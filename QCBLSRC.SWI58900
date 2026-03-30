@@ -1,0 +1,766 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI58900.
+      ******************************************************************
+      *     PROGRAMA SWI58900.                                         *
+      *                                                                *
+      *     Consulta Reconciliação                                     *
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      *
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI58900         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5808 END-EXEC.
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SWCD8201 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5890.
+       COPY SWCV5891.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+       COPY ARCL0039.
+       COPY ETCL0002.
+       COPY AQCW0005.
+      *
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+      *            SWITCH
+      *--------------------------------------------------------------
+       01  SW-SWITCH.
+           05 SW-CURSOR                  PIC X(01) VALUE SPACES.
+              88 SW-CURSOR-NONE                    VALUE '0'.
+              88 SW-CURSOR-1                       VALUE '1'.
+              88 SW-CURSOR-2                       VALUE '2'.
+              88 SW-CURSOR-3                       VALUE '3'.
+              88 SW-CURSOR-4                       VALUE '3'.
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT5808                PIC  X(08) VALUE 'SWVT5808'.
+           05 CON-SWVT7204                PIC  X(08) VALUE 'SWVT7204'.
+           05 CON-SWVT8201                PIC  X(08) VALUE 'SWVT8201'.
+           05 CON-DEBITO                  PIC  X(01) VALUE 'D'.
+      *
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-CSEND                    PIC  X(12) VALUE SPACES.
+           05 FILLER REDEFINES WS-CSEND.
+              10 WS-C2COD-CBAN            PIC  X(04).
+              10 WS-C2COD-CSPAI           PIC  X(02).
+              10 FILLER                   PIC  X(06).
+      *
+           05 WS-CCONTA                   PIC  X(20) VALUE SPACES.
+           05 FILLER REDEFINES WS-CCONTA.
+              10 WS-CCOD-NCCCBALC         PIC  9(04).
+              10 FILLER                   PIC  X(01).
+              10 WS-CCOD-NCCCCCB          PIC  X(13).
+              10 FILLER                   PIC  X(02).
+      *
+           05 WS-MONTANTE                 PIC  ZZZZZZZZZZZZZZ9,99.
+      *
+           05 WS-TOT-MOV-EXT              PIC S9(05) COMP   VALUE 0.
+           05 WS-VAL-MOV-EXT              PIC S9(17)V9(02)  VALUE 0.
+           05 WS-TOT-LAN-INT              PIC S9(05) COMP   VALUE 0.
+           05 WS-VAL-LAN-INT              PIC S9(17)V9(02)  VALUE 0.
+      *
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                 PIC  X(08) VALUE 'SWI58900'.
+      *--------------------------------------------------------------
+      *              DECLARACOES DE CURSORES DB2                     *
+      *--------------------------------------------------------------
+      *
+           EXEC SQL
+                DECLARE CURSWT01 CURSOR FOR
+                 SELECT
+                       IDRECONC
+                     , NSEQ
+                     , MRNOPR
+                     , MRNORD
+                     , COSN
+                     , COSNC
+                     , DATREC
+                 FROM SWVT8201
+                 WHERE IDRECONC  = :SWCD8201-IDRECONC
+                   AND NSEQ     >= :SWCD8201-NSEQ
+                 ORDER
+                    BY IDRECONC
+                     , NSEQ
+           END-EXEC.
+      *
+      *--------------------------------------------------------------
+       01  FILLER                         PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI58900         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5890-MSG.
+           MOVE SWCV5890-ASE               TO SWCV5891-ASE.
+      *
+           MOVE ZEROES                     TO SWCV5891-INDICE.
+           PERFORM 1100-LIMPA-OCCURS
+              THRU 1199-LIMPA-OCCURS-EXIT
+             UNTIL SWCV5891-PAGINA-CHEIA.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            1100-LIMPA-OCCURS
+      *--------------------------------------------------------------
+       1100-LIMPA-OCCURS.
+      *
+           ADD 1                       TO SWCV5891-INDICE.
+           MOVE ZEROS
+             TO SWCV5891-D-NSEQ(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-COSN(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-COSNC(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-CREF(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-CREFOPR(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-CREFEXT(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-CNATREC(SWCV5891-INDICE).
+           MOVE VIAK0002-DATA-MINIMA
+             TO SWCV5891-D-DATVAL(SWCV5891-INDICE).
+           MOVE ZEROES
+             TO SWCV5891-D-MVALOR(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-MRNOPR(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-MRNORD(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-MRDMOV(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-CNATREC2(SWCV5891-INDICE).
+           MOVE VIAK0002-DATA-MINIMA
+             TO SWCV5891-D-MRDATL(SWCV5891-INDICE).
+           MOVE ZEROES
+             TO SWCV5891-D-MRVLR(SWCV5891-INDICE).
+           MOVE SPACES
+             TO SWCV5891-D-MREANL(SWCV5891-INDICE).
+      *
+       1199-LIMPA-OCCURS-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV5890-NOMEFXLS          TO SWCV5891-NOMEFXLS
+           MOVE SWCV5890-NMAXLIST          TO SWCV5891-NMAXLIST
+           MOVE SWCV5890-NSEQ-PAG          TO SWCV5891-NSEQ-PAG
+           MOVE SWCV5890-IDRECON           TO SWCV5891-IDRECON
+           MOVE SWCV5890-CSEND             TO SWCV5891-CSEND
+           MOVE SWCV5890-CCONTA            TO SWCV5891-CCONTA
+           MOVE SWCV5890-CMOED             TO SWCV5891-CMOED
+           MOVE SWCV5890-CCODEST           TO SWCV5891-CCODEST
+
+           MOVE SWCV5890-NTOTMEXT          TO SWCV5891-NTOTMEXT
+           MOVE SWCV5890-NTOTLINT          TO SWCV5891-NTOTLINT
+      *
+           PERFORM 2010-VALIDACOES
+              THRU 2019-VALIDACOES-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2020-OPEN
+                 THRU 2029-OPEN-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2030-FETCH
+                 THRU 2039-FETCH-EXIT
+
+              IF VIAL0002-SEM-ERROS
+                 IF DB2-OK
+                    PERFORM 2040-CONTINUA
+                       THRU 2049-CONTINUA-EXIT
+                 ELSE
+                    COMPUTE SWCV5891-DIMINUI-LENGTH EQUAL
+                         SWCV5891-INDICE-INVERSO * SWCV5891-LENGTH-OCCUR
+                    COMPUTE SWCV5891-LENGTH EQUAL SWCV5891-LENGTH
+                         - SWCV5891-DIMINUI-LENGTH
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5891-CSEND-S
+                    MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5891-CSEND-MSG
+                    MOVE SWCK0002-CAPLIC   TO SWCV5891-CSEND-CAPLIC
+                 END-IF
+              END-IF
+              PERFORM 2070-CLOSE
+                 THRU 2079-CLOSE-EXIT
+           END-IF.
+
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+
+      *--------------------------------------------------------------
+      *                   2010-VALIDACOES
+      *--------------------------------------------------------------
+       2010-VALIDACOES.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2010-VALIDACOES' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+       2019-VALIDACOES-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                     2020-OPEN
+      *--------------------------------------------------------------
+       2020-OPEN.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2020-OPEN' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV5890-IDRECON           TO SWCD8201-IDRECONC.
+           MOVE SWCV5890-NSEQ-PAG          TO SWCD8201-NSEQ.
+      *
+           SET SW-CURSOR-NONE TO TRUE
+
+           IF SW-CURSOR-NONE
+              SET SW-CURSOR-1 TO TRUE
+           END-IF
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                        OPEN CURSWT01
+                    END-EXEC
+           END-EVALUATE.
+
+           MOVE CON-SWVT8201               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+      *
+       2029-OPEN-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                     2030-FETCH
+      *--------------------------------------------------------------
+       2030-FETCH.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2030-FETCH' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                       FETCH CURSWT01
+                       INTO
+                           :SWCD8201-IDRECONC
+                         , :SWCD8201-NSEQ
+                         , :SWCD8201-MRNOPR
+                         , :SWCD8201-MRNORD
+                         , :SWCD8201-COSN
+                         , :SWCD8201-COSNC
+                         , :SWCD8201-DATREC
+                    END-EXEC
+
+           END-EVALUATE.
+
+           MOVE CON-SWVT8201               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+       2039-FETCH-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                       2040-CONTINUA
+      *--------------------------------------------------------------
+       2040-CONTINUA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2040-CONTINUA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROES                     TO SWCV5891-INDICE.
+           PERFORM 2050-TRATA-OCCURS
+              THRU 2059-TRATA-OCCURS-EXIT
+             UNTIL DB2-NOTFND
+                OR SWCV5891-PAGINA-CHEIA
+                OR NOT VIAL0002-SEM-ERROS.
+
+           IF VIAL0002-SEM-ERROS
+              IF NOT SWCV5891-PAGINA-CHEIA
+                    COMPUTE SWCV5891-INDICE-INVERSO EQUAL
+                         SWCV5891-INDICE-INVERSO - SWCV5891-INDICE
+                    COMPUTE SWCV5891-DIMINUI-LENGTH EQUAL
+                         SWCV5891-INDICE-INVERSO * SWCV5891-LENGTH-OCCUR
+                    COMPUTE SWCV5891-LENGTH EQUAL SWCV5891-LENGTH -
+                         SWCV5891-DIMINUI-LENGTH
+                    SET  VIAL0002-FIM-CONSULTA TO TRUE
+              END-IF
+              IF DB2-NOTFND
+                    SET  VIAL0002-FIM-CONSULTA TO TRUE
+              END-IF
+           END-IF.
+
+       2049-CONTINUA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2050-TRATA-OCCURS
+      *--------------------------------------------------------------
+       2050-TRATA-OCCURS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2050-TRATA-OCCURS' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+      *
+           IF  SWCD8201-COSN NOT EQUAL SPACES
+           AND SWCD8201-COSNC NOT EQUAL SPACES
+              PERFORM 2051-TRATA-EXTRATO
+                 THRU 2051-TRATA-EXTRATO-EXIT
+           END-IF.
+      *
+           IF  SWCD8201-MRNOPR NOT EQUAL ZEROES
+           AND SWCD8201-MRNORD NOT EQUAL ZEROES
+              PERFORM 2052-TRATA-INTERNO
+                 THRU 2052-TRATA-INTERNO-EXIT
+DBG   *       IF SWCD8201-NSEQ EQUAL 21
+DBG   *          ADD 1                       TO SWCV5891-INDICE
+DBG   *          PERFORM 2051-TRATA-EXTRATO
+DBG   *             THRU 2051-TRATA-EXTRATO-EXIT
+DBG   *          ADD 1                       TO SWCV5891-INDICE
+DBG   *          PERFORM 2051-TRATA-EXTRATO
+DBG   *             THRU 2051-TRATA-EXTRATO-EXIT
+DBG   *       END-IF
+           END-IF.
+      *
+           PERFORM 2030-FETCH
+              THRU 2039-FETCH-EXIT.
+      *
+       2059-TRATA-OCCURS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2051-TRATA-EXTRATO
+      *--------------------------------------------------------------
+       2051-TRATA-EXTRATO.
+           MOVE '2051-TRATA-EXTRATO'       TO VIAL0015-CALLER-ID.
+           IF VIAL0001-DEBUG-SIM
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           ADD 1                           TO SWCV5891-INDICE.
+
+           MOVE SWCD8201-NSEQ
+                TO SWCV5891-D-NSEQ(SWCV5891-INDICE).
+
+           PERFORM 4000-MOV-EXTRATO
+              THRU 4000-MOV-EXTRATO-EXIT.
+
+           IF DB2-OK
+              ADD 1                        TO WS-TOT-MOV-EXT
+
+              MOVE SWCD5808-COSN
+                TO SWCV5891-D-COSN(SWCV5891-INDICE)
+              MOVE SWCD5808-COSNC
+                TO SWCV5891-D-COSNC(SWCV5891-INDICE)
+              MOVE SWCD5808-CREF
+                TO SWCV5891-D-CREF(SWCV5891-INDICE)
+              MOVE SWCD5808-CREFOPR
+                TO SWCV5891-D-CREFOPR(SWCV5891-INDICE)
+              MOVE SWCD5808-CREFEXT
+                TO SWCV5891-D-CREFEXT(SWCV5891-INDICE)
+              MOVE SWCD5808-CNATREC
+                TO SWCV5891-D-CNATREC(SWCV5891-INDICE)
+
+              IF SWCD5808-DATVAL NOT EQUAL ZEROES
+                 MOVE SWCD5808-DATVAL      TO AQCW0005-DT98
+                 PERFORM AQCP0005-CONV-DT8INDT10
+                    THRU AQCP0005-CONV-DT8INDT10-EXIT
+                 MOVE AQCW0005-DTX10
+                   TO SWCV5891-D-DATVAL(SWCV5891-INDICE)
+              END-IF
+
+              IF SWCD5808-CDBCR EQUAL CON-DEBITO
+                 MULTIPLY SWCD5808-MVALOR BY -1 GIVING SWCD5808-MVALOR
+              END-IF
+              ADD  SWCD5808-MVALOR         TO WS-VAL-MOV-EXT
+              MOVE SWCD5808-MVALOR
+                TO SWCV5891-D-MVALOR(SWCV5891-INDICE)
+           END-IF.
+
+       2051-TRATA-EXTRATO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2052-TRATA-INTERNO
+      *--------------------------------------------------------------
+       2052-TRATA-INTERNO.
+           MOVE '2052-TRATA-INTERNO'    TO VIAL0015-CALLER-ID
+           IF VIAL0001-DEBUG-SIM
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           ADD 1                           TO SWCV5891-INDICE.
+
+           MOVE SWCD8201-NSEQ
+                TO SWCV5891-D-NSEQ(SWCV5891-INDICE).
+
+           PERFORM 4100-MOV-INTERNO
+              THRU 4100-MOV-INTERNO-EXIT.
+
+           IF DB2-OK
+              ADD 1                        TO WS-TOT-LAN-INT
+
+              MOVE SWCD7204-MRNOPR
+                TO SWCV5891-D-MRNOPR(SWCV5891-INDICE)
+              MOVE SWCD7204-MRNORD
+                TO SWCV5891-D-MRNORD(SWCV5891-INDICE)
+              MOVE SWCD7204-MRDMOV
+                TO SWCV5891-D-MRDMOV(SWCV5891-INDICE)
+              MOVE SWCD7204-CNATREC
+                TO SWCV5891-D-CNATREC2(SWCV5891-INDICE)
+
+              IF SWCD7204-MRDATL NOT EQUAL ZEROES
+                 MOVE SWCD7204-MRDATL      TO AQCW0005-DT98
+                 PERFORM AQCP0005-CONV-DT8INDT10
+                    THRU AQCP0005-CONV-DT8INDT10-EXIT
+                 MOVE AQCW0005-DTX10
+                   TO SWCV5891-D-MRDATL(SWCV5891-INDICE)
+              END-IF
+
+              ADD SWCD7204-MRVLR           TO WS-VAL-LAN-INT
+              MOVE SWCD7204-MRVLR
+                TO SWCV5891-D-MRVLR(SWCV5891-INDICE)
+
+              MOVE SWCD7204-MREANL
+                TO SWCV5891-D-MREANL(SWCV5891-INDICE)
+           END-IF.
+
+       2052-TRATA-INTERNO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                     2070-CLOSE
+      *--------------------------------------------------------------
+       2070-CLOSE.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2070-CLOSE' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                        CLOSE CURSWT01
+                    END-EXEC
+           END-EVALUATE.
+
+       2079-CLOSE-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF SWCV5890-NMAXLIST EQUAL ZEROES
+              MOVE VIAL0001-CAPLIC         TO ARCL0039-CAPLIC
+              MOVE VIAL0001-COPCAO         TO ARCL0039-COPCAO
+              PERFORM ARCR0039-NMAXLIST
+                 THRU ARCR0039-NMAXLIST-EXIT
+
+              IF ETCL0002-ABEND-DB2
+                 MOVE ETCL0002-TABLE-NAME  TO VIAL0002-TABLE-NAME
+                 MOVE ETCL0002-SQLCA       TO VIAL0002-SQLCA
+              END-IF
+
+              MOVE ARCL0039-NMAXLIST       TO SWCV5891-NMAXLIST
+           ELSE
+              MOVE SWCV5890-NMAXLIST       TO SWCV5891-NMAXLIST
+           END-IF.
+      *
+           MOVE WS-TOT-MOV-EXT             TO SWCV5891-NTOTMEXT.
+           MOVE WS-VAL-MOV-EXT             TO SWCV5891-NVALMEXT.
+           MOVE WS-TOT-LAN-INT             TO SWCV5891-NTOTLINT.
+           MOVE WS-VAL-LAN-INT             TO SWCV5891-NVALLINT.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV5891-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5891-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5891-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE SWCV5891-INDICE            TO VIAL0001-OCORRENCIAS.
+
+           MOVE 'SWCV5891-D-NSEQ'          TO VIAL0015-CAMPO-NM(1)
+           MOVE  SWCV5891-D-NSEQ(1)        TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'SWCV5891-D-COSN'          TO VIAL0015-CAMPO-NM(2)
+           MOVE  SWCV5891-D-COSN(1)        TO VIAL0015-CAMPO-VLR(2)
+           MOVE 'SWCV5891-D-COSNC'         TO VIAL0015-CAMPO-NM(3)
+           MOVE  SWCV5891-D-COSNC(1)       TO VIAL0015-CAMPO-VLR(3)
+           MOVE 'SWCV5891-D-CREF'          TO VIAL0015-CAMPO-NM(4)
+           MOVE  SWCV5891-D-CREF(1)        TO VIAL0015-CAMPO-VLR(4)
+           MOVE 'SWCV5891-D-CREFOPR'       TO VIAL0015-CAMPO-NM(5)
+           MOVE  SWCV5891-D-CREFOPR(1)     TO VIAL0015-CAMPO-VLR(5)
+           MOVE 'SWCV5891-D-CREFEXT'       TO VIAL0015-CAMPO-NM(6)
+           MOVE  SWCV5891-D-CREFEXT(1)     TO VIAL0015-CAMPO-VLR(6)
+           MOVE 'SWCV5891-D-CNATREC'       TO VIAL0015-CAMPO-NM(7)
+           MOVE  SWCV5891-D-CNATREC(1)     TO VIAL0015-CAMPO-VLR(7)
+           MOVE 'SWCV5891-D-DATVAL'        TO VIAL0015-CAMPO-NM(8)
+           MOVE  SWCV5891-D-DATVAL(1)      TO VIAL0015-CAMPO-VLR(8)
+           MOVE 'SWCV5891-D-MVALOR'        TO VIAL0015-CAMPO-NM(9)
+           MOVE  SWCV5891-D-MVALOR(1)      TO VIAL0015-CAMPO-VLR(9)
+           PERFORM VIAP0016-TRATA-DEBUG
+              THRU VIAP0016-TRATA-DEBUG-EXIT.
+      *
+           MOVE 'SWCV5891-D-MRNOPR'        TO VIAL0015-CAMPO-NM(1)
+           MOVE  SWCV5891-D-MRNOPR(1)      TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'SWCV5891-D-MRNORD'        TO VIAL0015-CAMPO-NM(2)
+           MOVE  SWCV5891-D-MRNORD(1)      TO VIAL0015-CAMPO-VLR(2)
+           MOVE 'SWCV5891-D-MRDMOV'        TO VIAL0015-CAMPO-NM(3)
+           MOVE  SWCV5891-D-MRDMOV(1)      TO VIAL0015-CAMPO-VLR(3)
+           MOVE 'SWCV5891-D-CNATREC2'      TO VIAL0015-CAMPO-NM(4)
+           MOVE  SWCV5891-D-CNATREC2(1)    TO VIAL0015-CAMPO-VLR(4)
+           MOVE 'SWCV5891-D-MRDATL '       TO VIAL0015-CAMPO-NM(5)
+           MOVE  SWCV5891-D-MRDATL(1)      TO VIAL0015-CAMPO-VLR(5)
+           MOVE 'SWCV5891-D-MRVLR  '       TO VIAL0015-CAMPO-NM(6)
+           MOVE  SWCV5891-D-MRVLR(1)       TO VIAL0015-CAMPO-VLR(6)
+           MOVE 'SWCV5891-D-MREANL '       TO VIAL0015-CAMPO-NM(7)
+           MOVE  SWCV5891-D-MREANL(1)      TO VIAL0015-CAMPO-VLR(7)
+           PERFORM VIAP0016-TRATA-DEBUG
+              THRU VIAP0016-TRATA-DEBUG-EXIT.
+           MOVE 'SWCV5891-D-NSEQ'          TO VIAL0015-CAMPO-NM(1)
+           MOVE  SWCV5891-D-NSEQ(2)        TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'SWCV5891-D-COSN'          TO VIAL0015-CAMPO-NM(2)
+           MOVE  SWCV5891-D-COSN(2)        TO VIAL0015-CAMPO-VLR(2)
+           MOVE 'SWCV5891-D-COSNC'         TO VIAL0015-CAMPO-NM(3)
+           MOVE  SWCV5891-D-COSNC(2)       TO VIAL0015-CAMPO-VLR(3)
+           MOVE 'SWCV5891-D-CREF'          TO VIAL0015-CAMPO-NM(4)
+           MOVE  SWCV5891-D-CREF(2)        TO VIAL0015-CAMPO-VLR(4)
+           MOVE 'SWCV5891-D-CREFOPR'       TO VIAL0015-CAMPO-NM(5)
+           MOVE  SWCV5891-D-CREFOPR(2)     TO VIAL0015-CAMPO-VLR(5)
+           MOVE 'SWCV5891-D-CREFEXT'       TO VIAL0015-CAMPO-NM(6)
+           MOVE  SWCV5891-D-CREFEXT(2)     TO VIAL0015-CAMPO-VLR(6)
+           MOVE 'SWCV5891-D-CNATREC'       TO VIAL0015-CAMPO-NM(7)
+           MOVE  SWCV5891-D-CNATREC(2)     TO VIAL0015-CAMPO-VLR(7)
+           MOVE 'SWCV5891-D-DATVAL'        TO VIAL0015-CAMPO-NM(8)
+           MOVE  SWCV5891-D-DATVAL(2)      TO VIAL0015-CAMPO-VLR(8)
+           MOVE 'SWCV5891-D-MVALOR'        TO VIAL0015-CAMPO-NM(9)
+           MOVE  SWCV5891-D-MVALOR(2)      TO VIAL0015-CAMPO-VLR(9)
+           PERFORM VIAP0016-TRATA-DEBUG
+              THRU VIAP0016-TRATA-DEBUG-EXIT.
+      *
+           MOVE 'SWCV5891-D-MRNOPR'        TO VIAL0015-CAMPO-NM(1)
+           MOVE  SWCV5891-D-MRNOPR(2)      TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'SWCV5891-D-MRNORD'        TO VIAL0015-CAMPO-NM(2)
+           MOVE  SWCV5891-D-MRNORD(2)      TO VIAL0015-CAMPO-VLR(2)
+           MOVE 'SWCV5891-D-MRDMOV'        TO VIAL0015-CAMPO-NM(3)
+           MOVE  SWCV5891-D-MRDMOV(2)      TO VIAL0015-CAMPO-VLR(3)
+           MOVE 'SWCV5891-D-CNATREC2'      TO VIAL0015-CAMPO-NM(4)
+           MOVE  SWCV5891-D-CNATREC2(2)    TO VIAL0015-CAMPO-VLR(4)
+           MOVE 'SWCV5891-D-MRDATL '       TO VIAL0015-CAMPO-NM(5)
+           MOVE  SWCV5891-D-MRDATL(2)      TO VIAL0015-CAMPO-VLR(5)
+           MOVE 'SWCV5891-D-MRVLR  '       TO VIAL0015-CAMPO-NM(6)
+           MOVE  SWCV5891-D-MRVLR(2)       TO VIAL0015-CAMPO-VLR(6)
+           MOVE 'SWCV5891-D-MREANL '       TO VIAL0015-CAMPO-NM(7)
+           MOVE  SWCV5891-D-MREANL(2)      TO VIAL0015-CAMPO-VLR(7)
+           MOVE 'VIAL0001-OCORRENCIAS'     TO VIAL0015-CAMPO-NM(8)
+           MOVE  VIAL0001-OCORRENCIAS      TO VIAL0015-CAMPO-VLR(8)
+           PERFORM VIAP0016-TRATA-DEBUG
+              THRU VIAP0016-TRATA-DEBUG-EXIT.
+      *
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                    4000-MOV-EXTRATO
+      *--------------------------------------------------------------
+       4000-MOV-EXTRATO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '4000-MOV-EXTRATO  '   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE DCLSWCD5808.
+
+           MOVE SWCD8201-COSN             TO SWCD5808-COSN.
+           MOVE SWCD8201-COSNC            TO SWCD5808-COSNC.
+
+           EXEC SQL
+              SELECT CREF
+                   , CREFOPR
+                   , CREFEXT
+                   , CNATREC
+                   , DATVAL
+                   , MVALOR
+                   , CDBCR
+                INTO :SWCD5808-CREF
+                   , :SWCD5808-CREFOPR
+                   , :SWCD5808-CREFEXT
+                   , :SWCD5808-CNATREC
+                   , :SWCD5808-DATVAL
+                   , :SWCD5808-MVALOR
+                   , :SWCD5808-CDBCR
+                FROM SWVT5808
+               WHERE COSN  = :SWCD5808-COSN
+                 AND COSNC = :SWCD5808-COSNC
+           END-EXEC.
+      *
+           MOVE CON-SWVT5808               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+       4000-MOV-EXTRATO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                    4100-MOV-INTERNO
+      *--------------------------------------------------------------
+       4100-MOV-INTERNO.
+      *
+      *    IF VIAL0001-DEBUG-SIM
+              MOVE '4100-MOV-INTERNO'      TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           INITIALIZE DCLSWCD7204.
+
+           MOVE SWCD8201-MRNOPR            TO SWCD7204-MRNOPR.
+           MOVE SWCD8201-MRNORD            TO SWCD7204-MRNORD.
+
+           EXEC SQL
+              SELECT MRVLR
+                   , MRDATL
+                   , MRDMOV
+                   , CNATREC
+                   , MREANL
+                INTO :SWCD7204-MRVLR
+                   , :SWCD7204-MRDATL
+                   , :SWCD7204-MRDMOV
+                   , :SWCD7204-CNATREC
+                   , :SWCD7204-MREANL
+                FROM SWVT7204
+               WHERE MRNOPR      =  :SWCD7204-MRNOPR
+                 AND MRNORD      =  :SWCD7204-MRNORD
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+       4100-MOV-INTERNO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0015.
+           COPY ARCR0039.
+           COPY AQCP0005.

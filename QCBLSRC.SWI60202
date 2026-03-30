@@ -1,0 +1,324 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI60202.
+      ******************************************************************
+      *     PROGRAMA SWI60202.                                         *
+      *                                                                *
+      *     Eliminar movimento interno                                 *
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC  X(40) VALUE
+           'INICIO WORKING-STORAGE SWI60202         '.
+
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV6020.
+       COPY SWCV6021.
+
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+
+       COPY ARCL0039.
+       COPY ETCL0002.
+       COPY AQCW0005.
+
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+      *            SWITCH
+      *--------------------------------------------------------------
+      *01  SW-SWITCH.
+
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT7204                 PIC  X(08) VALUE 'SWVT7204'.
+           05 CON-NCCCBCOR                 PIC  X(08) VALUE 'NCCCBCOR'.
+
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-MONTANTE                  PIC  ZZZZZZZZZZZZZZ9,99.
+
+           05 WS-2210-BALC                 PIC S9(04) COMP-3.
+           05 WS-2210-BALCX                PIC  9(04).
+           05 WS-2210-CCB                  PIC  X(13).
+
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(08) VALUE 'SWI60202'.
+
+      *--------------------------------------------------------------
+      *              DECLARACOES DE CURSORES DB2
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+       01  FILLER                          PIC  X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI60202         '.
+
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+
+       COPY VIAL0004.
+
+           EXEC SQL INCLUDE VIAP0009 END-EXEC.
+
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV6020-MSG.
+           MOVE SWCV6020-ASE               TO SWCV6021-ASE.
+
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV6020-ADE               TO SWCV6021-ADE.
+
+           PERFORM 2100-VALIDACOES
+              THRU 2100-VALIDACOES-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2200-APRESENTA-DADOS
+                 THRU 2200-APRESENTA-DADOS-EXIT
+           END-IF.
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2100-VALIDACOES
+      *--------------------------------------------------------------
+       2100-VALIDACOES.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-VALIDACOES'       TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+       2100-VALIDACOES-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                     2200-APRESENTA-DADOS
+      *--------------------------------------------------------------
+       2200-APRESENTA-DADOS.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-APRESENTA-DADOS'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV6020-IDRECON           TO SWCD7204-IDRECONC.
+           MOVE SWCV6020-MRNOPR            TO SWCD7204-MRNOPR.
+           MOVE SWCV6020-MRNORD            TO SWCD7204-MRNORD.
+
+           EXEC SQL
+              SELECT NCCCCBAN
+                   , NCCCCSPAI
+                   , NCCCCCONTA
+                   , MRMOED
+                   , MRDATL
+                   , MRVLR
+                   , MRDMOV
+      *            , CREF
+      *            , CREFOPR
+               INTO  :SWCD7204-NCCCCBAN
+                   , :SWCD7204-NCCCCSPAI
+                   , :SWCD7204-NCCCCCONTA
+                   , :SWCD7204-MRMOED
+                   , :SWCD7204-MRDATL
+                   , :SWCD7204-MRVLR
+                   , :SWCD7204-MRDMOV
+      *            , :SWCD7204-CREF
+      *            , :SWCD7204-CREFOPR
+               FROM SWVT7204
+
+              WHERE IDRECONC = :SWCD7204-IDRECONC
+                AND MRNOPR   = :SWCD7204-MRNOPR
+                AND MRNORD   = :SWCD7204-MRNORD
+           END-EXEC.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+      * Obter SWCV6021-CCONTA
+           IF DB2-OK
+              PERFORM 2210-OBTER-CONTA
+                 THRU 2210-OBTER-CONTA-EXIT
+           END-IF.
+
+           EVALUATE TRUE
+           WHEN DB2-OK
+              STRING
+                 SWCD7204-NCCCCBAN
+                 SWCD7204-NCCCCSPAI      DELIMITED BY SIZE
+                                         INTO SWCV6021-CSEND
+              MOVE SWCD7204-MRMOED         TO SWCV6021-CMOED
+
+              MOVE SWCD7204-MRDATL         TO AQCW0005-DT98
+              PERFORM AQCP0005-CONV-DT8INDT10
+                 THRU AQCP0005-CONV-DT8INDT10-EXIT
+              MOVE AQCW0005-DTX10          TO SWCV6021-MRDATL
+
+              MOVE SWCD7204-MRVLR          TO SWCV6021-MRVLR
+              MOVE SWCD7204-MRDMOV         TO SWCV6021-MRDMOV
+      *       MOVE SWCD7204-CREF           TO SWCV6021-CREF
+      *       MOVE SWCD7204-CREFOPR        TO SWCV6021-CREFOPR
+
+           WHEN DB2-NOTFND
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV6021-IDRECON-S
+              MOVE SWCK0001-ERR-MVNOTFND   TO SWCV6021-IDRECON-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV6021-IDRECON-CAPLIC
+           WHEN OTHER
+              SET VIAL0002-ABEND-DB2       TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV6021-IDRECON-S
+              MOVE SWCK0001-ERR-REMOVER    TO SWCV6021-IDRECON-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV6021-IDRECON-CAPLIC
+           END-EVALUATE.
+
+       2200-APRESENTA-DADOS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2210-OBTER-CONTA
+      *--------------------------------------------------------------
+       2210-OBTER-CONTA.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2210-OBTER-CONTA'      TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+              SELECT NCCCBALC
+                   , NCCCCCB
+                INTO :WS-2210-BALC
+                   , :WS-2210-CCB
+                FROM NCCCBCOR
+               WHERE NCCCMOED  =  :SWCD7204-MRMOED
+                 AND NCCCCBAN  =  :SWCD7204-NCCCCBAN
+                 AND NCCCCSPAI =  :SWCD7204-NCCCCSPAI
+           END-EXEC.
+
+           MOVE CON-NCCCBCOR               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 MOVE WS-2210-BALC         TO WS-2210-BALCX
+                 STRING WS-2210-BALCX
+                        '-'
+                        WS-2210-CCB        DELIMITED BY SIZE
+                   INTO SWCV6021-CCONTA
+      *       WHEN OTHER
+      *          SET  VIAL0002-ERROS-FUNCAO
+      *                                    TO TRUE
+      *          SET  SWCV6011-CSEND-1     TO TRUE
+      *          MOVE SWCK0001-CSEND-N-EXISTS
+      *                                    TO SWCV6011-CSEND-MSG
+      *          MOVE SWCK0002-CAPLIC      TO SWCV6011-CSEND-CAPLIC
+           END-EVALUATE.
+
+       2210-OBTER-CONTA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV6021-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV6021-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV6021-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0015.
+           COPY ARCR0039.
+           COPY AQCP0005.

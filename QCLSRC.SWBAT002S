@@ -1,0 +1,99 @@
+/*--------------------------------------------------------------*/
+/*                                                              */
+/*                  Simulação de cadeia batch                   */
+/*                                                              */
+/*--------------------------------------------------------------*/
+           PGM
+/*--------------------------------------------------------------*/
+/* declaração de variaveis */
+           DCL VAR(&SPACES) TYPE(*CHAR) LEN(10)
+           DCL VAR(&TIME)   TYPE(*CHAR) LEN( 6)
+           DCL VAR(&DATE)   TYPE(*CHAR) LEN( 6)
+           DCL VAR(&DEBUG)  TYPE(*CHAR) LEN( 1) VALUE(S)
+           DCL VAR(&$RCODE) TYPE(*DEC)  LEN( 1 0) VALUE(0)
+           DCL VAR(&XRCODE) TYPE(*CHAR) LEN( 1)
+           DCL VAR(&SEQ)    TYPE(*DEC)  LEN( 3 0) VALUE(00)
+           DCL VAR(&PGM)    TYPE(*CHAR) LEN(10)
+           DCL VAR(&EOB)    TYPE(*CHAR) LEN(10) VALUE(*EOB)
+           DCL VAR(&CADEIA) TYPE(*CHAR) LEN(10) VALUE(SWBAT002)
+           DCL VAR(&DATA)   TYPE(*CHAR) LEN(10) VALUE('0001-01-01')
+           DCL VAR(&CURLIB) TYPE(*CHAR) LEN(10)
+           DCL VAR(&CUR)    TYPE(*CHAR) LEN(10)
+           DCL VAR(&AMB)    TYPE(*CHAR) LEN(01)
+/*--------------------------------------------------------------*/
+           RTVJOBA CURLIB(&CURLIB)
+           CALL BAB49900 PARM(&$RCODE &AMB &CUR)
+           CHGCURLIB CURLIB(&CUR)
+/*--------------------------------------------------------------*/
+           CALL BMEXT PARM('    ' '    ' 'E')
+           CALL BAB49991 PARM(&$RCODE &CADEIA &DATA)
+/*--------------------------------------------------------------*/
+MAIN:      CHGVAR VAR(&SEQ) VALUE(&SEQ + 1)
+           CHGVAR VAR(&PGM) VALUE(&SPACES)
+/*--------------------------------------------------------------*/
+/* Programas */
+/* Reconciliação de extractos (inicializa)                      */
+           IF (&SEQ=01)                    CHGVAR &PGM SWB7809
+/* Actualização de Saldos de Extractos                          */
+           IF (&SEQ=02)                    CHGVAR &PGM SWB7035
+/* Actualização de Saldos de Movimentos                         */
+           IF (&SEQ=03)                    CHGVAR &PGM SWB7040
+/* Reporting Correspondentes                                    */
+           IF (&SEQ=04)                    CHGVAR &PGM SWB7045
+/* Migração de movimentos (contas de correspondentes)           */
+           IF (&SEQ=05)                    CHGVAR &PGM SWB7010
+/*!Reconciliação de lançamentos estornados/anulados             */
+           IF (&SEQ=06)                    CHGVAR &PGM SWB7827
+/* Formatação de Chaves de movimentos (Ctas Corresp)            */
+           IF (&SEQ=07)                    CHGVAR &PGM SWB7015
+/* Carregamento de extractos (MT940)                            */
+           IF (&SEQ=08)                    CHGVAR &PGM SWB7800
+/* Carregamento de extractos (MT950)                            */
+           IF (&SEQ=09)                    CHGVAR &PGM SWB7801
+/* Carregamento de extractos do BdM                             */
+/*         IF (&SEQ=10)                    CHGVAR &PGM SWB7020  */
+/* Carregamento de operações                                    */
+           IF (&SEQ=11)                    CHGVAR &PGM SWB7805
+/* Carregamento de remessas e créditos documentários            */
+           IF (&SEQ=12)                    CHGVAR &PGM SWB7820
+/* Carregamento de históricos de extractos por reconciliar      */
+/*         IF (&SEQ=13)  CHGVAR &PGM SWB7025  */
+/* Carregamento de históricos de movimentos por reconciliar     */
+/*         IF (&SEQ=14)  CHGVAR &PGM SWB7030  */
+/*!Reconciliação de operações - Nível 1 a 9                     */
+           IF (&SEQ=15)                    CHGVAR &PGM SWB7860
+/*!Reconciliação de operações - Nível 10                        */
+           IF (&SEQ=16)                    CHGVAR &PGM SWB7865
+/* Reconstrução dos totais da tabela SWT63 c/periodo            */
+/*         IF (&SEQ=17)  CHGVAR &PGM SWB7850  */
+/* Previne o LOOP */
+           IF (&SEQ>17)                    CHGVAR &PGM &EOB
+
+/*--------------------------------------------------------------*/
+CALLPGM:   IF (&PGM *EQ &EOB)    GOTO FIM
+           IF (&PGM *EQ &SPACES) GOTO MAIN
+
+           RTVSYSVAL SYSVAL(QTIME) RTNVAR(&TIME)
+           RTVSYSVAL SYSVAL(QDATE) RTNVAR(&DATE)
+           IF (&DEBUG=S) +
+               SNDPGMMSG MSG('Debug>  '             +
+                             *CAT &PGM              +
+                             *CAT ' iniciou em '    +
+                             *CAT &DATE             +
+                             *CAT ' às '            +
+                             *CAT %SST(&TIME 1 2)   +
+                             *CAT ':'               +
+                             *CAT %SST(&TIME 3 2)   +
+                             *CAT ':'               +
+                             *CAT %SST(&TIME 5 2)   )
+
+            CALL &PGM PARM(&$RCODE)
+            CHGVAR VAR(&XRCODE) VALUE(&$RCODE)
+            SNDPGMMSG MSG('RETURN CODE = ' *CAT &XRCODE)
+            IF ((&$RCODE=0) *OR (&$RCODE=1)) THEN(GOTO MAIN)
+            ELSE SNDUSRMSG ('Procedimento terminou por erro')
+
+/*--------------------------------------------------------------*/
+FIM:       CALL BAB49996 PARM(&$RCODE &CADEIA &DATA)
+           CHGCURLIB CURLIB(&CURLIB)
+           ENDPGM

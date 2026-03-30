@@ -1,0 +1,1061 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWB4010.
+      ******************************************************************
+      *                                                                *
+      *                      - MENSAGENS SWIFT -                       *
+      *                                                                *
+      ******************************************************************
+      * Migração de movimentos de contas de correspondentes            *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+      ******************************************************************
+      *                      INPUT-OUTPUT SECTION                      *
+      ******************************************************************
+       FILE-CONTROL.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       FILE SECTION.
+      ******************************************************************
+      *                          FILE SECTION                          *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+       01  FILLER              PIC X(40) VALUE 'INICIO WORKING-STORAGE'.
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(10) VALUE 'SWB4010'.
+      *
+      ******************************************************************
+      * TABELAS
+      ******************************************************************
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+           EXEC SQL INCLUDE SWCD7204  END-EXEC.
+      *
+       01  DCLSWPARAM.
+           COPY DDS-ALL-FORMATS OF SWPARAM  PREFIX BY 'SWPARAM-'.
+       01  DCLGBMVCO.
+           COPY DDS-ALL-FORMATS OF GBMVCO   PREFIX BY 'GBMVCO-'.
+       01  DCLNCCCBCOR.
+           COPY DDS-ALL-FORMATS OF NCCCBCOR PREFIX BY 'NCCCBCOR-'.
+      *
+      ******************************************************************
+      * APIS
+      ******************************************************************
+      *
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 CON-SWPARAM                  PIC  X(10) VALUE 'SWPARAM'.
+           05 CON-SWVT7204                 PIC  X(10) VALUE 'SWVT7204'.
+           05 CON-GBMVCO                   PIC  X(10) VALUE 'GBMVCO'.
+           05 CON-NCCCBCOR                 PIC  X(10) VALUE 'NCCCBCOR'.
+           05 CON-PRDESC                   PIC  X(40) VALUE
+                                                'Conta Correspondente'.
+           05 CON-BOOLEAN                  PIC  X(01) VALUE 'B'.
+           05 CON-DATA-MINIMA              PIC S9(08) COMP-3
+                                                      VALUE 10101.
+           05 CON-PD                       PIC  X(02) VALUE 'PD'.
+           05 CON-P                        PIC  X(01) VALUE 'P'.
+           05 CON-O00                      PIC  X(03) VALUE 'O00'.
+
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01  WS-VARIAVEIS.
+           05 WS-PRPARAM               PIC  X(10) VALUE SPACES.
+           05 FILLER REDEFINES WS-PRPARAM.
+              10 WS-NCCCCBAN           PIC  X(04).
+              10 WS-NCCCCSPAI          PIC  X(02).
+              10 WS-NCCCMOED           PIC  X(03).
+              10 FILLER                PIC  X(01).
+           05 WS-DATE-TODAY            PIC  9(08) VALUE ZEROES.
+           05 WS-FIRST-DATE            PIC S9(08) COMP-3 VALUE 0.
+           05 WS-NEW-DATE              PIC S9(08) COMP-3 VALUE 0.
+           05 WS-PRVALDAT              PIC  9(08) VALUE ZEROES.
+           05 WS-PRVALALF              PIC  X(35) VALUE SPACES.
+           05 FILLER REDEFINES WS-PRVALALF.
+              10 WS-CHRNOPR            PIC  X(09).
+              10 WS-MRNOPR REDEFINES WS-CHRNOPR
+                                       PIC  9(09).
+              10 WS-CHRNORD            PIC  X(07).
+              10 WS-MRNORD REDEFINES WS-CHRNORD
+                                       PIC  9(07).
+              10 FILLER                PIC  X(19).
+           05 WS-PARAGRAPH-NAME        PIC  X(30) VALUE SPACES.
+           05 WS-CODIGO                PIC  X(03) VALUE SPACES.
+
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  WS-SWITCHES.
+           05 SW-NCCCBCOR-STATUS           PIC S9(04) COMP VALUE  0.
+              88 SW-NCCCBCOR-OK                            VALUE  0.
+              88 SW-NCCCBCOR-END                           VALUE -1.
+      *
+           05 SW-PARAM-STATUS              PIC S9(04) COMP VALUE  0.
+              88 SW-PARAM-OK                               VALUE  0.
+              88 SW-PARAM-NOTFND                           VALUE -1.
+      *
+           05 SW-PRVALBOL-STATUS           PIC  X(01)      VALUE SPACES.
+              88 SW-PRVALBOL-OK                            VALUE 'S'.
+              88 SW-PRVALBOL-NOTOK                         VALUE 'N'.
+      *
+           05 SW-GBMVCO-STATUS             PIC S9(04) COMP VALUE  0.
+              88 SW-GBMVCO-OK                              VALUE  0.
+              88 SW-GBMVCO-END                             VALUE -1.
+      *
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+           COPY AQCL0001.
+           COPY AQCK0001.
+           COPY SWCK0002.
+           COPY SWCK0003.
+           COPY SWCL5000.
+           COPY VIAW0050.
+           COPY VIAW0030.
+           COPY VIAL0015.
+           COPY BRCL1020.
+           COPY AQCW0109.
+      *    COPY AQCW0009.
+           COPY AQCW0011.
+           COPY SXCL1000.
+           COPY ETCL9221.
+      *
+      ******************************************************************
+      * DB2
+      ******************************************************************
+      *
+           EXEC SQL
+              DECLARE CRS_NCCCBCOR CURSOR WITH HOLD FOR
+                SELECT NCCCBALC
+                     , NCCCCCB
+                     , NCCCMOED
+                     , NCCCCBAN
+                     , NCCCCSPAI
+                     , NCCCCCONTA
+                  FROM NCCCBCOR
+                 WHERE NCCCCBAN   <> :NCCCBCOR-NCCCCBAN
+                   AND NCCCCSPAI  <> :NCCCBCOR-NCCCCSPAI
+                   AND NCCCMOED   <> :NCCCBCOR-NCCCMOED
+                 ORDER
+                    BY NCCCBALC
+                     , NCCCCCB
+                  WITH UR
+           END-EXEC.
+      *
+           EXEC SQL
+              DECLARE CRS_GBMVCO   CURSOR WITH HOLD FOR
+                 SELECT MRBALC
+                      , MRCCB
+                      , MRBAL
+                      , GBMRCONTA
+                      , MRTDOC
+                      , MRCOPE
+                      , MRNDOC
+                      , MRVLR
+                      , MRSALD
+                      , MRUSER
+                      , MRDTSIS
+                      , MRHORA
+                      , MRDATL
+                      , MRDRCX
+                      , MRETRB
+                      , MRBALM
+                      , MROBS
+                      , MRNOPR
+                      , MRNOPS
+                      , MRNCX
+                      , MRNTCX
+                      , MRNORD
+                      , MRMINV
+                      , MREANL
+                      , MRDTCB
+                      , MREXCT
+                      , MRMOED
+                      , MRDMOV
+                      , MRTXA
+                      , MRVLRI
+                      , MRAUTR
+                      , MRNTIT
+                      , MRMVCC
+                      , GBMRCONTAR
+                      , MRGRPP
+                      , GBMRMOVREC
+                      , GBMRDATREC
+                      , GBMRGRMOV
+                      , GBMRINFC
+                   FROM GBMVCO
+                  WHERE MRBALC  =  :GBMVCO-MRBALC
+                    AND MRCCB   =  :GBMVCO-MRCCB
+                    AND MRMOED  =  :GBMVCO-MRMOED
+                    AND MRDATL  >= :WS-FIRST-DATE
+      *             AND (
+      *                       MRNOPR  >  :GBMVCO-MRNOPR
+      *                   OR  MRNOPR  =  :GBMVCO-MRNOPR
+      *                   AND MRNORD  >  :GBMVCO-MRNORD
+      *             )
+                  ORDER
+                     BY MRDATL
+                      , MRNOPR
+                      , MRNORD
+                   WITH UR
+           END-EXEC.
+      *
+      ******************************************************************
+       01  FILLER                          PIC X(40)
+                                         VALUE 'FIM DA WORKING-STORAGE'.
+      *
+      ******************************************************************
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+       LINKAGE SECTION.
+           COPY AQCW0009.
+
+      ******************************************************************
+       PROCEDURE DIVISION USING AQCW0009-DATA.
+
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+      *
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT
+             UNTIL SW-NCCCBCOR-END
+                OR NOT AQCW0009-SEM-ERROS.
+      *
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3099-FIM-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           GOBACK.
+      *
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '1000-INICIO-PROGRAMA'     TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE WS-VARIAVEIS         REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+      *
+           SET  AQCW0009-RCODE-OK
+                SW-PRVALBOL-NOTOK          TO TRUE.
+      *
+           PERFORM AQCP0100-OBT-DADOS-ARQ
+              THRU AQCP0100-OBT-DADOS-ARQ-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-INICIO
+                 THRU AQCP0100-REG-INICIO-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              MOVE AQCW0100-AT-DTOP        TO WS-DATE-TODAY
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 4100-ABRIR-NCCCBCOR
+                 THRU 4199-ABRIR-NCCCBCOR-EXIT
+           END-IF.
+      *
+           PERFORM 4200-LER-NCCCBCOR
+              THRU 4299-LER-NCCCBCOR-EXIT
+             UNTIL NOT AQCW0009-SEM-ERROS
+                OR SW-NCCCBCOR-END
+                OR SW-PRVALBOL-OK.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '2000-PROC-PROGRAMA'       TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 5100-ABRIR-GBMVCO
+              THRU 5199-ABRIR-GBMVCO-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 5200-LER-GBMVCO
+                 THRU 5299-LER-GBMVCO-EXIT
+           END-IF.
+      *
+           PERFORM 5300-TRATAR-GBMVCO
+              THRU 5399-TRATAR-GBMVCO-EXIT
+             UNTIL SW-GBMVCO-END
+                OR NOT AQCW0009-SEM-ERROS.
+      *
+           PERFORM 5400-FECHAR-GBMVCO
+              THRU 5499-FECHAR-GBMVCO-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 7300-ACTUALIZA-PARAM
+                 THRU 7399-ACTUALIZA-PARAM-EXIT
+           END-IF.
+      *
+           SET  SW-PRVALBOL-NOTOK          TO TRUE.
+      *
+           PERFORM 4200-LER-NCCCBCOR
+              THRU 4299-LER-NCCCBCOR-EXIT
+             UNTIL NOT AQCW0009-SEM-ERROS
+                OR SW-NCCCBCOR-END
+                OR SW-PRVALBOL-OK.
+      *
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '3000-FIM-PROGRAMA'        TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              MOVE 'AQCW0009-RCODE'        TO VIAL0015-CAMPO-NM(1)
+              MOVE AQCW0009-RCODE          TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 4300-FECHAR-NCCCBCOR
+              THRU 4399-FECHAR-NCCCBCOR-EXIT.
+      *
+           PERFORM AQCP0009-TRATA-RCODE
+              THRU AQCP0009-TRATA-RCODE-EXIT.
+      *
+           PERFORM AQCP0002-TRATA-SYNCPOINT
+              THRU AQCP0002-TRATA-SYNCPOINT-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-FIM
+                 THRU AQCP0100-REG-FIM-EXIT
+           END-IF.
+      *
+       3099-FIM-PROGRAMA-EXIT.
+            EXIT.
+      *
+      ******************************************************************
+       4100-ABRIR-NCCCBCOR.
+      ******************************************************************
+      *
+           MOVE '4100-ABRIR-NCCCBCOR'      TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SPACES                     TO NCCCBCOR-NCCCCBAN
+                                              NCCCBCOR-NCCCCSPAI
+                                              NCCCBCOR-NCCCMOED.
+      *
+           SET  SW-NCCCBCOR-OK             TO TRUE.
+      *
+           EXEC SQL
+              OPEN CRS_NCCCBCOR
+           END-EXEC.
+      *
+           MOVE CON-NCCCBCOR              TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF NOT AQCW0011-OK
+              SET  AQCW0009-RCODE-APL
+                   VIAW0030-DB2-ERROR      TO TRUE
+              MOVE WS-PROGNAME             TO VIAW0030-PGMNAME
+              MOVE VIAL0015-CALLER-ID      TO VIAW0030-PARAGRAPH-NAME
+              MOVE AQCW0011-TABLE-NAME     TO VIAW0030-TABLE-NAME
+              MOVE AQCW0011-SQLCODE        TO VIAW0030-SQLCODE
+              MOVE 'Erro OPEN Cursor'      TO VIAW0030-DESC1
+              PERFORM VIAP0030-ESCREVE-SPOOL
+                 THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-IF.
+      *
+       4199-ABRIR-NCCCBCOR-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       4200-LER-NCCCBCOR.
+      ******************************************************************
+      *
+           MOVE '4200-LER-NCCCBCOR'        TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              FETCH CRS_NCCCBCOR
+               INTO :NCCCBCOR-NCCCBALC
+                  , :NCCCBCOR-NCCCCCB
+                  , :NCCCBCOR-NCCCMOED
+                  , :NCCCBCOR-NCCCCBAN
+                  , :NCCCBCOR-NCCCCSPAI
+                  , :NCCCBCOR-NCCCCCONTA
+           END-EXEC.
+      *
+           MOVE CON-NCCCBCOR               TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 PERFORM 7100-OBTER-PARAM
+                    THRU 7199-OBTER-PARAM-EXIT
+      *
+              WHEN AQCW0011-NOTFND
+                 SET  SW-NCCCBCOR-END      TO TRUE
+              WHEN OTHER
+                SET  AQCW0009-RCODE-APL
+                     VIAW0030-DB2-ERROR    TO TRUE
+                MOVE WS-PROGNAME           TO VIAW0030-PGMNAME
+                MOVE VIAL0015-CALLER-ID    TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME   TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE      TO VIAW0030-SQLCODE
+                MOVE 'Erro FETCH Cursor'   TO VIAW0030-DESC1
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       4299-LER-NCCCBCOR-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       4300-FECHAR-NCCCBCOR.
+      ******************************************************************
+      *
+           MOVE '4200-FECHAR-NCCCBCOR'     TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              CLOSE CRS_NCCCBCOR
+           END-EXEC.
+      *
+       4399-FECHAR-NCCCBCOR-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       5100-ABRIR-GBMVCO.
+      ******************************************************************
+      *
+           MOVE '5100-ABRIR-GBMVCO'        TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           SET  SW-GBMVCO-OK               TO TRUE.
+      *
+           MOVE NCCCBCOR-NCCCBALC          TO GBMVCO-MRBALC.
+           MOVE NCCCBCOR-NCCCCCB           TO GBMVCO-MRCCB.
+           MOVE NCCCBCOR-NCCCMOED          TO GBMVCO-MRMOED.
+      *
+           IF WS-CHRNOPR NOT NUMERIC
+              MOVE ZEROES                  TO WS-MRNOPR
+           END-IF.
+      *
+           IF WS-CHRNORD NOT NUMERIC
+              MOVE ZEROES                  TO WS-MRNORD
+           END-IF.
+      *
+           MOVE WS-MRNOPR                  TO GBMVCO-MRNOPR.
+           MOVE WS-MRNORD                  TO GBMVCO-MRNORD.
+      *
+           EXEC SQL
+              OPEN CRS_GBMVCO
+           END-EXEC.
+      *
+           MOVE CON-GBMVCO                TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF NOT AQCW0011-OK
+              SET  AQCW0009-RCODE-APL
+                   VIAW0030-DB2-ERROR      TO TRUE
+              MOVE WS-PROGNAME             TO VIAW0030-PGMNAME
+              MOVE VIAL0015-CALLER-ID      TO VIAW0030-PARAGRAPH-NAME
+              MOVE AQCW0011-TABLE-NAME     TO VIAW0030-TABLE-NAME
+              MOVE AQCW0011-SQLCODE        TO VIAW0030-SQLCODE
+              MOVE 'Erro OPEN Cursor'      TO VIAW0030-DESC1
+              PERFORM VIAP0030-ESCREVE-SPOOL
+                 THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-IF.
+      *
+       5199-ABRIR-GBMVCO-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       5200-LER-GBMVCO.
+      ******************************************************************
+      *
+           MOVE '5200-LER-GBMVCO'          TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              FETCH CRS_GBMVCO
+               INTO :GBMVCO-MRBALC
+                  , :GBMVCO-MRCCB
+                  , :GBMVCO-MRBAL
+                  , :GBMVCO-GBMRCONTA
+                  , :GBMVCO-MRTDOC
+                  , :GBMVCO-MRCOPE
+                  , :GBMVCO-MRNDOC
+                  , :GBMVCO-MRVLR
+                  , :GBMVCO-MRSALD
+                  , :GBMVCO-MRUSER
+                  , :GBMVCO-MRDTSIS
+                  , :GBMVCO-MRHORA
+                  , :GBMVCO-MRDATL
+                  , :GBMVCO-MRDRCX
+                  , :GBMVCO-MRETRB
+                  , :GBMVCO-MRBALM
+                  , :GBMVCO-MROBS
+                  , :GBMVCO-MRNOPR
+                  , :GBMVCO-MRNOPS
+                  , :GBMVCO-MRNCX
+                  , :GBMVCO-MRNTCX
+                  , :GBMVCO-MRNORD
+                  , :GBMVCO-MRMINV
+                  , :GBMVCO-MREANL
+                  , :GBMVCO-MRDTCB
+                  , :GBMVCO-MREXCT
+                  , :GBMVCO-MRMOED
+                  , :GBMVCO-MRDMOV
+                  , :GBMVCO-MRTXA
+                  , :GBMVCO-MRVLRI
+                  , :GBMVCO-MRAUTR
+                  , :GBMVCO-MRNTIT
+                  , :GBMVCO-MRMVCC
+                  , :GBMVCO-GBMRCONTAR
+                  , :GBMVCO-MRGRPP
+                  , :GBMVCO-GBMRMOVREC
+                  , :GBMVCO-GBMRDATREC
+                  , :GBMVCO-GBMRGRMOV
+                  , :GBMVCO-GBMRINFC
+           END-EXEC.
+      *
+           MOVE CON-GBMVCO                 TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 CONTINUE
+              WHEN AQCW0011-NOTFND
+                 SET  SW-GBMVCO-END        TO TRUE
+              WHEN OTHER
+                SET  AQCW0009-RCODE-APL
+                     VIAW0030-DB2-ERROR    TO TRUE
+                MOVE WS-PROGNAME           TO VIAW0030-PGMNAME
+                MOVE VIAL0015-CALLER-ID    TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME   TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE      TO VIAW0030-SQLCODE
+                MOVE 'Erro FETCH Cursor'   TO VIAW0030-DESC1
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       5299-LER-GBMVCO-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       5300-TRATAR-GBMVCO.
+      ******************************************************************
+      *
+           MOVE '5300-TRATAR-GBMVCO'       TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 6100-PREPARAR-LINHA
+              THRU 6199-PREPARAR-LINHA-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 6200-INSERIR-LINHA
+                 THRU 6299-INSERIR-LINHA-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 5200-LER-GBMVCO
+                 THRU 5299-LER-GBMVCO-EXIT
+           END-IF.
+      *
+       5399-TRATAR-GBMVCO-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       5400-FECHAR-GBMVCO.
+      ******************************************************************
+      *
+           MOVE '5400-FECHAR-GBMVCO'       TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              CLOSE CRS_GBMVCO
+           END-EXEC.
+      *
+       5499-FECHAR-GBMVCO-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       6100-PREPARAR-LINHA.
+      ******************************************************************
+      *
+           MOVE '6100-PREPARAR-LINHA'      TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE DCLSWCD7204          REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+      *
+           MOVE GBMVCO-MRBALC              TO SWCD7204-MRBALC.
+           MOVE GBMVCO-MRCCB               TO SWCD7204-MRCCB.
+           MOVE NCCCBCOR-NCCCCBAN          TO SWCD7204-NCCCCBAN.
+           MOVE NCCCBCOR-NCCCCSPAI         TO SWCD7204-NCCCCSPAI.
+           MOVE NCCCBCOR-NCCCCCONTA        TO SWCD7204-NCCCCCONTA.
+           MOVE GBMVCO-MRTDOC              TO SWCD7204-MRTDOC.
+           MOVE GBMVCO-MRCOPE              TO SWCD7204-MRCOPE.
+           MOVE GBMVCO-MRNDOC              TO SWCD7204-MRNDOC.
+           MOVE GBMVCO-MRVLR               TO SWCD7204-MRVLR.
+           MOVE GBMVCO-MRSALD              TO SWCD7204-MRSALD.
+           MOVE GBMVCO-MRUSER              TO SWCD7204-MRUSER.
+           MOVE GBMVCO-MRDTSIS             TO SWCD7204-MRDTSIS.
+           MOVE GBMVCO-MRHORA              TO SWCD7204-MRHORA.
+           MOVE GBMVCO-MRDATL              TO SWCD7204-MRDATL
+                                              WS-NEW-DATE.
+           MOVE GBMVCO-MRDRCX              TO SWCD7204-MRDRCX.
+           MOVE GBMVCO-MRETRB              TO SWCD7204-MRETRB.
+           MOVE GBMVCO-MRBALM              TO SWCD7204-MRBALM.
+           MOVE GBMVCO-MROBS               TO SWCD7204-MROBS.
+           MOVE GBMVCO-MRNOPR              TO SWCD7204-MRNOPR
+                                              WS-MRNOPR.
+           MOVE GBMVCO-MRNOPS              TO SWCD7204-MRNOPS.
+           MOVE GBMVCO-MRNORD              TO SWCD7204-MRNORD
+                                              WS-MRNORD.
+           MOVE GBMVCO-MREANL              TO SWCD7204-MREANL.
+           MOVE GBMVCO-MRDTCB              TO SWCD7204-MRDTCB.
+           MOVE GBMVCO-MREXCT              TO SWCD7204-MREXCT.
+           MOVE GBMVCO-MRMOED              TO SWCD7204-MRMOED.
+           MOVE GBMVCO-MRDMOV              TO SWCD7204-MRDMOV.
+           MOVE SPACES                     TO SWCD7204-CCHAVE.
+           MOVE GBMVCO-GBMRINFC            TO SWCD7204-GBMRINFC.
+      *    MOVE SWCK0002-NAO               TO SWCD7204-IRECONC.
+           MOVE SPACES                     TO SWCD7204-IRECONC.
+           MOVE SPACES                     TO SWCD7204-CCODMSG.
+           MOVE ZEROES                     TO SWCD7204-DATVAL.
+           MOVE SPACES                     TO SWCD7204-COSN
+                                              SWCD7204-COSNC
+                                              SWCD7204-CREF
+                                              SWCD7204-CREFOPR
+                                              SWCD7204-GOBS.
+           MOVE CON-P                      TO SWCD7204-CTIPREC.
+           MOVE CON-PD                     TO SWCD7204-CCODEST.
+           MOVE ZEROES                     TO SWCD7204-IDRECONC.
+           MOVE SPACES                     TO SWCD7204-CNATREC.
+           MOVE WS-PROGNAME                TO SWCD7204-CUSERID.
+           MOVE CON-O00                    TO SWCD7204-CNIVREC.
+      *
+       6199-PREPARAR-LINHA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       6200-INSERIR-LINHA.
+      ******************************************************************
+      *
+           MOVE '6200-INSERIR-LINHA'       TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              INSERT
+                INTO SWVT7204 (
+                     MRBALC
+                   , MRCCB
+                   , NCCCCBAN
+                   , NCCCCSPAI
+                   , NCCCCCONTA
+                   , MRTDOC
+                   , MRCOPE
+                   , MRNDOC
+                   , MRVLR
+                   , MRSALD
+                   , MRUSER
+                   , MRDTSIS
+                   , MRHORA
+                   , MRDATL
+                   , MRDRCX
+                   , MRETRB
+                   , MRBALM
+                   , MROBS
+                   , MRNOPR
+                   , MRNOPS
+                   , MRNORD
+                   , MREANL
+                   , MRDTCB
+                   , MREXCT
+                   , MRMOED
+                   , MRDMOV
+                   , GBMRINFC
+                   , CCHAVE
+                   , IRECONC
+                   , CCODMSG
+                   , DATVAL
+                   , COSN
+                   , COSNC
+                   , CREF
+                   , CREFOPR
+                   , CTIPREC
+                   , GOBS
+                   , CCODEST
+                   , IDRECONC
+                   , CNATREC
+                   , CUSERID
+                   , HTIMEST
+                   , CNIVREC
+                )
+              VALUES (
+                     :SWCD7204-MRBALC
+                   , :SWCD7204-MRCCB
+                   , :SWCD7204-NCCCCBAN
+                   , :SWCD7204-NCCCCSPAI
+                   , :SWCD7204-NCCCCCONTA
+                   , :SWCD7204-MRTDOC
+                   , :SWCD7204-MRCOPE
+                   , :SWCD7204-MRNDOC
+                   , :SWCD7204-MRVLR
+                   , :SWCD7204-MRSALD
+                   , :SWCD7204-MRUSER
+                   , :SWCD7204-MRDTSIS
+                   , :SWCD7204-MRHORA
+                   , :SWCD7204-MRDATL
+                   , :SWCD7204-MRDRCX
+                   , :SWCD7204-MRETRB
+                   , :SWCD7204-MRBALM
+                   , :SWCD7204-MROBS
+                   , :SWCD7204-MRNOPR
+                   , :SWCD7204-MRNOPS
+                   , :SWCD7204-MRNORD
+                   , :SWCD7204-MREANL
+                   , :SWCD7204-MRDTCB
+                   , :SWCD7204-MREXCT
+                   , :SWCD7204-MRMOED
+                   , :SWCD7204-MRDMOV
+                   , :SWCD7204-GBMRINFC
+                   , :SWCD7204-CCHAVE
+                   , :SWCD7204-IRECONC
+                   , :SWCD7204-CCODMSG
+                   , :SWCD7204-DATVAL
+                   , :SWCD7204-COSN
+                   , :SWCD7204-COSNC
+                   , :SWCD7204-CREF
+                   , :SWCD7204-CREFOPR
+                   , :SWCD7204-CTIPREC
+                   , :SWCD7204-GOBS
+                   , :SWCD7204-CCODEST
+                   , :SWCD7204-IDRECONC
+                   , :SWCD7204-CNATREC
+                   , :SWCD7204-CUSERID
+                   , CURRENT TIMESTAMP
+                   , :SWCD7204-CNIVREC
+                )
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+              WHEN DB2-DUPREC
+                 CONTINUE
+              WHEN OTHER
+                 MOVE WS-PROGNAME          TO AQCW0100-PGMNAME
+                 SET  AQCW0009-RCODE-APL   TO TRUE
+                 MOVE VIAL0015-CALLER-ID   TO AQCW0100-PARAGRAPH
+                 MOVE AQCW0011-TABLE-NAME  TO AQCW0100-NM-ENTIDADE
+                 MOVE AQCW0011-SQLCODE     TO AQCW0100-SQLCODE
+                 MOVE 'Erro INSERT tabela' TO AQCW0100-DESC1
+                 PERFORM AQCP0100-ESCREVE-MSG
+                    THRU AQCP0100-ESCREVE-MSG-EXIT
+           END-EVALUATE.
+      *
+       6299-INSERIR-LINHA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       7100-OBTER-PARAM.
+      ******************************************************************
+      *
+           MOVE '7100-OBTER-PARAM'         TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE DCLSWPARAM           REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+      *
+           MOVE NCCCBCOR-NCCCCBAN          TO WS-NCCCCBAN.
+           MOVE NCCCBCOR-NCCCCSPAI         TO WS-NCCCCSPAI.
+           MOVE NCCCBCOR-NCCCMOED          TO WS-NCCCMOED.
+      *
+           SET  SW-PARAM-OK                TO TRUE.
+      *
+           MOVE SWCK0002-CAPLIC            TO SWPARAM-PRCODPAR.
+           MOVE WS-PRPARAM                 TO SWPARAM-PRPARAM.
+      *
+           EXEC SQL
+              SELECT PRVALDAT
+                   , PRVALBOL
+                   , PRVALALF
+                INTO :SWPARAM-PRVALDAT
+                   , :SWPARAM-PRVALBOL
+                   , :SWPARAM-PRVALALF
+                FROM SWPARAM
+               WHERE PRCODPAR  =  :SWPARAM-PRCODPAR
+                 AND PRPARAM   =  :SWPARAM-PRPARAM
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 MOVE SWPARAM-PRVALBOL     TO SW-PRVALBOL-STATUS
+                 MOVE SWPARAM-PRVALDAT     TO WS-FIRST-DATE
+                 MOVE SWPARAM-PRVALALF     TO WS-PRVALALF
+              WHEN AQCW0011-NOTFND
+                 SET  SW-PARAM-NOTFND      TO TRUE
+                 PERFORM 7200-CRIAR-PARAM
+                    THRU 7299-CRIAR-PARAM-EXIT
+              WHEN OTHER
+                 SET  AQCW0009-RCODE-APL
+                      VIAW0030-DB2-ERROR   TO TRUE
+                 MOVE WS-PROGNAME          TO VIAW0030-PGMNAME
+                 MOVE VIAL0015-CALLER-ID   TO VIAW0030-PARAGRAPH-NAME
+                 MOVE AQCW0011-TABLE-NAME  TO VIAW0030-TABLE-NAME
+                 MOVE AQCW0011-SQLCODE     TO VIAW0030-SQLCODE
+                 MOVE 'Erro SELECT'        TO VIAW0030-DESC1
+                 PERFORM VIAP0030-ESCREVE-SPOOL
+                    THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       7199-OBTER-PARAM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       7200-CRIAR-PARAM.
+      ******************************************************************
+      *
+           MOVE '7200-CRIAR-PARAM'         TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE DCLSWPARAM           REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+      *
+           MOVE NCCCBCOR-NCCCCBAN          TO WS-NCCCCBAN.
+           MOVE NCCCBCOR-NCCCCSPAI         TO WS-NCCCCSPAI.
+           MOVE NCCCBCOR-NCCCMOED          TO WS-NCCCMOED.
+      *
+           MOVE CON-DATA-MINIMA            TO WS-FIRST-DATE.
+      *
+           SET  SW-PRVALBOL-OK             TO TRUE.
+      *
+           MOVE SWCK0002-CAPLIC            TO SWPARAM-PRCODPAR.
+           MOVE WS-PRPARAM                 TO SWPARAM-PRPARAM.
+           MOVE CON-PRDESC                 TO SWPARAM-PRDESC.
+           MOVE CON-BOOLEAN                TO SWPARAM-PRTIPPAR.
+           MOVE WS-FIRST-DATE              TO SWPARAM-PRVALDAT.
+           MOVE ZEROES                     TO SWPARAM-PRVALNUM.
+           MOVE SW-PRVALBOL-STATUS         TO SWPARAM-PRVALBOL.
+           MOVE SPACES                     TO SWPARAM-PRVALALF.
+           MOVE WS-PROGNAME                TO SWPARAM-CUSERID.
+      *
+           EXEC SQL
+              INSERT
+                INTO SWPARAM (
+                     PRCODPAR
+                   , PRPARAM
+                   , PRDESC
+                   , PRTIPPAR
+                   , PRVALDAT
+                   , PRVALNUM
+                   , PRVALBOL
+                   , PRVALALF
+                   , CUSERID
+                   , HTIMEEST
+                )
+              VALUES (
+                     :SWPARAM-PRCODPAR
+                   , :SWPARAM-PRPARAM
+                   , :SWPARAM-PRDESC
+                   , :SWPARAM-PRTIPPAR
+                   , :SWPARAM-PRVALDAT
+                   , :SWPARAM-PRVALNUM
+                   , :SWPARAM-PRVALBOL
+                   , :SWPARAM-PRVALALF
+                   , :SWPARAM-CUSERID
+                   , CURRENT TIMESTAMP
+                )
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 CONTINUE
+              WHEN OTHER
+                 SET  AQCW0009-RCODE-APL
+                      VIAW0030-DB2-ERROR   TO TRUE
+                 MOVE WS-PROGNAME          TO VIAW0030-PGMNAME
+                 MOVE VIAL0015-CALLER-ID   TO VIAW0030-PARAGRAPH-NAME
+                 MOVE AQCW0011-TABLE-NAME  TO VIAW0030-TABLE-NAME
+                 MOVE AQCW0011-SQLCODE     TO VIAW0030-SQLCODE
+                 MOVE 'Erro INSERT'        TO VIAW0030-DESC1
+                 PERFORM VIAP0030-ESCREVE-SPOOL
+                    THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       7299-CRIAR-PARAM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       7300-ACTUALIZA-PARAM.
+      ******************************************************************
+      *
+           MOVE '7300-ACTUALIZA-PARAM'     TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-FIRST-DATE              TO SWPARAM-PRVALDAT.
+           IF WS-NEW-DATE NOT EQUAL ZEROES
+              MOVE WS-NEW-DATE             TO SWPARAM-PRVALDAT
+           END-IF.
+           MOVE WS-PROGNAME                TO SWPARAM-CUSERID.
+           MOVE WS-PRVALALF                TO SWPARAM-PRVALALF.
+      *
+           EXEC SQL
+              UPDATE SWPARAM
+                 SET PRVALDAT  =  :SWPARAM-PRVALDAT
+                   , PRVALALF  =  :SWPARAM-PRVALALF
+                   , CUSERID   =  :SWPARAM-CUSERID
+                   , HTIMEEST  =  CURRENT TIMESTAMP
+               WHERE PRCODPAR  =  :SWPARAM-PRCODPAR
+                 AND PRPARAM   =  :SWPARAM-PRPARAM
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 CONTINUE
+              WHEN OTHER
+                 SET  AQCW0009-RCODE-APL
+                      VIAW0030-DB2-ERROR   TO TRUE
+                 MOVE WS-PROGNAME          TO VIAW0030-PGMNAME
+                 MOVE VIAL0015-CALLER-ID   TO VIAW0030-PARAGRAPH-NAME
+                 MOVE AQCW0011-TABLE-NAME  TO VIAW0030-TABLE-NAME
+                 MOVE AQCW0011-SQLCODE     TO VIAW0030-SQLCODE
+                 MOVE 'Erro UPDATE'        TO VIAW0030-DESC1
+                 PERFORM VIAP0030-ESCREVE-SPOOL
+                    THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       7399-ACTUALIZA-PARAM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      *    EXEC SQL INCLUDE VIAP9999 END-EXEC
+           EXEC SQL INCLUDE AQCP0002 END-EXEC
+           COPY VIAP0015.
+           COPY VIAP0030.
+           COPY AQCP0011.
+           COPY AQCP0109.
+           COPY AQCP0009.
+           COPY SXCP1000.
+           COPY ETCP9221.
+      ******************************************************************

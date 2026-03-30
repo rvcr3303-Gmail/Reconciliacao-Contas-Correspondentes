@@ -1,0 +1,550 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI56406.
+      ******************************************************************
+      *     PROGRAMA SWI56406.                                    *
+      *                                                                *
+      *     Anulação da reconciliação
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+
+      *-----------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *-----------------------------------------------------------------
+       01  FILLER                          PIC  X(40) VALUE
+           'INICIO WORKING-STORAGE SWI56406         '.
+
+      *-----------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *-----------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5606 END-EXEC.
+           EXEC SQL INCLUDE SWCD5808 END-EXEC.
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SWCD8201 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+
+      *-----------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *-----------------------------------------------------------------
+       COPY SWCV5640.
+       COPY SWCV5641.
+
+      *-----------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *-----------------------------------------------------------------
+       COPY VIAL0010.
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+       COPY ETCL0002.
+       COPY AQCW0005.
+
+      *-----------------------------------------------------------------
+      *            CONSTANTES
+      *-----------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT7204                 PIC  X(08) VALUE 'SWVT7204'.
+           05 CON-SWVT5808                 PIC  X(08) VALUE 'SWVT5808'.
+           05 CON-SWVT5606                 PIC  X(08) VALUE 'SWVT5606'.
+           05 CON-SWVT8201                 PIC  X(08) VALUE 'SWVT8201'.
+
+           05 CON-PD                       PIC  X(02) VALUE 'PD'.
+           05 CON-DATA-MIN                 PIC  9(08) VALUE 00010101.
+           05 CON-P                        PIC  X(01) VALUE 'P'.
+           05 CON-O00                      PIC  X(03) VALUE 'O00'.
+
+      *-----------------------------------------------------------------
+      *            VARIAVEIS
+      *-----------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-IDRECONC                  PIC S9(13) COMP-3.
+
+      *-----------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *-----------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(08) VALUE 'SWI56406'.
+
+      *-----------------------------------------------------------------
+       01  FILLER                          PIC  X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI56406         '.
+      *-----------------------------------------------------------------
+       LINKAGE SECTION.
+      *-----------------------------------------------------------------
+       COPY VIAL0004.
+
+           EXEC SQL INCLUDE VIAP0009 END-EXEC.
+
+      *-----------------------------------------------------------------
+      *            0000-MAINLINE
+      *-----------------------------------------------------------------
+       0000-MAINLINE.
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+
+      *-----------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *-----------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5640-MSG.
+           MOVE SWCV5640-ASE               TO SWCV5641-ASE.
+
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *-----------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5640-ADE               TO SWCV5641-ADE.
+
+           PERFORM 2100-VALIDACOES
+              THRU 2199-VALIDACOES-EXIT
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2200-MODIFICA-DADOS
+                 THRU 2299-MODIFICA-DADOS-EXIT
+           END-IF
+           .
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2100-VALIDACOES
+      *-----------------------------------------------------------------
+       2100-VALIDACOES.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-VALIDACOES' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+       2199-VALIDACOES-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2200-MODIFICA-DADOS
+      *-----------------------------------------------------------------
+       2200-MODIFICA-DADOS.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-MODIFICA-DADOS'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+      * IDRECONC a anular
+           MOVE SWCV5640-IDRECON           TO WS-IDRECONC.
+
+      * Mov Internos
+           PERFORM 2210-MODIFICA-SWT72
+              THRU 2210-MODIFICA-SWT72-EXIT.
+
+      * Mov Extracto
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2220-MODIFICA-SWT58
+                 THRU 2220-MODIFICA-SWT58-EXIT
+           END-IF.
+
+      * Operações
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2230-MODIFICA-SWT56
+                 THRU 2230-MODIFICA-SWT56-EXIT
+           END-IF.
+
+      * Reconciliacoes
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2240-APAGA-SWT82
+                 THRU 2240-APAGA-SWT82-EXIT
+           END-IF.
+
+       2299-MODIFICA-DADOS-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2210-MODIFICA-SWT72
+      *-----------------------------------------------------------------
+       2210-MODIFICA-SWT72.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2210-MODIFICA-SWT72'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROES                     TO SWCD7204-IDRECONC.
+           MOVE CON-PD                     TO SWCD7204-CCODEST.
+           MOVE CON-O00                    TO SWCD7204-CNIVREC.
+           MOVE CON-P                      TO SWCD7204-CTIPREC.
+           MOVE SPACES                     TO SWCD7204-CNATREC.
+
+           MOVE VIAL0001-CUTILIZA-I        TO SWCD7204-CUSERID.
+
+           PERFORM 2211-UPD-SWT72
+              THRU 2211-UPD-SWT72-EXIT.
+
+       2210-MODIFICA-SWT72-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2211-UPD-SWT72
+      *-----------------------------------------------------------------
+       2211-UPD-SWT72.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2210-MODIFICA-SWT72' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+              UPDATE SWVT7204
+                 SET IDRECONC =  :SWCD7204-IDRECONC
+                   , CCODEST  =  :SWCD7204-CCODEST
+                   , CNIVREC  =  :SWCD7204-CNIVREC
+                   , CTIPREC  =  :SWCD7204-CTIPREC
+                   , CNATREC  =  :SWCD7204-CNATREC
+                   , CUSERID  =  :SWCD7204-CUSERID
+                   , HTIMEST  =  CURRENT TIMESTAMP
+               WHERE IDRECONC =  :WS-IDRECONC
+           END-EXEC.
+
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 MOVE VIAK0002-ERROS-FUNCAO
+                   TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5641-MRNOPR-S
+                    MOVE SWCK0001-OPREF-N-EXISTS
+                      TO SWCV5641-MRNOPR-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5641-MRNOPR-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5641-MRNORD-S
+                    MOVE SWCK0001-OPREF-N-EXISTS
+                      TO SWCV5641-MRNORD-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5641-MRNORD-CAPLIC
+              ELSE
+                 IF NOT DB2-OK
+                    MOVE VIAK0002-ABEND-DB2
+                      TO VIAL0002-IND-ERROS
+                    MOVE VIAK0001-ERRO-DB2
+                      TO VIAL0002-COD-ERRO-GRAVE
+                 END-IF
+              END-IF
+           ELSE
+              MOVE VIAK0002-ABEND-DB2
+                TO VIAL0002-IND-ERROS
+              MOVE VIAK0001-ERRO-DB2
+                TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+       2211-UPD-SWT72-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2220-MODIFICA-SWT58
+      *-----------------------------------------------------------------
+       2220-MODIFICA-SWT58.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2220-MODIFICA-SWT58'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROES                     TO SWCD5808-IDRECONC.
+           MOVE CON-DATA-MIN               TO SWCD5808-DATREC.
+           MOVE CON-PD                     TO SWCD5808-CCODEST.
+           MOVE CON-O00                    TO SWCD5808-CNIVREC.
+           MOVE CON-P                      TO SWCD5808-CTIPREC.
+           MOVE SPACES                     TO SWCD5808-CNATREC.
+
+           MOVE VIAL0001-CUTILIZA-I        TO SWCD5808-CUSERID.
+
+           PERFORM 2221-UPD-SWT58
+              THRU 2221-UPD-SWT58-EXIT.
+
+       2220-MODIFICA-SWT58-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2221-UPD-SWT58
+      *-----------------------------------------------------------------
+       2221-UPD-SWT58.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2221-UPD-SWT58'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+              UPDATE SWVT5808
+                 SET IDRECONC = :SWCD5808-IDRECONC
+                   , DATREC   = :SWCD5808-DATREC
+                   , CCODEST  = :SWCD5808-CCODEST
+                   , CNIVREC  = :SWCD5808-CNIVREC
+                   , CTIPREC  = :SWCD5808-CTIPREC
+                   , CNATREC  = :SWCD5808-CNATREC
+                   , CUSERID  = :SWCD5808-CUSERID
+                   , HTIMEST  = CURRENT TIMESTAMP
+               WHERE IDRECONC = :WS-IDRECONC
+           END-EXEC.
+
+           MOVE CON-SWVT5808               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 CONTINUE
+      *          MOVE VIAK0002-ERROS-FUNCAO
+      *            TO VIAL0002-IND-ERROS
+      *             MOVE SWCK0002-STATUS-ACTIVO
+      *               TO SWCV5641-MRNOPR-S
+      *             MOVE SWCK0001-OPREF-N-EXISTS
+      *               TO SWCV5641-MRNOPR-MSG
+      *             MOVE SWCK0002-CAPLIC
+      *               TO SWCV5641-MRNOPR-CAPLIC
+      *             MOVE SWCK0002-STATUS-ACTIVO
+      *               TO SWCV5641-MRNORD-S
+      *             MOVE SWCK0001-OPREF-N-EXISTS
+      *               TO SWCV5641-MRNORD-MSG
+      *             MOVE SWCK0002-CAPLIC
+      *               TO SWCV5641-MRNORD-CAPLIC
+              ELSE
+                 IF NOT DB2-OK
+                    MOVE VIAK0002-ABEND-DB2
+                      TO VIAL0002-IND-ERROS
+                    MOVE VIAK0001-ERRO-DB2
+                      TO VIAL0002-COD-ERRO-GRAVE
+                 END-IF
+              END-IF
+           ELSE
+              MOVE VIAK0002-ABEND-DB2
+                TO VIAL0002-IND-ERROS
+              MOVE VIAK0001-ERRO-DB2
+                TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+       2221-UPD-SWT58-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2230-MODIFICA-SWT56
+      *-----------------------------------------------------------------
+       2230-MODIFICA-SWT56.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2230-MODIFICA-SWT58'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROES                     TO SWCD5606-IDRECONC.
+           MOVE ZEROES                     TO SWCD5606-DATREC.
+           MOVE CON-PD                     TO SWCD5606-CCODEST.
+           MOVE CON-O00                    TO SWCD5606-CNIVREC.
+           MOVE CON-P                      TO SWCD5606-CTIPREC.
+           MOVE SPACES                     TO SWCD5606-CNATREC.
+
+           MOVE VIAL0001-CUTILIZA-I        TO SWCD5606-CUSERID.
+
+           PERFORM 2231-UPD-SWT56
+              THRU 2231-UPD-SWT56-EXIT.
+
+       2230-MODIFICA-SWT56-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2231-UPD-SWT56
+      *-----------------------------------------------------------------
+       2231-UPD-SWT56.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2231-UPD-SWT56'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+              UPDATE SWVT5606
+                 SET IDRECONC = :SWCD5606-IDRECONC
+                   , DATREC   = :SWCD5606-DATREC
+                   , CCODEST  = :SWCD5606-CCODEST
+                   , CNIVREC  = :SWCD5606-CNIVREC
+                   , CTIPREC  = :SWCD5606-CTIPREC
+                   , CNATREC  = :SWCD5606-CNATREC
+                   , CUSERID  = :SWCD5606-CUSERID
+                   , HTIMEST  = CURRENT TIMESTAMP
+               WHERE IDRECONC = :WS-IDRECONC
+           END-EXEC.
+
+           MOVE CON-SWVT5606               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 CONTINUE
+      *          MOVE VIAK0002-ERROS-FUNCAO
+      *            TO VIAL0002-IND-ERROS
+      *             MOVE SWCK0002-STATUS-ACTIVO
+      *               TO SWCV5641-MRNOPR-S
+      *             MOVE SWCK0001-OPREF-N-EXISTS
+      *               TO SWCV5641-MRNOPR-MSG
+      *             MOVE SWCK0002-CAPLIC
+      *               TO SWCV5641-MRNOPR-CAPLIC
+      *             MOVE SWCK0002-STATUS-ACTIVO
+      *               TO SWCV5641-MRNORD-S
+      *             MOVE SWCK0001-OPREF-N-EXISTS
+      *               TO SWCV5641-MRNORD-MSG
+      *             MOVE SWCK0002-CAPLIC
+      *               TO SWCV5641-MRNORD-CAPLIC
+              ELSE
+                 IF NOT DB2-OK
+                    MOVE VIAK0002-ABEND-DB2
+                      TO VIAL0002-IND-ERROS
+                    MOVE VIAK0001-ERRO-DB2
+                      TO VIAL0002-COD-ERRO-GRAVE
+                 END-IF
+              END-IF
+           ELSE
+              MOVE VIAK0002-ABEND-DB2
+                TO VIAL0002-IND-ERROS
+              MOVE VIAK0001-ERRO-DB2
+                TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+       2231-UPD-SWT56-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2240-APAGA-SWT82
+      *-----------------------------------------------------------------
+       2240-APAGA-SWT82.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2240-APAGA-SWT82'      TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           PERFORM 2241-DEL-SWT82
+              THRU 2241-DEL-SWT82-EXIT.
+
+       2240-APAGA-SWT82-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *                   2241-DEL-SWT82
+      *-----------------------------------------------------------------
+       2241-DEL-SWT82.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2241-DEL-SWT82'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+              DELETE SWVT8201
+               WHERE IDRECONC = :WS-IDRECONC
+           END-EXEC.
+
+           MOVE CON-SWVT8201               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 MOVE VIAK0002-ERROS-FUNCAO
+                   TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5641-MRNOPR-S
+                    MOVE SWCK0001-OPREF-N-EXISTS
+                      TO SWCV5641-MRNOPR-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5641-MRNOPR-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5641-MRNORD-S
+                    MOVE SWCK0001-OPREF-N-EXISTS
+                      TO SWCV5641-MRNORD-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5641-MRNORD-CAPLIC
+              ELSE
+                 IF NOT DB2-OK
+                    MOVE VIAK0002-ABEND-DB2
+                      TO VIAL0002-IND-ERROS
+                    MOVE VIAK0001-ERRO-DB2
+                      TO VIAL0002-COD-ERRO-GRAVE
+                 END-IF
+              END-IF
+           ELSE
+              MOVE VIAK0002-ABEND-DB2
+                TO VIAL0002-IND-ERROS
+              MOVE VIAK0001-ERRO-DB2
+                TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+       2241-DEL-SWT82-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *-----------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5641-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5641-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5641-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES
+             TO VIAL0001-OCORRENCIAS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+
+      *-----------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0010.
+           COPY VIAP0016.
+           COPY AQCP0005.

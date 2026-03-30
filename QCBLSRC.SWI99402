@@ -1,0 +1,1968 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI99402.
+      ******************************************************************
+      *     PROGRAMA SWI99402.
+      *
+      *     Upload Extracto do BdM
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SOURCE-COMPUTER. IBM-AS400.
+       OBJECT-COMPUTER. IBM-AS400.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+       INPUT-OUTPUT SECTION.
+      *--------------------------------------------------------------
+      *            INPUT-OUTPUT SECTION
+      *--------------------------------------------------------------
+       FILE-CONTROL.
+           SELECT SWF0010-FILE ASSIGN      TO DISK-SWF0010
+                              FILE STATUS  IS VIAW0011-FSTATUS.
+       DATA DIVISION.
+       FILE SECTION.
+      *--------------------------------------------------------------
+      *            FILE SECTION
+      *--------------------------------------------------------------
+       FD  SWF0010-FILE.
+           COPY SWCF0010.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI99402         '.
+      *
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5806 END-EXEC.
+           EXEC SQL INCLUDE SWCD7302 END-EXEC.
+           EXEC SQL INCLUDE SWCD7401 END-EXEC.
+           EXEC SQL INCLUDE SWCD7501 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+       01  DCLNCCCBCOR.
+           COPY DDS-ALL-FORMATS OF NCCCBCOR PREFIX BY 'NCCCBCOR-'.
+      *
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV9940.
+       COPY SWCV9941.
+      *
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY AQCK0001.
+       COPY AQCW0005.
+       COPY VIAW0011.
+       COPY VIAW0030.
+       COPY VIAL0015.
+       COPY ETCL0002.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+       COPY VIAL0030.
+      *
+      *--------------------------------------------------------------
+      * SWITCHES
+      *--------------------------------------------------------------
+       01  WS-SWITCHES.
+           05 SW-EXTRATO                   PIC S9(04) COMP
+                                                      VALUE ZEROES.
+              88 SW-EXTRATO-OK                        VALUE ZEROES.
+              88 SW-EXTRATO-NOT-OK                    VALUE -1.
+           05 SW-FILE-STATE                PIC S9(04) COMP
+                                                      VALUE ZEROES.
+              88 SW-FILE-OK                           VALUE ZEROES.
+              88 SW-END-OF-FILE                       VALUE -1.
+           05 SW-FILE                      PIC S9(04) COMP
+                                                      VALUE ZEROES.
+              88 SW-FILE-OPEN                         VALUE ZEROES.
+              88 SW-FILE-CLOSE                        VALUE -1.
+           05 SW-CTRL-LINHA                PIC S9(04) COMP
+                                                      VALUE ZEROES.
+              88 SW-LINHA-NEXISTE                     VALUE ZEROES.
+              88 SW-LINHA-EXISTE                      VALUE -1.
+           05 SW-TIPO-REGISTO              PIC  X(01) VALUE SPACES.
+              88 SW-FIRST-LINE                        VALUE '0'.
+              88 SW-HEADER-LINE                       VALUE 'H'.
+              88 SW-DETAIL-LINE                       VALUE 'D'.
+           05 SW-HEADER                    PIC S9(04)        VALUE  0.
+              88 SW-NOT-1ST-HEADER                           VALUE  0.
+              88 SW-1ST-HEADER                               VALUE -1.
+           05 SW-IND-ERROS                 PIC S9(04) COMP-3 VALUE  0.
+              88 SW-SEM-AVISOS                        VALUE  0.
+              88 SW-SEM-ERROS                         VALUE  0,  1.
+              88 SW-COM-ERROS                         VALUE  2,  3.
+              88 SW-COM-AVISO                         VALUE  1.
+              88 SW-COM-ERRO                          VALUE  2.
+              88 SW-COM-ERRO-GRAVE                    VALUE  3.
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+      *
+           05 CON-SWVT7302                 PIC  X(10) VALUE 'SWVT7302'.
+           05 CON-SWVT7401                 PIC  X(10) VALUE 'SWVT7401'.
+           05 CON-SWVT7501                 PIC  X(10) VALUE 'SWVT7501'.
+           05 CON-SWVT5806                 PIC  X(10) VALUE 'SWVT5806'.
+           05 CON-NCCCBCOR                 PIC  X(10) VALUE 'NCCCBCOR'.
+           05 CON-A-PROCESSAR              PIC  X(01) VALUE 'N'.
+           05 CON-PROCESSADO               PIC  X(01) VALUE 'S'.
+           05 CON-S                        PIC  X(01) VALUE 'S'.
+           05 CON-N                        PIC  X(01) VALUE 'N'.
+           05 CON-p                        PIC  X(01) VALUE 'p'.
+           05 CON-COM-ERROS                PIC  X(01) VALUE 'X'.
+           05 CON-SYS-COMMAND              PIC  X(10) VALUE 'OVRDBF'.
+           05 CON-FILENAME                 PIC  X(10) VALUE 'SWF0010'.
+           05 CON-SPACE                    PIC  X(01) VALUE SPACES.
+           05 CON-SEPARATOR                PIC  X(01) VALUE '/'.
+           05 CON-QCMDEXC                  PIC  X(10) VALUE 'QCMDEXC'.
+           05 CON-LENGTH                   PIC S9(10)V9(05) COMP-3
+                                                      VALUE +256.
+           05 CON-PREFFIX                  PIC  X(01) VALUE 'Z'.
+           05 CON-UNIDADE                  PIC  9(07) VALUE 0000001.
+           05 CON-CODMSG                   PIC  X(06) VALUE 'MT940'.
+
+           05 CON-DEBITO                   PIC  X(01) VALUE 'D'.
+           05 CON-CREDITO                  PIC  X(01) VALUE 'C'.
+           05 CON-CBAN                     PIC  X(04) VALUE 'BMOC'.
+           05 CON-CSPAI                    PIC  X(02) VALUE 'MZ'.
+           05 CON-CNIVREC                  PIC  X(03) VALUE 'O00'.
+
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(08) VALUE 'SWI99402'.
+           05 WS-COMMAND                   PIC  X(256) VALUE SPACES.
+      *    05 WS-DESC1                     PIC  X(36) VALUE SPACES.
+           05 WS-DDATAUPL                  PIC  X(10) VALUE SPACES.
+           05 WS-ZSEQFILE                  PIC S9(05) COMP-3 VALUE  0.
+      *
+           05 WS-COSN                      PIC  X(10) VALUE SPACES.
+           05 FILLER REDEFINES WS-COSN.
+              10 WS-PREFFIX                PIC  X(01).
+              10 WS-COSN-VAL               PIC  9(09).
+              10 FILLER REDEFINES WS-COSN-VAL.
+                 15 WS-COSN-ANO            PIC  9(02).
+                 15 WS-COSN-SEQ            PIC  9(07).
+      *
+           05 WS-COSNC                     PIC  X(10) VALUE SPACES.
+           05 WS-COSNC-NLINHA REDEFINES WS-COSNC
+                                           PIC  9(10).
+      *
+           05 WS-DTOP                      PIC  9(08) VALUE ZEROES.
+           05 FILLER REDEFINES WS-DTOP.
+              10 FILLER                    PIC  X(02).
+              10 WS-DTOP-ANO               PIC  9(02).
+              10 FILLER                    PIC  X(04).
+      *
+           05 WS-DATE-TODAY                PIC  X(10) VALUE SPACES.
+           05 WS-DATA-EXTRATO              PIC  X(10) VALUE SPACES.
+      *
+           05 WS-CTRL-SLD                  PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-CTRL-PAG                  PIC S9(05)V      COMP-3
+                                                      VALUE ZEROES.
+           05 WS-CTRL-LIN                  PIC S9(03)V      COMP-3
+                                                      VALUE ZEROES.
+           05 WS-NLINHA                    PIC S9(05) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-NLIN-PAG                  PIC S9(05) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-NPAGINA                   PIC S9(05) COMP-3
+                                                      VALUE ZEROES.
+      *
+           05 WS-EDT-NPAGINA               PIC  Z(2).Z(2)9.
+           05 WS-EDT-NLINHA                PIC  Z9.
+      *
+           05 WS-CREFEXT                   PIC  X(16).
+              10 WS-CBAN                   PIC  X(04).
+              10 WS-CMOEDA                 PIC  X(03).
+              10 WS-DATA                   PIC  X(08).
+              10 FILLER                    PIC  X(01).
+      *
+           05 WS-CSPAI                     PIC  X(02).
+      *
+           05 WS-DT-OPER                   PIC  X(10).
+           05 FILLER REDEFINES WS-DT-OPER.
+              10 WS-OPER-DIA               PIC  9(02).
+              10 FILLER                    PIC  X(01).
+              10 WS-OPER-MES               PIC  9(02).
+              10 FILLER                    PIC  X(01).
+              10 WS-OPER-ANO               PIC  9(04).
+      *
+           05 WS-DT-ANSI                   PIC  X(10).
+           05 FILLER REDEFINES WS-DT-ANSI.
+              10 WS-ANSI-ANO               PIC  9(04).
+              10 FILLER                    PIC  X(01).
+              10 WS-ANSI-MES               PIC  9(02).
+              10 FILLER                    PIC  X(01).
+              10 WS-ANSI-DIA               PIC  9(02).
+      *
+           05 WS-MSALDO-INICIAL            PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-MSALDO-FINAL              PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-TOTAL-CREDITO             PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-TOTAL-DEBITO              PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+      *
+           05 WS-MSALDO                    PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-MVALOR                    PIC S9(13)V9(02) COMP-3
+                                                      VALUE ZEROES.
+           05 WS-CDBCR                     PIC  X(01) VALUE SPACES.
+           05 WS-GDESCR                    PIC  X(40) VALUE SPACES.
+      *
+           05 WS-RESULT                    PIC S9(13)V9(02) COMP-3.
+           05 WS-STRING                    PIC  X(27).
+           05 WS-STRAUX                    PIC  X(27).
+      *
+           05 WS-CALLER-ID                 PIC  X(30) VALUE SPACES.
+      *
+           05 WS-AUX                       PIC  X(10) VALUE SPACES.
+           05 WS-GDESCERR                  PIC  X(80) VALUE SPACES.
+           05 WS-I                         PIC S9(04) COMP.
+      *
+      *--------------------------------------------------------------
+       01  FILLER                          PIC  X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI99402         '.
+      *
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+      *
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+      *
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV9940-MSG.
+           MOVE SWCV9940-ASE               TO SWCV9941-ASE.
+      *
+           MOVE VIAL0001-DATA-PROCESSO-I   TO WS-DATE-TODAY
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA'  TO VIAL0015-CALLER-ID
+              MOVE 'SWCV9940-CFILEXTR'     TO VIAL0015-CAMPO-NM(1)
+              MOVE  SWCV9940-CFILEXTR      TO VIAL0015-CAMPO-VLR(1)
+              MOVE 'SWCV9940-CLIBRNAM'     TO VIAL0015-CAMPO-NM(2)
+              MOVE  SWCV9940-CLIBRNAM      TO VIAL0015-CAMPO-VLR(2)
+              MOVE 'SWCV9940-CFILENAM'     TO VIAL0015-CAMPO-NM(3)
+              MOVE  SWCV9940-CFILENAM      TO VIAL0015-CAMPO-VLR(3)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           IF SWCV9940-CFILEXTR EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO VIAL0002-IND-ERROS
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0001-ERR-FEXTERN    TO SWCV9941-CFILEXTR-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV9941-CFILEXTR-CAPLIC
+           END-IF.
+      *
+           IF SWCV9940-CLIBRNAM EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO VIAL0002-IND-ERROS
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV9941-CLIBRNAM-S
+              MOVE SWCK0001-ERR-LIBNAME    TO SWCV9941-CLIBRNAM-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV9941-CLIBRNAM-CAPLIC
+           END-IF.
+      *
+           IF SWCV9940-CFILENAM EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO VIAL0002-IND-ERROS
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV9941-CFILENAM-S
+              MOVE SWCK0001-ERR-FILNAME    TO SWCV9941-CFILENAM-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV9941-CFILENAM-CAPLIC
+      *
+           END-IF.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV9940-ADE               TO SWCV9941-ADE.
+      *
+      * Processamento do extrato BdM
+      *
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2200-TRATA-FICHEIRO
+                 THRU 2200-TRATA-FICHEIRO-EXIT
+           END-IF.
+
+           IF NOT VIAL0002-SEM-ERROS
+              EXEC SQL ROLLBACK END-EXEC
+              SET SW-EXTRATO-NOT-OK     TO TRUE
+              SET VIAL0002-OK           TO TRUE
+           END-IF.
+
+      *
+      * upload do extrato BdM
+      *
+           IF SW-EXTRATO-OK
+              PERFORM 2500-TRATA-SALDO
+                 THRU 2500-TRATA-SALDO-EXIT
+           END-IF.
+      *
+           PERFORM 2600-TRATA-EXTRATO
+              THRU 2600-TRATA-EXTRATO-EXIT
+
+           IF  NOT VIAL0002-SEM-ERROS
+           OR  SW-EXTRATO-NOT-OK
+               EXEC SQL COMMIT END-EXEC
+               SET VIAL0002-OK           TO TRUE
+           END-IF.
+      *
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2200-TRATA-FICHEIRO
+      *--------------------------------------------------------------
+       2200-TRATA-FICHEIRO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-TRATA-FICHEIRO'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SPACES                     TO WS-COMMAND
+                                              WS-GDESCERR.
+      *
+           STRING 'OVRDBF '
+               CON-FILENAME                DELIMITED BY SIZE
+               ' ' SWCV9940-CLIBRNAM       DELIMITED BY SPACES
+               '/' SWCV9940-CFILENAM       DELIMITED BY SPACES
+                                         INTO WS-COMMAND.
+
+           CALL SWCK0002-CMD-QCMDEXC USING WS-COMMAND
+                                         , SWCK0002-CMD-LENGTH
+
+           PERFORM 2210-OPEN-FICHEIRO
+              THRU 2210-OPEN-FICHEIRO-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2220-READ-FICHEIRO
+                 THRU 2220-READ-FICHEIRO-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE SWCF0010-DTFIM             TO WS-DT-OPER
+              MOVE ALL '-'                    TO WS-DT-ANSI
+              MOVE WS-OPER-DIA                TO WS-ANSI-DIA
+              MOVE WS-OPER-MES                TO WS-ANSI-MES
+              MOVE WS-OPER-ANO                TO WS-ANSI-ANO
+              MOVE WS-DT-ANSI                 TO WS-DATA-EXTRATO
+
+              PERFORM 2300-PROC-FICHEIRO
+                 THRU 2300-PROC-FICHEIRO-EXIT
+                UNTIL NOT VIAL0002-SEM-ERROS
+                   OR SW-END-OF-FILE
+                   OR SW-EXTRATO-NOT-OK
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              COMPUTE WS-MSALDO-FINAL  = WS-MSALDO-INICIAL +
+                      WS-TOTAL-CREDITO - WS-TOTAL-DEBITO
+
+              IF WS-MSALDO-FINAL      NOT EQUAL WS-MSALDO
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-TOT-CR-DB TO SWCV9941-CFILEXTR-MSG
+                 MOVE 'Total de mov. a debito/credito invalidos '
+                                             to WS-GDESCERR
+              END-IF
+           END-IF.
+
+           IF SW-FILE-OPEN
+              PERFORM 2230-CLOSE-FICHEIRO
+                 THRU 2230-CLOSE-FICHEIRO-EXIT
+           END-IF.
+      *
+       2200-TRATA-FICHEIRO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2210-OPEN-FICHEIRO
+      *--------------------------------------------------------------
+       2210-OPEN-FICHEIRO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2210-OPEN-FICHEIRO'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE ZEROES                     TO WS-CTRL-SLD
+                                              WS-NLINHA
+                                              WS-CTRL-PAG
+                                              WS-CTRL-LIN
+                                              WS-MSALDO-INICIAL
+                                              WS-TOTAL-DEBITO
+                                              WS-TOTAL-CREDITO.
+      *
+           SET  SW-FILE-OK
+                SW-FIRST-LINE              TO TRUE.
+      *
+           OPEN INPUT SWF0010-FILE.
+      *
+           PERFORM 9030-FSCHECK
+              THRU 9039-FSCHECK-EXIT.
+
+           IF NOT VIAW0011-OK
+              SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0001-ERR-OPEN      TO SWCV9941-CFILEXTR-MSG
+              MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+           ELSE
+              SET SW-FILE-OPEN            TO TRUE
+           END-IF.
+      *
+       2210-OPEN-FICHEIRO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2220-READ-FICHEIRO
+      *--------------------------------------------------------------
+       2220-READ-FICHEIRO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2220-READ-FICHEIRO'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           READ SWF0010-FILE.
+      *
+           PERFORM 9030-FSCHECK
+              THRU 9039-FSCHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN VIAW0011-OK
+                 CONTINUE
+           WHEN VIAW0011-EOF
+                 SET  SW-END-OF-FILE       TO TRUE
+           WHEN VIAW0011-RECSIZ
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+           WHEN OTHER
+                SET  VIAL0002-ERROS-FUNCAO   TO TRUE
+                MOVE SWCK0002-STATUS-ACTIVO  TO SWCV9941-CFILEXTR-S
+                MOVE SWCK0002-CAPLIC         TO SWCV9941-CFILEXTR-CAPLIC
+                MOVE SWCK0001-ERR-FICHEIRO   TO SWCV9941-CFILEXTR-MSG
+           END-EVALUATE.
+      *
+       2220-READ-FICHEIRO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2230-CLOSE-FICHEIRO
+      *--------------------------------------------------------------
+       2230-CLOSE-FICHEIRO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2230-CLOSE-FICHEIRO'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           CLOSE SWF0010-FILE.
+      *
+           PERFORM 9030-FSCHECK
+              THRU 9039-FSCHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN VIAW0011-OK
+                 CONTINUE
+           WHEN OTHER
+                SET  VIAL0002-ERROS-FUNCAO   TO TRUE
+                MOVE SWCK0002-STATUS-ACTIVO  TO SWCV9941-CFILEXTR-S
+                MOVE SWCK0002-CAPLIC         TO SWCV9941-CFILEXTR-CAPLIC
+                MOVE SWCK0001-ERR-CLOSE      TO SWCV9941-CFILEXTR-MSG
+           END-EVALUATE.
+      *
+       2230-CLOSE-FICHEIRO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2300-PROC-FICHEIRO
+      *--------------------------------------------------------------
+       2300-PROC-FICHEIRO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2300-PROC-FICHEIRO'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           SET SW-EXTRATO-OK         TO TRUE
+      *
+           PERFORM 2310-CONTROLAR-REGISTO
+              THRU 2310-CONTROLAR-REGISTO-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2320-VALIDAR-REGISTO
+                 THRU 2320-VALIDAR-REGISTO-EXIT
+           END-IF.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-HEADER-LINE
+              WHEN SW-LINHA-EXISTE
+                   CONTINUE
+              WHEN SW-DETAIL-LINE
+                   PERFORM 2400-COMPOR-LINHA
+                      THRU 2400-COMPOR-LINHA-EXIT
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-HEADER-LINE
+              WHEN SW-LINHA-EXISTE
+                   CONTINUE
+              WHEN SW-DETAIL-LINE
+                   PERFORM 2410-INSERIR-LINHA
+                      THRU 2410-INSERIR-LINHA-EXIT
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-LINHA-EXISTE
+                   CONTINUE
+              WHEN OTHER
+                   PERFORM 2420-COMPOR-CONTROLO
+                      THRU 2420-COMPOR-CONTROLO-EXIT
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-LINHA-EXISTE
+                   CONTINUE
+              WHEN OTHER
+                   PERFORM 2430-INSERIR-CONTROLO
+                      THRU 2430-INSERIR-CONTROLO-EXIT
+           END-EVALUATE.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2220-READ-FICHEIRO
+                 THRU 2220-READ-FICHEIRO-EXIT
+           END-IF.
+      *
+       2300-PROC-FICHEIRO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2310-CONTROLAR-REGISTO
+      *--------------------------------------------------------------
+       2310-CONTROLAR-REGISTO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2310-CONTROLAR-REGISTO' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCF0010-CDATETIME         TO SWCD7501-CDATETIME.
+           MOVE SWCF0010-NPAGINA           TO SWCD7501-NPAGINA.
+           MOVE SWCF0010-NLINHA            TO SWCD7501-NLINHA.
+           MOVE SWCF0010-MSALDO            TO SWCD7501-MSALDO.
+      *
+           EXEC SQL
+              SELECT COSN
+                   , COSNC
+                INTO :SWCD7501-COSN
+                   , :SWCD7501-COSNC
+                FROM SWVT7501
+               WHERE CDATETIME  =  :SWCD7501-CDATETIME
+                 AND NPAGINA    =  :SWCD7501-NPAGINA
+                 AND NLINHA     =  :SWCD7501-NLINHA
+                 AND MSALDO     =  :SWCD7501-MSALDO
+           END-EXEC.
+
+           MOVE CON-SWVT7501     TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 SET  SW-LINHA-EXISTE      TO TRUE
+                 MOVE SWCD7501-COSN        TO WS-COSN
+                 MOVE SWCD7501-COSNC       TO WS-COSNC
+                 IF WS-COSNC EQUAL SPACES
+                    MOVE ZEROES            TO WS-COSNC-NLINHA
+                 END-IF
+                 MOVE WS-COSNC-NLINHA      TO WS-NLINHA
+              WHEN DB2-NOTFND
+                 SET  SW-LINHA-NEXISTE     TO TRUE
+              WHEN OTHER
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                       TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC
+                                       TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-SEL-SWT75
+                                       TO SWCV9941-CFILEXTR-MSG
+                 MOVE 'Erro no Select da SWT75'
+                                       TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2310-CONTROLAR-REGISTO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2320-VALIDAR-REGISTO
+      *--------------------------------------------------------------
+       2320-VALIDAR-REGISTO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2320-VALIDAR-REGISTO' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCF0010-CMOEDA            TO WS-CMOEDA.
+           MOVE 'Saldo'                    TO WS-AUX.
+           MOVE SWCF0010-MSALDO            TO WS-STRING.
+           PERFORM 2330-CONVERT-DECIMAL
+              THRU 2330-CONVERT-DECIMAL-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE WS-RESULT               TO WS-MSALDO
+
+              MOVE SPACES                  TO WS-STRING
+                                              WS-STRAUX
+              PERFORM VARYING WS-I
+                 FROM 1 BY 1
+                UNTIL WS-I > FUNCTION LENGTH( SWCF0010-NPAGINA )
+                 IF SWCF0010-NPAGINA( WS-I : 1 ) NOT EQUAL '.'
+                    STRING WS-STRING        DELIMITED BY SPACES
+                       SWCF0010-NPAGINA( WS-I : 1 )
+                                            DELIMITED BY SIZE
+                                          INTO WS-STRAUX
+                    MOVE WS-STRAUX          TO WS-STRING
+                 END-IF
+              END-PERFORM
+              MOVE 'Página'                TO WS-AUX
+              PERFORM 2340-CONVERT-INTEGER
+                 THRU 2340-CONVERT-INTEGER-EXIT
+           END-IF.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE WS-RESULT               TO WS-NPAGINA
+      *
+              MOVE SWCF0010-NLINHA         TO WS-STRING
+              MOVE 'Linha'                 TO WS-AUX
+              PERFORM 2340-CONVERT-INTEGER
+                 THRU 2340-CONVERT-INTEGER-EXIT
+           END-IF.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE WS-RESULT               TO WS-NLIN-PAG
+           END-IF.
+
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+                 CONTINUE
+              WHEN SWCF0010-DDATA          NOT EQUAL SPACES
+              WHEN SWCF0010-GDESCR         NOT EQUAL SPACES
+              WHEN SWCF0010-CDOCUM         NOT EQUAL SPACES
+              WHEN SWCF0010-DTVALOR        NOT EQUAL SPACES
+              WHEN SWCF0010-MDEBITO        NOT EQUAL ZEROES
+              WHEN SWCF0010-MCREDITO       NOT EQUAL ZEROES
+                 SET  SW-DETAIL-LINE
+                      SW-NOT-1ST-HEADER    TO TRUE
+                 ADD  +1                   TO WS-CTRL-LIN
+              WHEN SW-FIRST-LINE
+                 SET  SW-HEADER-LINE
+                      SW-1ST-HEADER        TO TRUE
+                 MOVE WS-MSALDO            TO WS-CTRL-SLD
+                                              WS-MSALDO-INICIAL
+                 MOVE +1                   TO WS-CTRL-PAG
+                 MOVE ZEROES               TO WS-CTRL-LIN
+                 IF SW-LINHA-NEXISTE
+                    PERFORM 2350-OBTER-OSN
+                       THRU 2350-OBTER-OSN-EXIT
+                 END-IF
+
+                 IF VIAL0002-SEM-ERROS
+                    PERFORM 2360-OBTEM-SALDO-INICIAL
+                       THRU 2360-OBTEM-SALDO-INICIAL-EXIT
+
+                    IF VIAL0002-SEM-ERROS
+                       IF  SWCD7302-MSALDEXT NOT EQUAL WS-MSALDO-INICIAL
+                           SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                           MOVE SWCK0002-STATUS-ACTIVO
+                                             TO SWCV9941-CFILEXTR-S
+                           MOVE SWCK0002-CAPLIC
+                                             TO SWCV9941-CFILEXTR-CAPLIC
+                           MOVE SWCK0001-SALDO-INIC-INV
+                                             TO SWCV9941-CFILEXTR-MSG
+                           MOVE 'Saldo inicial invalido'  TO WS-GDESCERR
+                       END-IF
+                    END-IF
+                 END-IF
+              WHEN SW-DETAIL-LINE
+                 SET  SW-HEADER-LINE       TO TRUE
+                 ADD  +1                   TO WS-CTRL-PAG
+                 MOVE ZEROES               TO WS-CTRL-LIN
+              WHEN SW-1ST-HEADER
+                 MOVE 'Extracto vazio'     TO WS-GDESCERR
+              WHEN SW-HEADER-LINE
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 STRING '2 linhas de transporte detectadas P g. '
+                                           DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN NOT SW-HEADER-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN WS-CTRL-PAG             NOT EQUAL WS-NPAGINA
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 STRING 'Numero de pagina inválido (Pág.) '
+                                           DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+              WHEN WS-CTRL-LIN             NOT EQUAL WS-NLIN-PAG
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 STRING 'Numero de linha inválido (Pág.) '
+                                           DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN NOT SW-HEADER-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN WS-CTRL-SLD             NOT EQUAL WS-MSALDO
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-SALDO-TRANS-INV TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 STRING 'Saldo de transporte inválido Pag. '
+                                           DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-HEADER-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN SWCF0010-DDATA          EQUAL SPACES
+              WHEN SWCF0010-GDESCR         EQUAL SPACES
+              WHEN SWCF0010-CDOCUM         EQUAL SPACES
+              WHEN SWCF0010-DTVALOR        EQUAL SPACES
+              WHEN SWCF0010-MDEBITO        EQUAL ZEROES
+               AND SWCF0010-MCREDITO       EQUAL ZEROES
+              WHEN SWCF0010-MDEBITO        NOT EQUAL ZEROES
+               AND SWCF0010-MCREDITO       NOT EQUAL ZEROES
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-DADOS-INV-EXT-BDM
+                                             TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 MOVE WS-NLIN-PAG            TO WS-EDT-NLINHA
+                 STRING 'Dados invalidos no extrato BdM '
+                                           DELIMITED BY SIZE
+                        'Linha '           DELIMITED BY SIZE
+                    WS-EDT-NLINHA          DELIMITED BY SIZE
+                        'Pag. '            DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN SW-HEADER-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN SWCF0010-MDEBITO        NOT EQUAL ZEROES
+                 MOVE CON-DEBITO           TO WS-CDBCR
+                 MOVE SWCF0010-MDEBITO     TO WS-STRING
+                 MOVE 'Débito'             TO WS-AUX
+                 PERFORM 2330-CONVERT-DECIMAL
+                    THRU 2330-CONVERT-DECIMAL-EXIT
+              WHEN SWCF0010-MCREDITO       NOT EQUAL ZEROES
+                 MOVE CON-CREDITO          TO WS-CDBCR
+                 MOVE SWCF0010-MCREDITO    TO WS-STRING
+                 MOVE 'Crédito'            TO WS-AUX
+                 PERFORM 2330-CONVERT-DECIMAL
+                    THRU 2330-CONVERT-DECIMAL-EXIT
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN NOT SW-DETAIL-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN SWCF0010-MDEBITO        NOT EQUAL ZEROES
+                 MOVE WS-RESULT            TO WS-MVALOR
+                 SUBTRACT WS-MVALOR        FROM WS-CTRL-SLD
+                 COMPUTE WS-TOTAL-DEBITO  =
+                         WS-TOTAL-DEBITO  + WS-MVALOR
+              WHEN SWCF0010-MCREDITO       NOT EQUAL ZEROES
+                 MOVE WS-RESULT            TO WS-MVALOR
+                 ADD  WS-MVALOR            TO WS-CTRL-SLD
+                 COMPUTE WS-TOTAL-CREDITO =
+                         WS-TOTAL-CREDITO + WS-MVALOR
+           END-EVALUATE.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN NOT SW-DETAIL-LINE
+              WHEN SW-1ST-HEADER
+                 CONTINUE
+              WHEN WS-CTRL-SLD             NOT EQUAL WS-MSALDO
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-SALDO-DETALHE-INV
+                                             TO SWCV9941-CFILEXTR-MSG
+                 MOVE WS-NLIN-PAG            TO WS-EDT-NLINHA
+                 MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+                 STRING 'Saldo de detalhe inválido'
+                                           DELIMITED BY SIZE
+                        'Linha '           DELIMITED BY SIZE
+                    WS-EDT-NLINHA          DELIMITED BY SIZE
+                        'Pag. '            DELIMITED BY SIZE
+                    WS-EDT-NPAGINA         DELIMITED BY SIZE
+                                         INTO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2320-VALIDAR-REGISTO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2330-CONVERT-DECIMAL
+      *--------------------------------------------------------------
+       2330-CONVERT-DECIMAL.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2330-CONVERT-DECIMAL' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              SET :WS-RESULT = DECIMAL( :WS-STRING, 15, 2 )
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF NOT DB2-OK
+              SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+              MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+      *       MOVE 'Erro na conversao de valores' TO WS-GDESCERR
+              MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+              MOVE WS-NLIN-PAG            TO WS-EDT-NLINHA
+              STRING WS-AUX               DELIMITED BY SPACES
+                ' invalido(a) no extrato BdM '
+                                          DELIMITED BY SIZE
+                'Linha '                  DELIMITED BY SIZE
+                WS-EDT-NLINHA             DELIMITED BY SIZE
+                'Pag. '                   DELIMITED BY SIZE
+                WS-EDT-NPAGINA            DELIMITED BY SIZE
+                                        INTO WS-GDESCERR
+           END-IF.
+
+       2330-CONVERT-DECIMAL-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2340-CONVERT-INTEGER
+      *--------------------------------------------------------------
+       2340-CONVERT-INTEGER.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2340-CONVERT-INTEGER' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              SET :WS-RESULT = DECIMAL( :WS-STRING, 15, 0 )
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF NOT DB2-OK
+              SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+              MOVE SWCK0001-ERR-FORMATO   TO SWCV9941-CFILEXTR-MSG
+      *       MOVE 'Erro na conversao de valores' TO WS-GDESCERR
+              MOVE WS-NPAGINA             TO WS-EDT-NPAGINA
+              MOVE WS-NLIN-PAG            TO WS-EDT-NLINHA
+              STRING WS-AUX               DELIMITED BY SPACES
+                ' invalido(a) no extrato BdM '
+                                          DELIMITED BY SIZE
+                'Linha '                  DELIMITED BY SIZE
+                WS-EDT-NLINHA             DELIMITED BY SIZE
+                'Pag. '                   DELIMITED BY SIZE
+                WS-EDT-NPAGINA            DELIMITED BY SIZE
+                                        INTO WS-GDESCERR
+           END-IF.
+      *
+       2340-CONVERT-INTEGER-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2350-OBTER-OSN
+      *--------------------------------------------------------------
+       2350-OBTER-OSN.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2350-OBTER-OSN' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE CON-PREFFIX                TO WS-PREFFIX.
+           MOVE VIAL0001-DATA-PROCESSO-I   TO WS-DTOP.
+      *
+           PERFORM 2351-SOMAR-1
+              THRU 2351-SOMAR-1-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE VIAL0030-NSEQUEN-1      TO WS-COSN-VAL
+           END-IF.
+      *
+           EVALUATE TRUE
+              WHEN NOT VIAL0002-SEM-ERROS
+              WHEN WS-COSN-ANO EQUAL WS-DTOP-ANO
+                 CONTINUE
+              WHEN OTHER
+                 PERFORM 2352-INICIALIZAR
+                    THRU 2352-INICIALIZAR-EXIT
+           END-EVALUATE.
+      *
+       2350-OBTER-OSN-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2351-SOMAR-1
+      *--------------------------------------------------------------
+       2351-SOMAR-1.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2351-SOMAR-1  ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCK0002-CSEQ-OSN-BDM      TO VIAL0030-CSEQUEN.
+           SET  VIAL0030-SOMA-1            TO TRUE.
+      *
+           CALL VIAL0030-NM-ROTINA USING VIAL0030-COMMAREA
+                                         ETCL0002-COMMAREA.
+      *
+           IF NOT ETCL0002-SEM-ERROS
+              SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+              MOVE SWCK0001-ERR-ROTINA-DATAS
+                                          TO SWCV9941-CFILEXTR-MSG
+              MOVE 'Erro na rotina de datas (Somar 1)'
+                                          TO WS-GDESCERR
+           END-IF.
+      *
+       2351-SOMAR-1-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                     2352-INICIALIZAR
+      *--------------------------------------------------------------
+       2352-INICIALIZAR.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2352-INICIALIZAR' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCK0002-CSEQ-OSN-BDM      TO VIAL0030-CSEQUEN.
+           SET  VIAL0030-FORCA-VALOR       TO TRUE.
+      *
+           MOVE CON-PREFFIX                TO WS-PREFFIX.
+           MOVE WS-DTOP-ANO                TO WS-COSN-ANO.
+           MOVE CON-UNIDADE                TO WS-COSN-SEQ.
+      *
+           MOVE WS-COSN-VAL                TO VIAL0030-VALOR-ACUM.
+      *
+           CALL VIAL0030-NM-ROTINA USING VIAL0030-COMMAREA
+                                         ETCL0002-COMMAREA.
+      *
+           IF NOT ETCL0002-SEM-ERROS
+              SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+              MOVE SWCK0002-STATUS-ACTIVO TO SWCV9941-CFILEXTR-S
+              MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+              MOVE SWCK0001-ERR-ROTINA-DATAS
+                                          TO SWCV9941-CFILEXTR-MSG
+              MOVE 'Erro na rotina de datas (inicializar)'
+                                          TO WS-GDESCERR
+           END-IF.
+      *
+       2352-INICIALIZAR-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2360-OBTEM-SALDO-INICIAL
+      *--------------------------------------------------------------
+       2360-OBTEM-SALDO-INICIAL.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2360-OBTEM-SALDO-INICIAL' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE 'BMOC'                     TO SWCD7302-CBAN
+           MOVE 'MZ'                       TO SWCD7302-CSPAI
+           MOVE 'S'                        TO SWCD7302-ISALDEXT
+           MOVE SWCF0010-CMOEDA            TO SWCD7302-CMOED
+           MOVE WS-DATA-EXTRATO            TO SWCD7302-DATVAL
+      *
+           EXEC SQL
+              SELECT MSALDEXT
+                INTO :SWCD7302-MSALDEXT
+                FROM SWVT7302
+               WHERE CBAN       =  :SWCD7302-CBAN
+                 AND CSPAI      =  :SWCD7302-CSPAI
+                 AND CMOED      =  :SWCD7302-CMOED
+                 AND DATVAL     <  :SWCD7302-DATVAL
+                 AND ISALDEXT   =  :SWCD7302-ISALDEXT
+               ORDER BY DATVAL DESC
+               FETCH FIRST ROW ONLY
+           END-EXEC.
+
+           MOVE CON-SWVT7302     TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN DB2-NOTFND
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                       TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC
+                                       TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-SALDO-INIC-N-EXIST
+                                       TO SWCV9941-CFILEXTR-MSG
+                 MOVE 'Saldo inicial inexistente na SWT73'
+                                       TO WS-GDESCERR
+              WHEN OTHER
+                 SET  VIAL0002-ERROS-FUNCAO  TO TRUE
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                       TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0002-CAPLIC
+                                       TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE SWCK0001-ERR-SEL-SWT73
+                                       TO SWCV9941-CFILEXTR-MSG
+                 MOVE 'Erro no Select da SWT73'
+                                       TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2360-OBTEM-SALDO-INICIAL-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                     2400-COMPOR-LINHA
+      *--------------------------------------------------------------
+       2400-COMPOR-LINHA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2400-COMPOR-LINHA  ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE CON-CODMSG                 TO SWCD5806-CCODMSG.
+      *
+           MOVE SWCF0010-DTVALOR           TO WS-DT-OPER.
+           MOVE ALL '-'                    TO WS-DT-ANSI.
+           MOVE WS-OPER-DIA                TO WS-ANSI-DIA.
+           MOVE WS-OPER-MES                TO WS-ANSI-MES.
+           MOVE WS-OPER-ANO                TO WS-ANSI-ANO.
+           MOVE WS-DT-ANSI                 TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO SWCD5806-DATVAL.
+      *
+           MOVE SWCF0010-CDOCUM            TO SWCD5806-CREF.
+           MOVE SPACES                     TO SWCD5806-CREFOPR.
+           MOVE CON-CBAN                   TO WS-CBAN.
+           MOVE CON-CSPAI                  TO WS-CSPAI.
+      *
+           MOVE WS-DATA-EXTRATO            TO AQCW0005-DTX10
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO WS-DATA.
+      *
+           MOVE WS-CREFEXT                 TO SWCD5806-CREFEXT.
+
+           STRING WS-CBAN                DELIMITED BY SIZE
+                  WS-CSPAI               DELIMITED BY SIZE
+                                         INTO SWCD5806-CSEND.
+
+           MOVE WS-CBAN                    TO SWCD5806-CBAN.
+           MOVE WS-CSPAI                   TO SWCD5806-CSPAI.
+           MOVE SWCK0002-CODEST-PEND       TO SWCD5806-CCODEST.
+           MOVE SPACES                     TO SWCD5806-CTIPOP.
+           MOVE WS-MVALOR                  TO SWCD5806-MVALOR.
+           MOVE WS-CMOEDA                  TO SWCD5806-CMOED.
+           MOVE VIAK0002-DATA-MINIMA       TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO SWCD5806-DATREC.
+PML        MOVE CON-P                      TO SWCD5806-CTIPREC.
+           MOVE SPACES                     TO SWCD5806-CTRATRYP
+                                              SWCD5806-CCODOPE.
+           MOVE WS-CDBCR                   TO SWCD5806-CDBCR.
+           MOVE WS-DATE-TODAY              TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO SWCD5806-DREG.
+           MOVE ZEROES                     TO SWCD5806-NOPRREC.
+           MOVE SPACES                     TO SWCD5806-MOTIVO
+                                              SWCD5806-OBSER.
+           STRING FUNCTION TRIM( SWCF0010-GDESCR )
+                                           DELIMITED BY SIZE
+              ' '                          DELIMITED BY SIZE
+              SWCF0010-CDOCUM              DELIMITED BY SPACES
+                                         INTO SWCD5806-GDESC.
+           MOVE SPACES                     TO SWCD5806-CBYPASS
+                                              SWCD5806-CSENDREC.
+           MOVE ZEROES                     TO SWCD5806-MVLRREC.
+           MOVE SPACES                     TO SWCD5806-CMOEDREC
+                                              SWCD5806-CROPRREC
+                                              SWCD5806-CORIGEMREC.
+           MOVE CON-CNIVREC                TO SWCD5806-CNIVREC.
+           MOVE WS-PROGNAME                TO SWCD5806-CUSERID.
+           MOVE SPACES                     TO SWCD5806-CEXT.
+           MOVE WS-NPAGINA                 TO SWCD5806-CPAG.
+           MOVE ZEROES                     TO SWCD5806-NORDREC.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE WS-COSN                 TO SWCD5806-COSN
+              ADD  +1                      TO WS-NLINHA
+              MOVE WS-NLINHA               TO WS-COSNC-NLINHA
+              MOVE WS-COSNC                TO SWCD5806-COSNC
+           END-IF.
+      *
+       2400-COMPOR-LINHA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                     2410-INSERIR-LINHA
+      *--------------------------------------------------------------
+       2410-INSERIR-LINHA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2410-INSERIR-LINHA   ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              INSERT
+                INTO SWVT5806 (
+                     CCODMSG
+                   , DATVAL
+                   , COSN
+                   , COSNC
+                   , CREF
+                   , CREFOPR
+                   , CREFEXT
+                   , CSEND
+                   , CBAN
+                   , CSPAI
+                   , CCODEST
+                   , CTIPOP
+                   , MVALOR
+                   , CMOED
+                   , DATREC
+                   , CTIPREC
+                   , CTRATRYP
+                   , CCODOPE
+                   , CDBCR
+                   , DREG
+                   , NOPRREC
+                   , MOTIVO
+                   , OBSER
+                   , GDESC
+                   , CBYPASS
+                   , CSENDREC
+                   , MVLRREC
+                   , CMOEDREC
+                   , CROPRREC
+                   , CORIGEMREC
+                   , CNIVREC
+                   , CUSERID
+                   , HTIMEST
+                   , CEXT
+                   , CPAG
+                   , NORDREC
+                )
+              VALUES (
+                     :SWCD5806-CCODMSG
+                   , :SWCD5806-DATVAL
+                   , :SWCD5806-COSN
+                   , :SWCD5806-COSNC
+                   , :SWCD5806-CREF
+                   , :SWCD5806-CREFOPR
+                   , :SWCD5806-CREFEXT
+                   , :SWCD5806-CSEND
+                   , :SWCD5806-CBAN
+                   , :SWCD5806-CSPAI
+                   , :SWCD5806-CCODEST
+                   , :SWCD5806-CTIPOP
+                   , :SWCD5806-MVALOR
+                   , :SWCD5806-CMOED
+                   , :SWCD5806-DATREC
+                   , :SWCD5806-CTIPREC
+                   , :SWCD5806-CTRATRYP
+                   , :SWCD5806-CCODOPE
+                   , :SWCD5806-CDBCR
+                   , :SWCD5806-DREG
+                   , :SWCD5806-NOPRREC
+                   , :SWCD5806-MOTIVO
+                   , :SWCD5806-OBSER
+                   , :SWCD5806-GDESC
+                   , :SWCD5806-CBYPASS
+                   , :SWCD5806-CSENDREC
+                   , :SWCD5806-MVLRREC
+                   , :SWCD5806-CMOEDREC
+                   , :SWCD5806-CROPRREC
+                   , :SWCD5806-CORIGEMREC
+                   , :SWCD5806-CNIVREC
+                   , :SWCD5806-CUSERID
+                   , CURRENT TIMESTAMP
+                   , :SWCD5806-CEXT
+                   , :SWCD5806-CPAG
+                   , :SWCD5806-NORDREC
+                )
+           END-EXEC.
+      *
+           MOVE CON-SWVT5806               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+              WHEN DB2-DUPREC
+                 CONTINUE
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-INS-SWT58
+                                           TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'Erro no Insert da SWT58'
+                                           TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2410-INSERIR-LINHA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                     2420-COMPOR-CONTROLO
+      *--------------------------------------------------------------
+       2420-COMPOR-CONTROLO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2420-COMPOR-CONTROLO' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCF0010-CTITULO           TO SWCD7501-CTITULO.
+           MOVE SWCF0010-CDATETIME         TO SWCD7501-CDATETIME.
+           MOVE SWCF0010-NPAGINA           TO SWCD7501-NPAGINA.
+           MOVE SWCF0010-DTINICIO          TO SWCD7501-DTINICIO.
+           MOVE SWCF0010-DTFIM             TO SWCD7501-DTFIM.
+           MOVE SWCF0010-CDESTIN           TO SWCD7501-CDESTIN.
+           MOVE SWCF0010-CCONTA            TO SWCD7501-CCONTA.
+           MOVE SWCF0010-CMOEDA            TO SWCD7501-CMOEDA.
+           MOVE SWCF0010-DDATA             TO SWCD7501-DDATA.
+           MOVE SWCF0010-GDESCR            TO SWCD7501-GDESCR.
+           MOVE SWCF0010-CDOCUM            TO SWCD7501-CDOCUM.
+           MOVE SWCF0010-DTVALOR           TO SWCD7501-DTVALOR.
+           MOVE SWCF0010-MDEBITO           TO SWCD7501-MDEBITO.
+           MOVE SWCF0010-MCREDITO          TO SWCD7501-MCREDITO.
+           MOVE SWCF0010-MSALDO            TO SWCD7501-MSALDO.
+           MOVE SWCF0010-NLINHA            TO SWCD7501-NLINHA.
+           MOVE WS-COSN                    TO SWCD7501-COSN.
+           MOVE WS-COSNC                   TO SWCD7501-COSNC.
+           MOVE WS-PROGNAME                TO SWCD7501-CUSERID.
+      *
+       2420-COMPOR-CONTROLO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                     2430-INSERIR-CONTROLO
+      *--------------------------------------------------------------
+       2430-INSERIR-CONTROLO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2430-INSERIR-CONTROLO'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              INSERT
+                INTO SWVT7501 (
+                     CTITULO
+                   , CDATETIME
+                   , NPAGINA
+                   , DTINICIO
+                   , DTFIM
+                   , CDESTIN
+                   , CCONTA
+                   , CMOEDA
+                   , DDATA
+                   , GDESCR
+                   , CDOCUM
+                   , DTVALOR
+                   , MDEBITO
+                   , MCREDITO
+                   , MSALDO
+                   , NLINHA
+                   , COSN
+                   , COSNC
+                   , CUSERID
+                   , HTIMEST
+                )
+              VALUES (
+                     :SWCD7501-CTITULO
+                   , :SWCD7501-CDATETIME
+                   , :SWCD7501-NPAGINA
+                   , :SWCD7501-DTINICIO
+                   , :SWCD7501-DTFIM
+                   , :SWCD7501-CDESTIN
+                   , :SWCD7501-CCONTA
+                   , :SWCD7501-CMOEDA
+                   , :SWCD7501-DDATA
+                   , :SWCD7501-GDESCR
+                   , :SWCD7501-CDOCUM
+                   , :SWCD7501-DTVALOR
+                   , :SWCD7501-MDEBITO
+                   , :SWCD7501-MCREDITO
+                   , :SWCD7501-MSALDO
+                   , :SWCD7501-NLINHA
+                   , :SWCD7501-COSN
+                   , :SWCD7501-COSNC
+                   , :SWCD7501-CUSERID
+                   , CURRENT TIMESTAMP
+                )
+           END-EXEC.
+      *
+           MOVE CON-SWVT7501               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+              WHEN DB2-DUPREC
+                 CONTINUE
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-INS-SWT75
+                                           TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'Erro no Insert da SWT75'
+                                           TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2430-INSERIR-CONTROLO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2500-TRATA-SALDO
+      *--------------------------------------------------------------
+       2500-TRATA-SALDO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2500-TRATA-SALDO'     TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE CON-CBAN                   TO SWCD7302-CBAN
+           MOVE CON-CSPAI                  TO SWCD7302-CSPAI
+           MOVE CON-S                      TO SWCD7302-ISALDEXT
+           MOVE WS-CMOEDA                  TO SWCD7302-CMOED
+           MOVE WS-DATA-EXTRATO            TO SWCD7302-DATVAL
+           MOVE WS-MSALDO                  TO SWCD7302-MSALDEXT
+           MOVE WS-PROGNAME                TO SWCD7302-CUSERID.
+      *
+           EXEC SQL
+              UPDATE SWVT7302
+                 SET MSALDEXT   =  :SWCD7302-MSALDEXT
+                   , CUSERID    =  :SWCD7302-CUSERID
+                   , HTIMEST    =  CURRENT TIMESTAMP
+               WHERE CBAN       =  :SWCD7302-CBAN
+                 AND CSPAI      =  :SWCD7302-CSPAI
+                 AND CMOED      =  :SWCD7302-CMOED
+                 AND DATVAL     =  :SWCD7302-DATVAL
+                 AND ISALDEXT   =  :SWCD7302-ISALDEXT
+           END-EXEC.
+      *
+           MOVE CON-SWVT7302               TO VIAL0002-TABLE-NAME
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN DB2-NOTFND
+                 PERFORM 2510-REGISTA-SALDO
+                    THRU 2510-REGISTA-SALDO-EXIT
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-UPD-SWT73
+                                           TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'Erro no Update da SWT73'
+                                           TO WS-GDESCERR
+           END-EVALUATE.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2500-TRATA-SALDO   '   TO VIAL0015-CALLER-ID
+              MOVE 'SQLCODE'               TO VIAL0015-CAMPO-NM(1)
+              MOVE SQLCODE                 TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+       2500-TRATA-SALDO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2510-REGISTA-SALDO
+      *--------------------------------------------------------------
+       2510-REGISTA-SALDO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2510-REGISTA-SALDO'     TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 2520-OBTEM-CCB
+              THRU 2520-OBTEM-CCB-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE CON-CBAN                TO SWCD7302-CBAN
+              MOVE CON-CSPAI               TO SWCD7302-CSPAI
+              MOVE NCCCBCOR-NCCCBALC       TO SWCD7302-NBALC
+              MOVE NCCCBCOR-NCCCCCB        TO SWCD7302-CCB
+              MOVE WS-CMOEDA               TO SWCD7302-CMOED
+      *
+              MOVE WS-DATA-EXTRATO         TO SWCD7302-DATVAL
+              MOVE ZEROS                   TO SWCD7302-MSALDMOV
+              MOVE WS-MSALDO               TO SWCD7302-MSALDEXT
+              MOVE CON-S                   TO SWCD7302-ISALDEXT
+              MOVE CON-N                   TO SWCD7302-ISALDMOV
+
+              EXEC SQL
+                 INSERT
+                   INTO SWVT7302 (
+                        CBAN
+                      , CSPAI
+                      , NBALC
+                      , CCB
+                      , CMOED
+                      , DATVAL
+                      , MSALDMOV
+                      , MSALDEXT
+                      , CUSERID
+                      , HTIMEST
+                      , ISALDEXT
+                      , ISALDMOV
+                   )
+                 VALUES (
+                        :SWCD7302-CBAN
+                      , :SWCD7302-CSPAI
+                      , :SWCD7302-NBALC
+                      , :SWCD7302-CCB
+                      , :SWCD7302-CMOED
+                      , :SWCD7302-DATVAL
+                      , :SWCD7302-MSALDMOV
+                      , :SWCD7302-MSALDEXT
+                      , :SWCD7302-CUSERID
+                      , CURRENT TIMESTAMP
+                      , :SWCD7302-ISALDEXT
+                      , :SWCD7302-ISALDMOV
+                   )
+              END-EXEC
+      *
+              MOVE CON-SWVT7302            TO VIAL0002-TABLE-NAME
+      *
+              PERFORM 9020-DB2CHECK
+                 THRU 9029-DB2CHECK-EXIT
+      *
+              EVALUATE TRUE
+                 WHEN DB2-OK
+                    CONTINUE
+                 WHEN DB2-DUPREC
+                    PERFORM 2511-ALTERA-SALDO
+                       THRU 2511-ALTERA-SALDO-EXIT
+                 WHEN OTHER
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                              TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                              TO SWCV9941-CFILEXTR-S
+                    MOVE SWCK0001-ERR-INS-SWT73
+                                              TO SWCV9941-CFILEXTR-MSG
+                    MOVE SWCK0002-CAPLIC     TO SWCV9941-CFILEXTR-CAPLIC
+                    MOVE 'Erro no Insert da SWT73'
+                                              TO WS-GDESCERR
+              END-EVALUATE
+           END-IF.
+      *
+       2510-REGISTA-SALDO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2511-ALTERA-SALDO
+      *--------------------------------------------------------------
+       2511-ALTERA-SALDO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2511-ALTERA-SALDO'      TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE CON-CBAN                   TO SWCD7302-CBAN.
+           MOVE CON-CSPAI                  TO SWCD7302-CSPAI.
+           MOVE NCCCBCOR-NCCCBALC          TO SWCD7302-NBALC.
+           MOVE NCCCBCOR-NCCCCCB           TO SWCD7302-CCB.
+           MOVE WS-CMOEDA                  TO SWCD7302-CMOED.
+   *
+           MOVE WS-DATA-EXTRATO            TO SWCD7302-DATVAL.
+           MOVE WS-MSALDO                  TO SWCD7302-MSALDEXT.
+           MOVE CON-S                      TO SWCD7302-ISALDEXT.
+
+           EXEC SQL
+              UPDATE SWVT7302
+                 SET MSALDEXT  =  :SWCD7302-MSALDEXT
+                   , ISALDEXT  =  :SWCD7302-ISALDEXT
+                   , CUSERID   =  :SWCD7302-CUSERID
+                   , HTIMEST   =  CURRENT TIMESTAMP
+               WHERE CBAN      =  :SWCD7302-CBAN
+                 AND CSPAI     =  :SWCD7302-CSPAI
+                 AND NBALC     =  :SWCD7302-NBALC
+                 AND CCB       =  :SWCD7302-CCB
+                 AND CMOED     =  :SWCD7302-CMOED
+                 AND DATVAL    =  :SWCD7302-DATVAL
+           END-EXEC.
+      *
+           MOVE CON-SWVT7302               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                              TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                              TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-INS-SWT73
+                                              TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC        TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'Erro no Insert da SWT73'
+                                              TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2511-ALTERA-SALDO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2520-OBTEM-CCB
+      *--------------------------------------------------------------
+       2520-OBTEM-CCB.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2520-OBTEM-CCB'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-CMOEDA                  TO NCCCBCOR-NCCCMOED.
+           MOVE CON-CBAN                   TO NCCCBCOR-NCCCCBAN.
+           MOVE CON-CSPAI                  TO NCCCBCOR-NCCCCSPAI.
+      *
+           EXEC SQL
+              SELECT NCCCBALC
+                   , NCCCCCB
+                INTO :NCCCBCOR-NCCCBALC
+                   , :NCCCBCOR-NCCCCCB
+                FROM NCCCBCOR
+               WHERE NCCCCBAN  =  :NCCCBCOR-NCCCCBAN
+                 AND NCCCCSPAI =  :NCCCBCOR-NCCCCSPAI
+                 AND NCCCMOED  =  :NCCCBCOR-NCCCMOED
+           END-EXEC.
+      *
+           MOVE CON-NCCCBCOR               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN DB2-NOTFND
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-CCB-N-EXIST TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'CCB Inexistente na tab. NCCCBCOR'
+                                           TO WS-GDESCERR
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-SEL-NCCCBCOR
+                                           TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+                 MOVE 'Erro no select da tab. NCCCBCOR'
+                                           TO WS-GDESCERR
+           END-EVALUATE.
+      *
+       2520-OBTEM-CCB-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2600-TRATA-EXTRATO
+      *--------------------------------------------------------------
+       2600-TRATA-EXTRATO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2600-TRATA-EXTRATO'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-DATA-EXTRATO            TO SWCD7401-DDATAUPL.
+           MOVE SWCV9940-CFILEXTR          TO SWCD7401-CFILEXTR.
+           IF SW-EXTRATO-OK
+              MOVE CON-PROCESSADO          TO SWCD7401-CPROCESS
+           ELSE
+              MOVE CON-COM-ERROS           TO SWCD7401-CPROCESS
+           END-IF
+           MOVE WS-GDESCERR                TO SWCD7401-GDESCERR
+           MOVE VIAL0001-CUTILIZA-I        TO SWCD7401-CUSERIDC.
+           MOVE WS-PROGNAME                TO SWCD7401-CUSERID.
+      *
+           EXEC SQL
+              UPDATE SWVT7401
+                 SET CPROCESS  =  :SWCD7401-CPROCESS
+                   , GDESCERR  =  :SWCD7401-GDESCERR
+                   , CUSERID   =  :SWCD7401-CUSERID
+                   , HTIMEST   =  CURRENT TIMESTAMP
+               WHERE DDATAUPL  =  :SWCD7401-DDATAUPL
+                 AND CFILEXTR  =  :SWCD7401-CFILEXTR
+           END-EXEC.
+      *
+           MOVE CON-SWVT7401               TO VIAL0002-TABLE-NAME
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN DB2-NOTFND
+                 PERFORM 2610-REGISTA-EXTRATO
+                    THRU 2610-REGISTA-EXTRATO-EXIT
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-UPD-SWT74
+                                           TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+           END-EVALUATE.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2600-TRATA-EXTRATO '   TO VIAL0015-CALLER-ID
+              MOVE 'SQLCODE'               TO VIAL0015-CAMPO-NM(1)
+              MOVE SQLCODE                 TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+       2600-TRATA-EXTRATO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2610-REGISTA-EXTRATO
+      *--------------------------------------------------------------
+       2610-REGISTA-EXTRATO.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2610-REGISTA-EXTRATO'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-DATA-EXTRATO            TO SWCD7401-DDATAUPL.
+           MOVE SWCV9940-CFILEXTR          TO SWCD7401-CFILEXTR.
+           MOVE SWCV9940-CLIBRNAM          TO SWCD7401-CLIBRNAM.
+           MOVE SWCV9940-CFILENAM          TO SWCD7401-CFILENAM.
+           IF SW-EXTRATO-OK
+              MOVE CON-PROCESSADO          TO SWCD7401-CPROCESS
+           ELSE
+              MOVE CON-COM-ERROS           TO SWCD7401-CPROCESS
+           END-IF
+           MOVE WS-GDESCERR                TO SWCD7401-GDESCERR
+           MOVE VIAL0001-CUTILIZA-I        TO SWCD7401-CUSERIDC.
+           MOVE WS-PROGNAME                TO SWCD7401-CUSERID.
+
+           PERFORM 2620-OBTER-SEQ
+              THRU 2620-OBTER-SEQ-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+
+              EXEC SQL
+                 INSERT
+                   INTO SWVT7401 (
+                        DDATAUPL
+                      , ZSEQFILE
+                      , CFILEXTR
+                      , CLIBRNAM
+                      , CFILENAM
+                      , CPROCESS
+                      , GDESCERR
+                      , CUSERIDC
+                      , HTIMESTC
+                      , CUSERID
+                      , HTIMEST
+                   )
+                 VALUES (
+                        :SWCD7401-DDATAUPL
+                      , :SWCD7401-ZSEQFILE
+                      , :SWCD7401-CFILEXTR
+                      , :SWCD7401-CLIBRNAM
+                      , :SWCD7401-CFILENAM
+                      , :SWCD7401-CPROCESS
+                      , :SWCD7401-GDESCERR
+                      , :SWCD7401-CUSERIDC
+                      , CURRENT TIMESTAMP
+                      , :SWCD7401-CUSERID
+                      , CURRENT TIMESTAMP
+                   )
+              END-EXEC
+      *
+              MOVE CON-SWVT7401               TO VIAL0002-TABLE-NAME
+      *
+              PERFORM 9020-DB2CHECK
+                 THRU 9029-DB2CHECK-EXIT
+      *
+              EVALUATE TRUE
+                 WHEN DB2-OK
+                    CONTINUE
+                 WHEN OTHER
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                              TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                              TO SWCV9941-CFILEXTR-S
+                    MOVE SWCK0001-ERR-INS-SWT74
+                                              TO SWCV9941-CFILEXTR-MSG
+                    MOVE SWCK0002-CAPLIC     TO SWCV9941-CFILEXTR-CAPLIC
+              END-EVALUATE
+      *
+              IF VIAL0001-DEBUG-SIM
+                 MOVE '2610-REGISTA-EXTRATO ' TO VIAL0015-CALLER-ID
+                 MOVE 'SQLCODE'               TO VIAL0015-CAMPO-NM(1)
+                 MOVE SQLCODE                 TO VIAL0015-CAMPO-VLR(1)
+                 PERFORM VIAP0016-TRATA-DEBUG
+                    THRU VIAP0016-TRATA-DEBUG-EXIT
+              END-IF
+           END-IF.
+      *
+       2610-REGISTA-EXTRATO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                   2620-OBTER-SEQ
+      *--------------------------------------------------------------
+       2620-OBTER-SEQ.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2620-OBTER-SEQ'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              SELECT IFNULL( MAX( ZSEQFILE ), 0 ) + 1
+                INTO :SWCD7401-ZSEQFILE
+                FROM SWVT7401
+               WHERE DDATAUPL  =  :SWCD7401-DDATAUPL
+           END-EXEC.
+      *
+           MOVE CON-SWVT7401               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV9941-CFILEXTR-S
+                 MOVE SWCK0001-ERR-ZSQFILE TO SWCV9941-CFILEXTR-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV9941-CFILEXTR-CAPLIC
+           END-EVALUATE.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2620-OBTER-SEQ     '   TO VIAL0015-CALLER-ID
+              MOVE 'SQLCODE'               TO VIAL0015-CAMPO-NM(1)
+              MOVE SQLCODE                 TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2620-OBTER-SEQ     '   TO VIAL0015-CALLER-ID
+              MOVE 'SWCD7401-ZSEQFILE'     TO VIAL0015-CAMPO-NM(1)
+              MOVE SWCD7401-ZSEQFILE       TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+       2620-OBTER-SEQ-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV9941-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV9941-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV9941-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES                     TO VIAL0001-OCORRENCIAS.
+      *
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0011.
+           COPY AQCP0005.

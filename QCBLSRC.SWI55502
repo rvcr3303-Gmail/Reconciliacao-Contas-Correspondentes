@@ -1,0 +1,393 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI55502.
+      ******************************************************************
+      *     PROGRAMA SWI55502.
+      *
+      *     Detalhe da Linha do Extracto
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI55502         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5806 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5550.
+       COPY SWCV5551.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+       COPY AQCW0005.
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT5806 PIC X(08) VALUE 'SWVT5806'.
+           05 CON-CCODEST-HIST-PENDENTE     PIC  X(02) VALUE 'HP'.
+      *
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME            PIC  X(08) VALUE 'SWI55502'.
+      *--------------------------------------------------------------
+       01  FILLER                        PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI55502         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5550-MSG.
+           MOVE SWCV5550-ASE       TO SWCV5551-ASE.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5550-ADE       TO SWCV5551-ADE.
+
+
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2100-OBTEM-DADOS
+                 THRU 2199-OBTEM-DADOS-EXIT
+           END-IF
+
+           .
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                   2100-OBTEM-DADOS
+      *--------------------------------------------------------------
+       2100-OBTEM-DADOS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-OBTEM-DADOS' TO VIAL0015-CALLER-ID
+              MOVE 'SWCV5550-COSN   ' TO VIAL0015-CAMPO-NM(1)
+              MOVE  SWCV5550-COSN     TO VIAL0015-CAMPO-VLR(1)
+              MOVE 'SWCV5550-COSNC  ' TO VIAL0015-CAMPO-NM(2)
+              MOVE  SWCV5550-COSNC    TO VIAL0015-CAMPO-VLR(2)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+AG    *    MOVE SWCV5550-CCODMSG           TO SWCD5806-CCODMSG.
+|     *    MOVE SWCV5550-DATVAL            TO AQCW0005-DTX10.
+|     *    PERFORM AQCP0005-CONV-DT10INDT8
+|     *       THRU AQCP0005-CONV-DT10INDT8-EXIT.
+AG    *    MOVE AQCW0005-DT98              TO SWCD5806-DATVAL.
+           MOVE SWCV5550-COSN              TO SWCD5806-COSN.
+           MOVE SWCV5550-COSNC             TO SWCD5806-COSNC.
+AG    *    MOVE SWCV5550-CREF              TO SWCD5806-CREF.
+      *
+           EXEC SQL
+              SELECT CCODMSG
+                   , DATVAL
+                   , COSN
+                   , COSNC
+                   , CREF
+                   , CREFOPR
+                   , CREFEXT
+                   , CSEND
+                   , CBAN
+                   , CSPAI
+                   , CCODEST
+                   , CTIPOP
+                   , MVALOR
+                   , CMOED
+                   , DATREC
+                   , CTIPREC
+                   , CTRATRYP
+                   , CCODOPE
+                   , CDBCR
+                   , DREG
+                   , NOPRREC
+                   , MOTIVO
+                   , OBSER
+                   , GDESC
+                   , CBYPASS
+                   , CSENDREC
+                   , MVLRREC
+                   , CMOEDREC
+                   , CROPRREC
+                   , CORIGEMREC
+                   , CNIVREC
+                   , CUSERID
+                   , HTIMEST
+                   , CEXT
+                   , CPAG
+                   , NORDREC
+                INTO :SWCD5806-CCODMSG
+                   , :SWCD5806-DATVAL
+                   , :SWCD5806-COSN
+                   , :SWCD5806-COSNC
+                   , :SWCD5806-CREF
+                   , :SWCD5806-CREFOPR
+                   , :SWCD5806-CREFEXT
+                   , :SWCD5806-CSEND
+                   , :SWCD5806-CBAN
+                   , :SWCD5806-CSPAI
+                   , :SWCD5806-CCODEST
+                   , :SWCD5806-CTIPOP
+                   , :SWCD5806-MVALOR
+                   , :SWCD5806-CMOED
+                   , :SWCD5806-DATREC
+                   , :SWCD5806-CTIPREC
+                   , :SWCD5806-CTRATRYP
+                   , :SWCD5806-CCODOPE
+                   , :SWCD5806-CDBCR
+                   , :SWCD5806-DREG
+                   , :SWCD5806-NOPRREC
+                   , :SWCD5806-MOTIVO
+                   , :SWCD5806-OBSER
+                   , :SWCD5806-GDESC
+                   , :SWCD5806-CBYPASS
+                   , :SWCD5806-CSENDREC
+                   , :SWCD5806-MVLRREC
+                   , :SWCD5806-CMOEDREC
+                   , :SWCD5806-CROPRREC
+                   , :SWCD5806-CORIGEMREC
+                   , :SWCD5806-CNIVREC
+                   , :SWCD5806-CUSERID
+                   , :SWCD5806-HTIMEST
+                   , :SWCD5806-CEXT
+                   , :SWCD5806-CPAG
+                   , :SWCD5806-NORDREC
+                FROM SWVT5806
+AG    *        WHERE CCODMSG   =  :SWCD5806-CCODMSG
+AG    *          AND DATVAL    =  :SWCD5806-DATVAL
+               WHERE COSN      =  :SWCD5806-COSN
+                 AND COSNC     =  :SWCD5806-COSNC
+AG    *          AND CREF      =  :SWCD5806-CREF
+           END-EXEC.
+      *
+           MOVE CON-SWVT5806               TO VIAL0002-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 IF VIAL0001-CRIACAO
+AG    *             MOVE VIAK0002-ERROS-FUNCAO
+|     *               TO VIAL0002-IND-ERROS
+|     *             MOVE SWCK0002-STATUS-ACTIVO
+|     *               TO SWCV5551-CCODMSG-S
+|     *             MOVE SWCK0001-CCODMSG-EXISTS
+|     *               TO SWCV5551-CCODMSG-MSG
+|     *             MOVE SWCK0002-CAPLIC
+|     *               TO SWCV5551-CCODMSG-CAPLIC
+|     *             MOVE SWCK0002-STATUS-ACTIVO
+|     *               TO SWCV5551-DATVAL-S
+|     *             MOVE SWCK0001-DATVAL-EXISTS
+|     *               TO SWCV5551-DATVAL-MSG
+|     *             MOVE SWCK0002-CAPLIC
+|     *               TO SWCV5551-DATVAL-CAPLIC
+|     *             MOVE SWCK0002-STATUS-ACTIVO
+|     *               TO SWCV5551-COSN-S
+|     *             MOVE SWCK0001-COSN-EXISTS
+|     *               TO SWCV5551-COSN-MSG
+|     *             MOVE SWCK0002-CAPLIC
+|     *               TO SWCV5551-COSN-CAPLIC
+|     *             MOVE SWCK0002-STATUS-ACTIVO
+|     *               TO SWCV5551-COSNC-S
+|     *             MOVE SWCK0001-COSNC-EXISTS
+|     *               TO SWCV5551-COSNC-MSG
+|     *             MOVE SWCK0002-CAPLIC
+|     *               TO SWCV5551-COSNC-CAPLIC
+|     *             MOVE SWCK0002-STATUS-ACTIVO
+|     *               TO SWCV5551-CREF-S
+|     *             MOVE SWCK0001-CREF-EXISTS
+|     *               TO SWCV5551-CREF-MSG
+|     *             MOVE SWCK0002-CAPLIC
+|     *               TO SWCV5551-CREF-CAPLIC
+AG                  CONTINUE
+                 ELSE
+                    MOVE SWCD5806-CCODMSG  TO SWCV5551-CCODMSG
+                    MOVE SWCD5806-DATVAL   TO AQCW0005-DT98
+                    PERFORM AQCP0005-CONV-DT8INDT10
+                       THRU AQCP0005-CONV-DT8INDT10-EXIT
+                    MOVE AQCW0005-DTX10    TO SWCV5551-DATVAL
+                    MOVE SWCD5806-COSN     TO SWCV5551-COSN
+                    MOVE SWCD5806-COSNC    TO SWCV5551-COSNC
+                    MOVE SWCD5806-CREF     TO SWCV5551-CREF
+                    MOVE SWCD5806-CREFOPR  TO SWCV5551-CREFOPR
+                    MOVE SWCD5806-CREFEXT  TO SWCV5551-CREFEXT
+                    MOVE SWCD5806-CSEND    TO SWCV5551-CSEND
+                    MOVE SWCD5806-CCODEST  TO SWCV5551-CCODEST
+                    MOVE SWCD5806-CTIPOP   TO SWCV5551-CTIPOP
+                    MOVE SWCD5806-MVALOR   TO SWCV5551-MVALOR
+                    MOVE SWCD5806-CMOED    TO SWCV5551-CMOED
+                    MOVE SWCD5806-DATREC   TO AQCW0005-DT98
+                    PERFORM AQCP0005-CONV-DT8INDT10
+                       THRU AQCP0005-CONV-DT8INDT10-EXIT
+                    MOVE AQCW0005-DTX10    TO SWCV5551-DATREC
+                    MOVE SWCD5806-CTIPREC  TO SWCV5551-CTIPREC
+                    MOVE SWCD5806-CTRATRYP TO SWCV5551-CTRATRYP
+                    MOVE SWCD5806-CCODOPE  TO SWCV5551-CCODOPE
+                    MOVE SWCD5806-CDBCR    TO SWCV5551-CDBCR
+                    MOVE SWCD5806-DREG     TO AQCW0005-DT98
+                    PERFORM AQCP0005-CONV-DT8INDT10
+                       THRU AQCP0005-CONV-DT8INDT10-EXIT
+                    MOVE AQCW0005-DTX10    TO SWCV5551-DREG
+                    MOVE SWCD5806-CEXT     TO SWCV5551-CEXT
+                    MOVE SWCD5806-CPAG     TO SWCV5551-CPAG
+                    IF VIAL0001-VISUALIZACAO
+                       MOVE SWCD5806-NOPRREC
+                                           TO SWCV5551-MRNOPRX
+AG                                            SWCV5551-MRNOPR
+                       MOVE SWCD5806-NORDREC
+                                           TO SWCV5551-MRNORDX
+AG                                            SWCV5551-MRNORD
+                    ELSE
+                       MOVE SWCV5550-MRNOPR
+                                           TO SWCV5551-MRNOPRX
+                       MOVE SWCV5550-MRNORD
+                                           TO SWCV5551-MRNORDX
+AG    *                IF SWCD5806-CCODEST NOT EQUAL
+|     *                                        CON-CCODEST-HIST-PENDENTE
+|     *                                    AND SWCK0002-CODEST-PEND
+|     *                   MOVE VIAK0002-ERROS-FUNCAO
+|     *                     TO VIAL0002-IND-ERROS
+|     *                   MOVE SWCK0002-STATUS-ACTIVO
+|     *                     TO SWCV5551-CCODMSG-S
+|     *                   MOVE SWCK0001-CCODMSG-A-EXISTS
+|     *                     TO SWCV5551-CCODMSG-MSG
+|     *                   MOVE SWCK0002-CAPLIC
+|     *                     TO SWCV5551-CCODMSG-CAPLIC
+AG    *                END-IF
+                    END-IF
+                    MOVE SWCD5806-OBSER    TO SWCV5551-OBSER
+                    IF NOT VIAL0001-VISUALIZACAO
+                        CONTINUE
+                    END-IF
+                 END-IF
+              ELSE
+                 IF NOT VIAL0001-CRIACAO
+                    MOVE VIAK0002-ERROS-FUNCAO
+                      TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5551-CCODMSG-S
+                    MOVE SWCK0001-CCODMSG-N-EXISTS
+                      TO SWCV5551-CCODMSG-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5551-CCODMSG-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5551-DATVAL-S
+                    MOVE SWCK0001-DATVAL-N-EXISTS
+                      TO SWCV5551-DATVAL-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5551-DATVAL-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5551-COSN-S
+                    MOVE SWCK0001-COSN-N-EXISTS
+                      TO SWCV5551-COSN-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5551-COSN-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5551-COSNC-S
+                    MOVE SWCK0001-COSNC-N-EXISTS
+                      TO SWCV5551-COSNC-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5551-COSNC-CAPLIC
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5551-CREF-S
+                    MOVE SWCK0001-CREF-N-EXISTS
+                      TO SWCV5551-CREF-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5551-CREF-CAPLIC
+                 END-IF
+              END-IF
+           END-IF.
+
+
+       2199-OBTEM-DADOS-EXIT.
+           EXIT.
+
+
+
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5551-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5551-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5551-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES
+             TO VIAL0001-OCORRENCIAS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY AQCP0005.

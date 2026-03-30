@@ -1,0 +1,258 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI50102.
+      ******************************************************************
+      *     PROGRAMA SWI50102.
+      *
+      *     Consulta de Mensagens
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI50102         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD8101 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5010.
+       COPY SWCV5011.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT8101 PIC X(08) VALUE 'SWVT8101'.
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME            PIC  X(08) VALUE 'SWI50102'.
+      *--------------------------------------------------------------
+       01  FILLER                        PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI50102         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5010-MSG.
+           MOVE SWCV5010-ASE               TO SWCV5011-ASE.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5010-ADE               TO SWCV5011-ADE.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2100-OBTEM-DADOS
+                 THRU 2199-OBTEM-DADOS-EXIT
+           END-IF.
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                   2100-OBTEM-DADOS
+      *--------------------------------------------------------------
+       2100-OBTEM-DADOS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-OBTEM-DADOS'      TO VIAL0015-CALLER-ID
+              MOVE 'SWCV5010-CCHAVE '      TO VIAL0015-CAMPO-NM(1)
+              MOVE SWCV5010-CCHAVE         TO VIAL0015-CAMPO-VLR(1)
+              MOVE 'SWCV5010-ZMSGORD'      TO VIAL0015-CAMPO-NM(2)
+              MOVE SWCV5010-ZMSGORD        TO VIAL0015-CAMPO-VLR(2)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5010-CCHAVE            TO SWCD8101-CCODMSG.
+           MOVE SWCV5010-ZMSGORD           TO SWCD8101-ZMSGORD.
+
+           EXEC SQL
+                 SELECT
+                       CCODMSG
+                     , ZMSGORD
+                     , GMSG
+                     , ILIDO
+                     , CPERFILC
+                     , CUSERIDC
+                     , HTIMESTC
+                     , CPERFIL
+                     , CUSERID
+                     , HTIMEST
+                 INTO
+                       :SWCD8101-CCODMSG
+                     , :SWCD8101-ZMSGORD
+                     , :SWCD8101-GMSG
+                     , :SWCD8101-ILIDO
+                     , :SWCD8101-CPERFILC
+                     , :SWCD8101-CUSERIDC
+                     , :SWCD8101-HTIMESTC
+                     , :SWCD8101-CPERFIL
+                     , :SWCD8101-CUSERID
+                     , :SWCD8101-HTIMEST
+                 FROM SWVT8101
+                WHERE CCODMSG = :SWCD8101-CCODMSG
+                  AND ZMSGORD = :SWCD8101-ZMSGORD
+           END-EXEC.
+
+           MOVE CON-SWVT8101               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+      **R        IF VIAL0001-CRIACAO
+      *RR           MOVE VIAK0002-ERROS-FUNCAO
+      *RR             TO VIAL0002-IND-ERROS
+      *RR           MOVE SWCK0002-STATUS-ACTIVO
+      *RR             TO SWCV5011-CCODMSG-S
+      *RR           MOVE SWCK0001-CCODMSG-EXISTS
+      *RR             TO SWCV5011-CCODMSG-MSG
+      *RR           MOVE SWCK0002-CAPLIC
+      *RR             TO SWCV5011-CCODMSG-CAPLIC
+      *RR          CONTINUE
+      *RR       ELSE
+                    MOVE SWCD8101-CCODMSG
+                      TO SWCV5011-CCHAVE
+                    MOVE SWCD8101-ZMSGORD
+                      TO SWCV5011-ZMSGORD
+                    MOVE SWCD8101-GMSG
+                      TO SWCV5011-GMSG
+                    MOVE SWCD8101-ILIDO
+                      TO SWCV5011-ILIDO
+                    MOVE SWCD8101-CPERFILC
+                      TO SWCV5011-CPERFILC
+                    MOVE SWCD8101-CUSERIDC
+                      TO SWCV5011-CUSERIDC
+                    MOVE SWCD8101-HTIMESTC
+                      TO SWCV5011-HTIMESTC
+                    IF SWCD8101-ILIDO EQUAL 'S'
+                       MOVE SWCD8101-CPERFIL
+                         TO SWCV5011-CPERFIL
+                       MOVE SWCD8101-CUSERID
+                         TO SWCV5011-CUSERID
+                       MOVE SWCD8101-HTIMEST
+                         TO SWCV5011-HTIMEST
+                    ELSE
+                       MOVE SPACES         TO SWCV5011-CPERFIL
+                                              SWCV5011-CUSERID
+                                              SWCV5011-HTIMEST
+                    END-IF
+                    IF NOT VIAL0001-VISUALIZACAO
+                        CONTINUE
+                    END-IF
+      **R        END-IF
+              ELSE
+                 IF NOT VIAL0001-CRIACAO
+                    MOVE VIAK0002-ERROS-FUNCAO
+                      TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                      TO SWCV5011-CCHAVE-S
+                    MOVE SWCK0001-CCODMSG-N-EXISTS
+                      TO SWCV5011-CCHAVE-MSG
+                    MOVE SWCK0002-CAPLIC
+                      TO SWCV5011-CCHAVE-CAPLIC
+                 END-IF
+              END-IF
+           END-IF.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-OBTEM-DADOS-EXIT' TO VIAL0015-CALLER-ID
+              MOVE 'SQLCODE' TO VIAL0015-CAMPO-NM(1)
+              MOVE SQLCODE TO VIAL0015-CAMPO-VLR(1)
+              MOVE 'SWCV5011-CUSERID' TO VIAL0015-CAMPO-NM(2)
+              MOVE SWCV5011-CUSERID TO VIAL0015-CAMPO-VLR(2)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+       2199-OBTEM-DADOS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5011-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5011-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5011-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES
+             TO VIAL0001-OCORRENCIAS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.

@@ -1,0 +1,16 @@
+/*--------------------------------------------------------------*/
+/*                                                              */
+/*                  Simulação de cadeia batch                   */
+/*                                                              */
+/*--------------------------------------------------------------*/
+           PGM
+/*--------------------------------------------------------------*/
+/* declaração de variaveis */
+         DCL VAR(&CADEIA)  TYPE(*CHAR) LEN(10)  VALUE(SWBAT002S)
+/*--------------------------------------------------------------*/
+SUBMIT:    SBMJOB     CMD(CALL PGM(&CADEIA) ) +
+                        JOB(VIA_BATCH) JOBQ(BCI/VIAJOBS) +
+                        PRTDEV(*SYSVAL) USER(DSIOPRS) +
+                        JOBMSGQFL(*WRAP) INQMSGRPY(*RQD)
+/*--------------------------------------------------------------*/
+FIM:       ENDPGM

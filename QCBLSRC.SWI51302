@@ -1,0 +1,761 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI51302.
+      ******************************************************************
+      *     PROGRAMA SWI51302.                                    *
+      *                                                                *
+      *     Reporting Correspondentes
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI51302         '.
+
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5807 END-EXEC.
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SWCD7302 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5130.
+       COPY SWCV5131.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+
+       COPY ARCL0039.
+       COPY ETCL0002.
+       COPY AQCW0005.
+
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+      *            SWITCH
+      *--------------------------------------------------------------
+       01  SW-SWITCH.
+           05 SW-CURSOR                  PIC X(01) VALUE SPACES.
+              88 SW-CURSOR-NONE                    VALUE '0'.
+              88 SW-CURSOR-1                       VALUE '1'.
+              88 SW-CURSOR-2                       VALUE '2'.
+              88 SW-CURSOR-3                       VALUE '3'.
+              88 SW-CURSOR-4                       VALUE '4'.
+
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT5807                  PIC  X(08) VALUE 'SWVT5807'.
+           05 CON-SWVT7204                  PIC  X(08) VALUE 'SWVT7204'.
+           05 CON-SWVT7302                  PIC  X(08) VALUE 'SWVT7302'.
+      *    05 CON-RECONCILIADO              PIC  X(01) VALUE 'S'.
+      *    05 CON-NRECONCILIADO             PIC  X(01) VALUE 'N'.
+      *    05 CON-MANUAL                    PIC  X(01) VALUE 'M'.
+      *    05 CON-AMBOS                     PIC  X(01) VALUE 'A'.
+           05 CON-CCODEST-PENDENTE          PIC  X(02) VALUE 'PD'.
+           05 CON-CCODEST-RECONCILIADO      PIC  X(02) VALUE 'RC'.
+PML24      05 CON-CCODEST-SUGERIDO          PIC  X(02) VALUE 'RS'.
+PML24 *    05 CON-CCODEST-VALIDADO          PIC  X(02) VALUE 'VA'.
+           05 CON-DATA-MINIMA               PIC S9(08) COMP-3
+                                                       VALUE +10101.
+           05 CON-DATA-MAXIMA               PIC S9(08) COMP-3
+                                                       VALUE +99991231.
+           05 CON-NAO                       PIC  X(01) VALUE 'N'.
+           05 CON-SIM                       PIC  X(01) VALUE 'S'.
+           05 CON-CREDITO                   PIC  X(01) VALUE 'C'.
+           05 CON-DEBITO                    PIC  X(01) VALUE 'D'.
+
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-MAX-RECORDS               PIC  9(10) VALUE ZEROES.
+           05 WS-COUNT                     PIC S9(10) COMP-3
+                                                      VALUE ZEROES.
+
+           05 WS-CSEND                     PIC  X(12) VALUE SPACES.
+           05 FILLER REDEFINES WS-CSEND.
+              10 WS-C2COD-CBAN             PIC  X(04).
+              10 WS-C2COD-CSPAI            PIC  X(02).
+              10 FILLER                    PIC  X(06).
+
+           05 WS-CCONTA                    PIC  X(20) VALUE SPACES.
+           05 FILLER REDEFINES WS-CCONTA.
+              10 WS-CCOD-NCCCBALC          PIC  9(04).
+              10 FILLER                    PIC  X(01).
+              10 WS-CCOD-NCCCCCB           PIC  X(13).
+              10 FILLER                    PIC  X(02).
+
+           05 WS-CSBALC                    PIC S9(04) COMP-3 VALUE 0.
+           05 WS-CSMOED                    PIC  X(03) VALUE SPACES.
+           05 WS-MONTANTE                  PIC  ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99.
+
+           05 WS-SOMA-POSITIVA             PIC S9(15)V9(02)
+                                                      COMP-3 VALUE 0.
+           05 WS-SOMA-NEGATIVA             PIC S9(15)V9(02)
+                                                      COMP-3 VALUE 0.
+           05 WS-COUNT-POSITIVA            PIC S9(10) COMP-3 VALUE 0.
+           05 WS-COUNT-NEGATIVA            PIC S9(10) COMP-3 VALUE 0.
+
+           05 WS-DATAVL-MIN                PIC S9(08) COMP-3 VALUE 0.
+           05 WS-DATAVL-MAX                PIC S9(08) COMP-3 VALUE 0.
+PML24 *    05 WS-IRECONC1                  PIC  X(01) VALUE SPACE.
+PML24 *    05 WS-IRECONC2                  PIC  X(01) VALUE SPACE.
+PML24 *    05 WS-IRECONC3                  PIC  X(01) VALUE SPACE.
+PML24 *    05 WS-CCODEST1                  PIC  X(02) VALUE SPACES.
+PML24 *    05 WS-CCODEST2                  PIC  X(02) VALUE SPACES.
+PML24 *    05 WS-CCODEST3                  PIC  X(02) VALUE SPACES.
+
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(08) VALUE 'SWI51302'.
+
+      *--------------------------------------------------------------
+      *              DECLARACOES DE CURSORES DB2                     *
+      *--------------------------------------------------------------
+      *
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI51302         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+       COPY VIAL0004.
+
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5130-MSG.
+           MOVE SWCV5130-ASE               TO SWCV5131-ASE.
+
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5130-ADE       TO SWCV5131-ADE.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2100-OBTEM-DADOS
+                 THRU 2199-OBTEM-DADOS-EXIT
+           END-IF.
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2100-OBTEM-DADOS
+      *--------------------------------------------------------------
+       2100-OBTEM-DADOS.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-OBTEM-DADOS'      TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROS                      TO SWCV5131-SLDCONTAB.
+           MOVE ZEROS                      TO SWCV5131-SLDEXT.
+           MOVE ZEROS                      TO SWCV5131-VALID.
+           MOVE ZEROS                      TO SWCV5131-LQTDDEBITO.
+           MOVE ZEROS                      TO SWCV5131-LSLDDEBITO.
+           MOVE ZEROS                      TO SWCV5131-LQTDCREDITO.
+           MOVE ZEROS                      TO SWCV5131-LSLDCREDITO.
+           MOVE ZEROS                      TO SWCV5131-CQTDDEBITO.
+           MOVE ZEROS                      TO SWCV5131-CSLDDEBITO.
+           MOVE ZEROS                      TO SWCV5131-CQTDCREDITO.
+
+           MOVE SWCV5130-CSEND             TO SWCV5131-CSEND.
+           MOVE SWCV5130-CCONTA            TO SWCV5131-CCONTA.
+           MOVE SWCV5130-CMOED             TO SWCV5131-CMOED.
+PML24 *    MOVE SWCV5130-IRECONC           TO SWCV5131-IRECONC.
+           MOVE SWCV5130-CINTERV           TO SWCV5131-CINTERV.
+           MOVE SWCV5130-GUSERNAME         TO SWCV5131-GUSERNAME.
+           MOVE SWCV5130-CPERFIL           TO SWCV5131-CPERFIL.
+      *    MOVE SWCV5130-DDATAI            TO SWCV5131-DDATAI.
+      *    MOVE SWCV5130-DDATAF            TO SWCV5131-DDATAF.
+           MOVE SWCV5130-DDATA             TO SWCV5131-DDATA.
+
+           MOVE SWCV5130-CSEND             TO WS-CSEND.
+           MOVE SWCV5130-CCONTA            TO WS-CCONTA.
+PML24 *    MOVE CON-NRECONCILIADO          TO WS-IRECONC1.
+PML24 *    MOVE CON-RECONCILIADO           TO WS-IRECONC2.
+PML24 *    MOVE CON-MANUAL                 TO WS-IRECONC3.
+
+      *    MOVE SWCV5130-DDATAI            TO AQCW0005-DTX10.
+      *    PERFORM AQCP0005-CONV-DT10INDT8
+      *       THRU AQCP0005-CONV-DT10INDT8-EXIT.
+      *    MOVE AQCW0005-DT98              TO WS-DATAVL-MIN.
+      *
+      *    MOVE CON-DATA-MAXIMA            TO WS-DATAVL-MAX.
+      *    IF SWCV5130-DDATAF NOT EQUAL VIAK0002-DATA-MINIMA
+      *       MOVE SWCV5130-DDATAF         TO AQCW0005-DTX10
+      *       PERFORM AQCP0005-CONV-DT10INDT8
+      *          THRU AQCP0005-CONV-DT10INDT8-EXIT
+      *       MOVE AQCW0005-DT98           TO WS-DATAVL-MAX
+      *    END-IF.
+
+           MOVE CON-DATA-MAXIMA            TO WS-DATAVL-MAX.
+           IF SWCV5130-DDATA  NOT EQUAL VIAK0002-DATA-MINIMA
+              MOVE SWCV5130-DDATA          TO AQCW0005-DTX10
+              PERFORM AQCP0005-CONV-DT10INDT8
+                 THRU AQCP0005-CONV-DT10INDT8-EXIT
+              MOVE AQCW0005-DT98           TO WS-DATAVL-MAX
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2200-SALDO-CORRESP
+                 THRU 2299-SALDO-CORRESP-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2300-SALDO-EXTRATO
+                 THRU 2399-SALDO-EXTRATO-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2400-CORRESPONDENTES
+                 THRU 2499-CORRESPONDENTES-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2500-EXTRATOS
+                 THRU 2599-EXTRATOS-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              COMPUTE SWCV5131-VALID =
+                      SWCV5131-SLDCONTAB - SWCV5131-SLDEXT -
+                      SWCV5131-LSLDCREDITO + SWCV5131-LSLDDEBITO -
+                      SWCV5131-CSLDCREDITO + SWCV5131-CSLDDEBITO
+           END-IF.
+
+       2199-OBTEM-DADOS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2200-SALDO-CORRESP
+      *--------------------------------------------------------------
+       2200-SALDO-CORRESP.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-SALDO-CORRESP'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE WS-CCOD-NCCCBALC           TO SWCD7302-NBALC.
+           MOVE WS-CCOD-NCCCCCB            TO SWCD7302-CCB.
+           MOVE WS-C2COD-CBAN              TO SWCD7302-CBAN.
+           MOVE WS-C2COD-CSPAI             TO SWCD7302-CSPAI.
+           MOVE SWCV5130-CMOED             TO SWCD7302-CMOED.
+           MOVE CON-SIM                    TO SWCD7302-ISALDMOV.
+
+      *    IF SWCV5130-DDATAF NOT EQUAL VIAK0002-DATA-MINIMA
+      *       MOVE SWCV5130-DDATAF         TO SWCD7302-DATVAL
+      *    ELSE
+      *       MOVE VIAK0002-DATA-MAXIMA    TO SWCD7302-DATVAL
+      *    END-IF.
+
+           IF SWCV5130-DDATA  NOT EQUAL VIAK0002-DATA-MINIMA
+              MOVE SWCV5130-DDATA          TO SWCD7302-DATVAL
+           ELSE
+              MOVE VIAK0002-DATA-MAXIMA    TO SWCD7302-DATVAL
+           END-IF.
+
+           EXEC SQL
+              SELECT MSALDMOV
+                INTO :SWCD7302-MSALDMOV
+                FROM SWVT7302
+               WHERE CBAN      =  :SWCD7302-CBAN
+                 AND CSPAI     =  :SWCD7302-CSPAI
+                 AND CMOED     =  :SWCD7302-CMOED
+                 AND NBALC     =  :SWCD7302-NBALC
+                 AND CCB       =  :SWCD7302-CCB
+                 AND DATVAL   <=  :SWCD7302-DATVAL
+                 AND ISALDMOV  =  :SWCD7302-ISALDMOV
+                 ORDER BY DATVAL DESC
+                 FETCH FIRST ROW ONLY
+           END-EXEC.
+
+           MOVE CON-SWVT7302               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 MOVE ZEROES               TO SWCD7302-MSALDMOV
+                                              SWCV5131-SLDCONTAB
+              ELSE
+                 IF DB2-OK
+                    MOVE SWCD7302-MSALDMOV TO SWCV5131-SLDCONTAB
+                 ELSE
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                    MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                    MOVE SWCK0002-CAPLIC   TO SWCV5131-CSEND-CAPLIC
+                 END-IF
+              END-IF
+           END-IF.
+
+       2299-SALDO-CORRESP-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2300-SALDO-EXTRATO
+      *--------------------------------------------------------------
+       2300-SALDO-EXTRATO.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2300-SALDO-EXTRATO'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE WS-CCOD-NCCCBALC           TO SWCD7302-NBALC.
+           MOVE WS-CCOD-NCCCCCB            TO SWCD7302-CCB.
+           MOVE WS-C2COD-CBAN              TO SWCD7302-CBAN.
+           MOVE WS-C2COD-CSPAI             TO SWCD7302-CSPAI.
+           MOVE SWCV5130-CMOED             TO SWCD7302-CMOED.
+           MOVE CON-SIM                    TO SWCD7302-ISALDEXT.
+
+      *    IF SWCV5130-DDATAF NOT EQUAL VIAK0002-DATA-MINIMA
+      *       MOVE SWCV5130-DDATAF         TO SWCD7302-DATVAL
+      *    ELSE
+      *       MOVE VIAK0002-DATA-MAXIMA    TO SWCD7302-DATVAL
+      *    END-IF.
+
+           IF SWCV5130-DDATA  NOT EQUAL VIAK0002-DATA-MINIMA
+              MOVE SWCV5130-DDATA          TO SWCD7302-DATVAL
+           ELSE
+              MOVE VIAK0002-DATA-MAXIMA    TO SWCD7302-DATVAL
+           END-IF.
+
+           EXEC SQL
+              SELECT MSALDEXT
+                INTO :SWCD7302-MSALDEXT
+                FROM SWVT7302
+               WHERE CBAN      = :SWCD7302-CBAN
+                 AND CSPAI     = :SWCD7302-CSPAI
+                 AND CMOED     = :SWCD7302-CMOED
+                 AND NBALC     =  :SWCD7302-NBALC
+                 AND CCB       =  :SWCD7302-CCB
+                 AND DATVAL   <= :SWCD7302-DATVAL
+                 AND ISALDEXT  = :SWCD7302-ISALDEXT
+                 ORDER BY DATVAL DESC
+                 FETCH FIRST ROW ONLY
+           END-EXEC.
+
+           MOVE CON-SWVT7302               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-NOTFND
+                 MOVE ZEROES               TO SWCD7302-MSALDEXT
+                                              SWCV5131-SLDEXT
+              ELSE
+                 IF DB2-OK
+                    MOVE SWCD7302-MSALDEXT TO SWCV5131-SLDEXT
+                 ELSE
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                    MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                    MOVE SWCK0002-CAPLIC   TO SWCV5131-CSEND-CAPLIC
+                 END-IF
+              END-IF
+           END-IF.
+
+       2399-SALDO-EXTRATO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2400-CORRESPONDENTES
+      *--------------------------------------------------------------
+       2400-CORRESPONDENTES.
+
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2400-CORRESPONDENTES'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE WS-CCOD-NCCCBALC           TO SWCD7204-MRBALC.
+           MOVE WS-C2COD-CBAN              TO SWCD7204-NCCCCBAN.
+           MOVE WS-C2COD-CSPAI             TO SWCD7204-NCCCCSPAI.
+           MOVE WS-CCOD-NCCCCCB            TO SWCD7204-MRCCB.
+           MOVE SWCV5130-CMOED             TO SWCD7204-MRMOED.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2410-CORRESP-CREDITO
+                 THRU 2419-CORRESP-CREDITO-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2420-CORRESP-DEBITO
+                 THRU 2429-CORRESP-DEBITO-EXIT
+           END-IF.
+
+       2499-CORRESPONDENTES-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2410-CORRESP-CREDITO
+      *--------------------------------------------------------------
+       2410-CORRESP-CREDITO.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2410-CORRESP-CREDITO ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROS                      TO WS-SOMA-POSITIVA
+                                              WS-COUNT-POSITIVA.
+
+           EXEC SQL
+              SELECT IFNULL(SUM(MRVLR), 0)
+                   , IFNULL(COUNT(MRVLR), 0)
+                INTO :WS-SOMA-POSITIVA
+                   , :WS-COUNT-POSITIVA
+                FROM SWVT7204
+               WHERE MRBALC    =  :SWCD7204-MRBALC
+                 AND MRCCB     =  :SWCD7204-MRCCB
+                 AND NCCCCBAN  =  :SWCD7204-NCCCCBAN
+                 AND NCCCCSPAI =  :SWCD7204-NCCCCSPAI
+                 AND MRMOED    =  :SWCD7204-MRMOED
+      *          AND IRECONC   IN ( :WS-IRECONC1
+      *                           , :WS-IRECONC2
+      *                           , :WS-IRECONC3 )
+PML24 *          AND IRECONC   <> :CON-RECONCILIADO
+PML24            AND CCODEST   <> :CON-CCODEST-RECONCILIADO
+      *          AND MRDATL    BETWEEN :WS-DATAVL-MIN
+      *                            AND :WS-DATAVL-MAX
+                 AND MRDATL    <= :WS-DATAVL-MAX
+                 AND MRVLR     > 0
+           END-EXEC.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE WS-COUNT-POSITIVA    TO SWCV5131-LQTDCREDITO
+                 MOVE WS-SOMA-POSITIVA     TO SWCV5131-LSLDCREDITO
+              ELSE
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                 MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV5131-CSEND-CAPLIC
+              END-IF
+           END-IF.
+
+       2419-CORRESP-CREDITO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2420-CORRESP-DEBITO
+      *--------------------------------------------------------------
+       2420-CORRESP-DEBITO.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2420-CORRESP-DEBITO  ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROS                      TO WS-SOMA-NEGATIVA
+                                              WS-COUNT-NEGATIVA.
+
+           EXEC SQL
+              SELECT IFNULL(SUM(MRVLR), 0)
+                   , IFNULL(COUNT(MRVLR), 0)
+                INTO :WS-SOMA-NEGATIVA
+                   , :WS-COUNT-NEGATIVA
+                FROM SWVT7204
+               WHERE MRBALC    =  :SWCD7204-MRBALC
+                 AND MRCCB     =  :SWCD7204-MRCCB
+                 AND NCCCCBAN  =  :SWCD7204-NCCCCBAN
+                 AND NCCCCSPAI =  :SWCD7204-NCCCCSPAI
+                 AND MRMOED    =  :SWCD7204-MRMOED
+      *          AND IRECONC   IN ( :WS-IRECONC1
+      *                           , :WS-IRECONC2
+      *                           , :WS-IRECONC3 )
+PML24 *          AND IRECONC   <> :CON-RECONCILIADO
+PML24            AND CCODEST   <> :CON-CCODEST-RECONCILIADO
+      *          AND MRDATL    BETWEEN :WS-DATAVL-MIN
+      *                            AND :WS-DATAVL-MAX
+                 AND MRDATL    <= :WS-DATAVL-MAX
+                 AND MRVLR     < 0
+           END-EXEC.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE WS-COUNT-NEGATIVA    TO SWCV5131-LQTDDEBITO
+                 MULTIPLY WS-SOMA-NEGATIVA BY -1
+                                       GIVING SWCV5131-LSLDDEBITO
+PRA   *          MOVE WS-SOMA-NEGATIVA     TO SWCV5131-LSLDDEBITO
+              ELSE
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                 MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV5131-CSEND-CAPLIC
+              END-IF
+           END-IF.
+
+       2429-CORRESP-DEBITO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2500-EXTRATOS
+      *--------------------------------------------------------------
+       2500-EXTRATOS.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2500-EXTRATOS     '    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+PML24 *    EVALUATE SWCV5130-IRECONC
+PML24 *      WHEN CON-NRECONCILIADO
+PML24 *        MOVE CON-CCODEST-PENDENTE     TO WS-CCODEST1
+PML24 *                                         WS-CCODEST2
+PML24 *                                         WS-CCODEST3
+PML24 *      WHEN CON-RECONCILIADO
+PML24 *        MOVE CON-CCODEST-RECONCILIADO TO WS-CCODEST1
+PML24 *        MOVE CON-CCODEST-VALIDADO     TO WS-CCODEST2
+PML24 *                                         WS-CCODEST3
+PML24 *                                         WS-CCODEST3
+PML24 *      WHEN CON-AMBOS
+PML24 *        MOVE CON-CCODEST-RECONCILIADO TO WS-CCODEST1
+PML24 *        MOVE CON-CCODEST-VALIDADO     TO WS-CCODEST2
+PML24 *        MOVE CON-CCODEST-PENDENTE     TO WS-CCODEST3
+PML24 *    END-EVALUATE.
+
+           MOVE WS-C2COD-CBAN              TO SWCD5807-CBAN.
+           MOVE WS-C2COD-CSPAI             TO SWCD5807-CSPAI.
+           MOVE SWCV5130-CMOED             TO SWCD5807-CMOED.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2510-EXTRATO-CREDITO
+                 THRU 2519-EXTRATO-CREDITO-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2520-EXTRATO-DEBITO
+                 THRU 2529-EXTRATO-DEBITO-EXIT
+           END-IF.
+
+       2599-EXTRATOS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2510-EXTRATO-CREDITO
+      *--------------------------------------------------------------
+       2510-EXTRATO-CREDITO.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2510-EXTRATO-CREDITO ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROS                      TO WS-SOMA-POSITIVA
+                                              WS-COUNT-POSITIVA.
+
+           EXEC SQL
+              SELECT IFNULL(SUM(MVALOR), 0)
+                   , IFNULL(COUNT(MVALOR), 0)
+                INTO :WS-SOMA-POSITIVA
+                   , :WS-COUNT-POSITIVA
+                FROM SWVT5807
+               WHERE CBAN    =  :SWCD5807-CBAN
+                 AND CSPAI   =  :SWCD5807-CSPAI
+                 AND CMOED   =  :SWCD5807-CMOED
+      *          AND DATVAL  BETWEEN :WS-DATAVL-MIN
+      *                          AND :WS-DATAVL-MAX
+                 AND DATVAL  <= :WS-DATAVL-MAX
+      *          AND CCODEST IN ( :WS-CCODEST1
+      *                         , :WS-CCODEST2
+      *                         , :WS-CCODEST3 )
+                 AND CCODEST <> :CON-CCODEST-RECONCILIADO
+                 AND CDBCR   = :CON-CREDITO
+           END-EXEC.
+
+           MOVE CON-SWVT5807               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE WS-COUNT-POSITIVA    TO SWCV5131-CQTDCREDITO
+                 MOVE WS-SOMA-POSITIVA     TO SWCV5131-CSLDCREDITO
+              ELSE
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                 MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV5131-CSEND-CAPLIC
+              END-IF
+           END-IF.
+
+       2519-EXTRATO-CREDITO-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2520-EXTRATO-DEBITO
+      *--------------------------------------------------------------
+       2520-EXTRATO-DEBITO.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2520-EXTRATO-DEBITO  ' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROS                      TO WS-SOMA-NEGATIVA
+                                              WS-COUNT-NEGATIVA.
+
+           EXEC SQL
+              SELECT IFNULL(SUM(MVALOR), 0)
+                   , IFNULL(COUNT(MVALOR), 0)
+                INTO :WS-SOMA-NEGATIVA
+                   , :WS-COUNT-NEGATIVA
+                FROM SWVT5807
+               WHERE CBAN        =  :SWCD5807-CBAN
+                 AND CSPAI       =  :SWCD5807-CSPAI
+                 AND CMOED       =  :SWCD5807-CMOED
+      *          AND DATVAL      BETWEEN :WS-DATAVL-MIN
+      *                              AND :WS-DATAVL-MAX
+                 AND DATVAL      <= :WS-DATAVL-MAX
+      *          AND CCODEST     IN ( :WS-CCODEST1
+      *                             , :WS-CCODEST2
+      *                             , :WS-CCODEST3 )
+                 AND CCODEST <> :CON-CCODEST-RECONCILIADO
+                 AND CDBCR   = :CON-DEBITO
+           END-EXEC.
+
+           MOVE CON-SWVT5807               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE WS-COUNT-NEGATIVA    TO SWCV5131-CQTDDEBITO
+PRA   *          COMPUTE WS-SOMA-NEGATIVA = WS-SOMA-NEGATIVA * -1
+                 MOVE WS-SOMA-NEGATIVA     TO SWCV5131-CSLDDEBITO
+              ELSE
+                 MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                 MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5131-CSEND-S
+                 MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5131-CSEND-MSG
+                 MOVE SWCK0002-CAPLIC      TO SWCV5131-CSEND-CAPLIC
+              END-IF
+           END-IF.
+
+       2529-EXTRATO-DEBITO-EXIT.
+           EXIT.
+      *---------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *---------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5131-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5131-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5131-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES                     TO VIAL0001-OCORRENCIAS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0015.
+           COPY ARCR0039.
+           COPY AQCP0005.

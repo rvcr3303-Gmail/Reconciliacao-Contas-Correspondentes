@@ -1,0 +1,274 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI51102.
+      ******************************************************************
+      *     PROGRAMA SWI51102.
+      *
+      *     Atribuir tarefa
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI51102         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5807 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5110.
+       COPY SWCV5111.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT5807 PIC X(08) VALUE 'SWVT5807'.
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME            PIC  X(08) VALUE 'SWI51102'.
+      *--------------------------------------------------------------
+       01  FILLER                        PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI51102         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5110-MSG.
+           MOVE SWCV5110-ASE       TO SWCV5111-ASE.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5110-ADE       TO SWCV5111-ADE.
+
+
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2100-OBTEM-DADOS
+                 THRU 2199-OBTEM-DADOS-EXIT
+           END-IF
+
+           .
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                   2100-OBTEM-DADOS
+      *--------------------------------------------------------------
+       2100-OBTEM-DADOS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-OBTEM-DADOS' TO VIAL0015-CALLER-ID
+              MOVE 'SWCV5110-COSN '        TO VIAL0015-CAMPO-NM(1)
+              MOVE 'SWCV5110-COSNC'        TO VIAL0015-CAMPO-NM(2)
+              MOVE  SWCV5110-COSN          TO VIAL0015-CAMPO-VLR(1)
+              MOVE  SWCV5110-COSNC         TO VIAL0015-CAMPO-VLR(2)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5110-COSN
+             TO SWCD5807-COSN
+           MOVE SWCV5110-COSNC
+             TO SWCD5807-COSNC
+
+           EXEC SQL
+                 SELECT
+                       CCODMSG
+                     , DATVAL
+                     , COSN
+                     , COSNC
+                     , CREF
+                     , CREFOPR
+                     , CREFEXT
+                     , CSEND
+                     , CBAN
+                     , CSPAI
+                     , CCODEST
+                     , CTIPOP
+                     , MVALOR
+                     , CMOED
+                     , DATREC
+                     , CTIPREC
+                     , CTRATRYP
+                     , CCODOPE
+                     , CDBCR
+                     , DREG
+                     , NOPRREC
+                     , MOTIVO
+                     , OBSER
+                     , GDESC
+                     , CBYPASS
+                     , CSENDREC
+                     , MVLRREC
+                     , CMOEDREC
+                     , CROPRREC
+                     , CORIGEMREC
+                     , CNIVREC
+                     , CUSERID
+                     , HTIMEST
+                     , CEXT
+                     , CPAG
+                     , NORDREC
+                     , CINTERV
+                     , CUSERIDINT
+                 INTO
+                       :SWCD5807-CCODMSG
+                     , :SWCD5807-DATVAL
+                     , :SWCD5807-COSN
+                     , :SWCD5807-COSNC
+                     , :SWCD5807-CREF
+                     , :SWCD5807-CREFOPR
+                     , :SWCD5807-CREFEXT
+                     , :SWCD5807-CSEND
+                     , :SWCD5807-CBAN
+                     , :SWCD5807-CSPAI
+                     , :SWCD5807-CCODEST
+                     , :SWCD5807-CTIPOP
+                     , :SWCD5807-MVALOR
+                     , :SWCD5807-CMOED
+                     , :SWCD5807-DATREC
+                     , :SWCD5807-CTIPREC
+                     , :SWCD5807-CTRATRYP
+                     , :SWCD5807-CCODOPE
+                     , :SWCD5807-CDBCR
+                     , :SWCD5807-DREG
+                     , :SWCD5807-NOPRREC
+                     , :SWCD5807-MOTIVO
+                     , :SWCD5807-OBSER
+                     , :SWCD5807-GDESC
+                     , :SWCD5807-CBYPASS
+                     , :SWCD5807-CSENDREC
+                     , :SWCD5807-MVLRREC
+                     , :SWCD5807-CMOEDREC
+                     , :SWCD5807-CROPRREC
+                     , :SWCD5807-CORIGEMREC
+                     , :SWCD5807-CNIVREC
+                     , :SWCD5807-CUSERID
+                     , :SWCD5807-HTIMEST
+                     , :SWCD5807-CEXT
+                     , :SWCD5807-CPAG
+                     , :SWCD5807-NORDREC
+                     , :SWCD5807-CINTERV
+                     , :SWCD5807-CUSERIDINT
+                 FROM SWVT5807
+                 WHERE   COSN = :SWCD5807-COSN
+                     AND COSNC = :SWCD5807-COSNC
+           END-EXEC
+
+           MOVE CON-SWVT5807
+             TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 IF VIAL0001-CRIACAO
+                    MOVE VIAK0002-ERROS-FUNCAO
+                      TO VIAL0002-IND-ERROS
+                 ELSE
+                    IF NOT VIAL0001-VISUALIZACAO
+                        CONTINUE
+                    END-IF
+                 END-IF
+              ELSE
+                 IF NOT VIAL0001-CRIACAO
+                    MOVE VIAK0002-ERROS-FUNCAO
+                      TO VIAL0002-IND-ERROS
+                 END-IF
+              END-IF
+           END-IF.
+
+
+       2199-OBTEM-DADOS-EXIT.
+           EXIT.
+
+
+
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV5111-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5111-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5111-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE ZEROES
+             TO VIAL0001-OCORRENCIAS.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.

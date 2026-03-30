@@ -1,0 +1,1430 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI55800.
+      ******************************************************************
+      *     PROGRAMA SWI55800.                                         *
+      *                                                                *
+      *     Mov. Não Reconciliados/Correspondente                      *
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *  AGESTAS   / 20032020 / RECONCILIACAO CORRESPONDENTES / AG     *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      *
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI55800         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD5807 END-EXEC.
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SWCD7301 END-EXEC.
+           EXEC SQL INCLUDE ARCD4102 END-EXEC.
+AG         EXEC SQL INCLUDE SWCD8101 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+PRA    01  DCLSWPARAM.
+PRA        COPY DDS-ALL-FORMATS OF SWPARAM  PREFIX BY 'SWPARAM-'.
+PRA   *
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5580.
+       COPY SWCV5581.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+       COPY ARCL0039.
+       COPY ETCL0002.
+       COPY AQCW0005.
+      *
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+      *            SWITCH
+      *--------------------------------------------------------------
+       01  SW-SWITCH.
+           05 SW-CURSOR                  PIC X(01) VALUE SPACES.
+              88 SW-CURSOR-NONE                    VALUE '0'.
+              88 SW-CURSOR-1                       VALUE '1'.
+              88 SW-CURSOR-2                       VALUE '2'.
+              88 SW-CURSOR-3                       VALUE '3'.
+              88 SW-CURSOR-4                       VALUE '3'.
+PRA   *
+PRA        05 SW-PRVALBOL-STATUS           PIC  X(01)      VALUE SPACES.
+PRA           88 SW-PRVALBOL-OK                            VALUE 'S'.
+PRA           88 SW-PRVALBOL-NOTOK                         VALUE 'N'.
+PRA   *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT5807                  PIC  X(08) VALUE 'SWVT5807'.
+           05 CON-SWVT7204                  PIC  X(08) VALUE 'SWVT7204'.
+           05 CON-SWVT7301                  PIC  X(08) VALUE 'SWVT7301'.
+           05 CON-ARVT4102                  PIC  X(08) VALUE 'ARVT4102'.
+AG         05 CON-SWVT8101                  PIC  X(08) VALUE 'SWVT8101'.
+PRA        05 CON-SWPARAM                   PIC  X(08) VALUE 'SWPARAM'.
+      *    05 CON-GBCCO                     PIC  X(08) VALUE 'GBCCO'.
+           05 CON-RECONCILIADO              PIC  X(01) VALUE 'S'.
+           05 CON-NRECONCILIADO             PIC  X(01) VALUE 'N'.
+           05 CON-MANUAL                    PIC  X(01) VALUE 'M'.
+           05 CON-DATA-MINIMA               PIC S9(08) COMP-3
+                                                       VALUE +10101.
+           05 CON-DATA-MAXIMA               PIC S9(08) COMP-3
+                                                       VALUE +99991231.
+           05 CON-NAO                       PIC  X(01) VALUE 'N'.
+           05 CON-SIM                       PIC  X(01) VALUE 'S'.
+      *
+AG         05 CON-CNATREC-1-1               PIC  X(03) VALUE '1:1'.
+|          05 CON-CNATREC-1-N               PIC  X(03) VALUE '1:n'.
+|          05 CON-CNATREC-N-N               PIC  X(03) VALUE 'n:n'.
+|          05 CON-CNATREC-N-0               PIC  X(03) VALUE 'n:0'.
+PML        05 CON-CNATREC-N-1               PIC  X(03) VALUE 'n:1'.
+|          05 CON-CCODEST-PENDENTE          PIC  X(02) VALUE 'PD'.
+|          05 CON-CCODEST-RECONCILIADO      PIC  X(02) VALUE 'RC'.
+AG         05 CON-CCODEST-SUGERIDO          PIC  X(02) VALUE 'RS'.
+      *
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-MAX-RECORDS           PIC  9(10) VALUE ZEROES.
+           05 WS-COUNT                 PIC S9(10) COMP-3 VALUE ZEROES.
+
+           05 WS-CSEND                     PIC  X(12) VALUE SPACES.
+           05 FILLER REDEFINES WS-CSEND.
+              10 WS-C2COD-CBAN             PIC  X(04).
+              10 WS-C2COD-CSPAI            PIC  X(02).
+              10 FILLER                    PIC  X(06).
+      *
+           05 WS-CCONTA                    PIC  X(20) VALUE SPACES.
+           05 FILLER REDEFINES WS-CCONTA.
+              10 WS-CCOD-NCCCBALC          PIC  9(04).
+              10 FILLER                    PIC  X(01).
+              10 WS-CCOD-NCCCCCB           PIC  X(13).
+              10 FILLER                    PIC  X(02).
+      *
+           05 WS-CSBALC                    PIC S9(04) COMP-3 VALUE 0.
+           05 WS-CSMOED                    PIC  X(03) VALUE SPACES.
+           05 WS-MONTANTE                  PIC  ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99.
+      *
+           05 WS-SLD-INI                   PIC S9(15)V9(02)
+                                                      COMP-3 VALUE 0.
+           05 WS-SLD-MOV                   PIC S9(15)V9(02)
+                                                      COMP-3 VALUE 0.
+           05 WS-SLD-FIM                   PIC S9(15)V9(02)
+                                                      COMP-3 VALUE 0.
+      *
+           05 WS-CCHAVE                    PIC  X(16) VALUE SPACES.
+           05 FILLER REDEFINES WS-CCHAVE.
+              10 WS-MRNOPR                 PIC  9(09).
+              10 WS-MRNORD                 PIC S9(07).
+      *
+           05 WS-DOC-EXIST                 PIC S9(01) COMP-3 VALUE 0.
+AG         05 WS-MSG-EXIST                 PIC  X(01) VALUE SPACES.
+      *
+PRA        05 WS-PRPARAM               PIC  X(10) VALUE SPACES.
+PRA        05 FILLER REDEFINES WS-PRPARAM.
+PRA           10 WS-CBAN               PIC  X(04).
+PRA           10 WS-CSPAI              PIC  X(02).
+PRA           10 WS-CMOED              PIC  X(03).
+PRA           10 FILLER                PIC  X(01).
+PRA   *
+           05 WS-NPAGINA                   PIC S9(09) COMP   VALUE 0.
+           05 WS-NTPAGINAS                 PIC S9(09) COMP   VALUE 0.
+           05 WS-NPAG                      PIC S9(09)V99 COMP   VALUE 0.
+           05 WS-NTOTPAG                   PIC S9(09)V99 COMP   VALUE 0.
+           05 WS-DIFF                      PIC SV99   COMP   VALUE 0.
+           05 WS-PAGESIZE                  PIC S9(09) COMP   VALUE 0.
+      *
+PML        05 WS-2120-CBAN                 PIC  X(04).
+PML        05 WS-2120-CSPAI                PIC  X(02).
+PML        05 WS-2120-CMOED                PIC  X(03).
+PML        05 WS-2120-BALC                 PIC S9(04) COMP-3.
+PML        05 WS-2120-BALCX                PIC  9(04).
+PML        05 WS-2120-CCB                  PIC  X(13).
+PML   *
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME     PIC  X(08) VALUE 'SWI55800'.
+      *--------------------------------------------------------------
+      *              DECLARACOES DE CURSORES DB2                     *
+      *--------------------------------------------------------------
+      *
+       01  WS-CURSOR-VARS.
+RRM        05 WS-MRBALC-MIN                PIC S9(04) COMP-3 VALUE 0.
+RRM        05 WS-MRBALC-MAX                PIC S9(04) COMP-3 VALUE 0.
+RRM        05 WS-MRCCB-MIN                 PIC  X(13) VALUE SPACES.
+RRM        05 WS-MRCCB-MAX                 PIC  X(13) VALUE SPACES.
+RRM        05 WS-NCCCCBAN-MIN              PIC  X(04) VALUE SPACES.
+RRM        05 WS-NCCCCBAN-MAX              PIC  X(04) VALUE SPACES.
+RRM        05 WS-NCCCCSPAI-MIN             PIC  X(02) VALUE SPACES.
+RRM        05 WS-NCCCCSPAI-MAX             PIC  X(02) VALUE SPACES.
+RRM        05 WS-MRMOED-MIN                PIC  X(03) VALUE SPACES.
+RRM        05 WS-MRMOED-MAX                PIC  X(03) VALUE SPACES.
+AG         05 WS-CCODEST1                  PIC  X(02) VALUE SPACES.
+|          05 WS-CCODEST2                  PIC  X(02) VALUE SPACES.
+AG         05 WS-CCODEST3                  PIC  X(02) VALUE SPACES.
+           05 WS-MRDATL-MIN                PIC S9(08) COMP-3 VALUE 0.
+           05 WS-MRDATL-MAX                PIC S9(08) COMP-3 VALUE 0.
+           05 WS-MRDMOV                    PIC  X(40) VALUE SPACES.
+           05 WS-CINTERV-MIN               PIC  X(12) VALUE SPACES.
+           05 WS-CINTERV-MAX               PIC  X(12) VALUE SPACES.
+           05 WS-CUSERIDINT-MIN            PIC  X(20) VALUE SPACES.
+           05 WS-CUSERIDINT-MAX            PIC  X(20) VALUE SPACES.
+PML        05 WS-CNATREC-MIN               PIC  X(03) VALUE SPACES.
+PML        05 WS-CNATREC-MAX               PIC  X(03) VALUE SPACES.
+      *
+           EXEC SQL
+                DECLARE CURSWT01 CURSOR FOR
+                 SELECT
+                       MRBALC
+                     , MRCCB
+                     , NCCCCBAN
+                     , NCCCCSPAI
+                     , NCCCCCONTA
+                     , MRTDOC
+                     , MRCOPE
+                     , MRNDOC
+                     , MRVLR
+                     , MRSALD
+                     , MRUSER
+                     , MRDTSIS
+                     , MRHORA
+                     , MRDATL
+                     , MRDRCX
+                     , MRETRB
+                     , MRBALM
+                     , MROBS
+                     , MRNOPR
+                     , MRNOPS
+                     , MRNORD
+                     , MREANL
+                     , MRDTCB
+                     , MREXCT
+                     , MRMOED
+                     , MRDMOV
+                     , GBMRINFC
+                     , CCHAVE
+                     , IRECONC
+                     , CCODMSG
+                     , DATVAL
+                     , COSN
+                     , COSNC
+                     , CREF
+                     , CREFOPR
+                     , CTIPREC
+                     , GOBS
+                     , CUSERID
+                     , HTIMEST
+AG                   , CINTERV
+|                    , CUSERIDINT
+|                    , CNATREC
+|                    , IDRECONC
+AG                   , CCODEST
+                 FROM SWVT7204
+                 WHERE MRBALC      BETWEEN :WS-MRBALC-MIN
+                                       AND :WS-MRBALC-MAX
+                   AND MRCCB       BETWEEN :WS-MRCCB-MIN
+                                       AND :WS-MRCCB-MAX
+                   AND NCCCCBAN    BETWEEN :WS-NCCCCBAN-MIN
+                                       AND :WS-NCCCCBAN-MAX
+                   AND NCCCCSPAI   BETWEEN :WS-NCCCCSPAI-MIN
+                                       AND :WS-NCCCCSPAI-MAX
+                   AND MRMOED      BETWEEN :WS-MRMOED-MIN
+                                       AND :WS-MRMOED-MAX
+AG                 AND CCODEST        IN ( :WS-CCODEST1
+|                                        , :WS-CCODEST2
+AG                                       , :WS-CCODEST3 )
+                   AND CINTERV     BETWEEN :WS-CINTERV-MIN
+                                       AND :WS-CINTERV-MAX
+                   AND CUSERIDINT  BETWEEN :WS-CUSERIDINT-MIN
+                                       AND :WS-CUSERIDINT-MAX
+                   AND MRDATL      BETWEEN :WS-MRDATL-MIN
+                                       AND :WS-MRDATL-MAX
+PML                AND CNATREC     BETWEEN :WS-CNATREC-MIN
+PML                                    AND :WS-CNATREC-MAX
+                   AND MRDMOV         LIKE :WS-MRDMOV
+                   AND (     MRDATL     >  :SWCD7204-MRDATL
+
+                         OR  MRDATL     =  :SWCD7204-MRDATL
+                         AND MRNOPR     >  :SWCD7204-MRNOPR
+
+                         OR  MRDATL     =  :SWCD7204-MRDATL
+                         AND MRNOPR     =  :SWCD7204-MRNOPR
+                         AND MRNORD     >  :SWCD7204-MRNORD
+                       )
+                 ORDER
+                    BY MRDATL
+                     , MRNOPR
+                     , MRNORD
+           END-EXEC.
+      *
+      *--------------------------------------------------------------
+       01  FILLER                        PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI55800         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5580-MSG.
+           MOVE SWCV5580-ASE               TO SWCV5581-ASE.
+           MOVE SWCV5581-INDICE-INVERSO    TO WS-PAGESIZE.
+      *
+           MOVE ZEROES                     TO SWCV5581-INDICE.
+           PERFORM 1100-LIMPA-OCCURS
+              THRU 1199-LIMPA-OCCURS-EXIT
+             UNTIL SWCV5581-PAGINA-CHEIA.
+
+           MOVE ZEROES                     TO SWCD7204-MRBALC
+           MOVE SPACES                     TO SWCD7204-MRCCB
+           MOVE SPACES                     TO SWCD7204-NCCCCBAN
+           MOVE SPACES                     TO SWCD7204-NCCCCSPAI
+           MOVE SPACES                     TO SWCD7204-MRMOED
+
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            1100-LIMPA-OCCURS
+      *--------------------------------------------------------------
+       1100-LIMPA-OCCURS.
+      *
+           ADD 1                       TO SWCV5581-INDICE.
+PML        MOVE SPACES
+PML          TO SWCV5581-D-CSEND(SWCV5581-INDICE).
+PML        MOVE SPACES
+PML          TO SWCV5581-D-CCONTA(SWCV5581-INDICE).
+PML        MOVE SPACES
+PML          TO SWCV5581-D-CMOED(SWCV5581-INDICE).
+           MOVE VIAK0002-DATA-MINIMA
+             TO SWCV5581-D-MRDATL(SWCV5581-INDICE).
+           MOVE VIAK0002-DATA-MINIMA
+             TO SWCV5581-D-DATVALI(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-MRDMOV(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-MDEBITO(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-MCREDITO(SWCV5581-INDICE).
+           MOVE ZEROES
+             TO SWCV5581-D-MRNOPR(SWCV5581-INDICE).
+           MOVE ZEROES
+             TO SWCV5581-D-NOPR(SWCV5581-INDICE).
+           MOVE ZEROES
+             TO SWCV5581-D-MRNORD(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-MRUSER(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CBAN(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CSPAI(SWCV5581-INDICE).
+           MOVE ZEROES
+             TO SWCV5581-D-MVLR(SWCV5581-INDICE).
+AG         MOVE SPACES
+PML          TO SWCV5581-D-CCODEST(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CCODMSG(SWCV5581-INDICE).
+           MOVE VIAK0002-DATA-MINIMA
+             TO SWCV5581-D-DATVAL(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-COSN(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-COSNC(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CREF(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CREFOPR(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-GDESC(SWCV5581-INDICE).
+           MOVE SPACES
+             TO SWCV5581-D-CCHAVE(SWCV5581-INDICE)
+AG         MOVE SPACES
+AG           TO SWCV5581-D-ITIPORECON(SWCV5581-INDICE)
+
+           MOVE SPACES
+             TO SWCV5581-D-CINTERV(SWCV5581-INDICE)
+           MOVE SPACES
+             TO SWCV5581-D-GUSERNAME(SWCV5581-INDICE)
+           MOVE SPACES
+             TO SWCV5581-D-CMSG(SWCV5581-INDICE)
+
+           MOVE SPACES
+             TO SWCV5581-D-CDOC(SWCV5581-INDICE)
+AG         MOVE ZEROS
+AG           TO SWCV5581-D-IDRECON(SWCV5581-INDICE)
+      *
+       1199-LIMPA-OCCURS-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV5580-NOMEFXLS          TO SWCV5581-NOMEFXLS
+           MOVE SWCV5580-NMAXLIST          TO SWCV5581-NMAXLIST
+           MOVE SWCV5580-MRDATL-PAG        TO SWCV5581-MRDATL-PAG
+           MOVE SWCV5580-MRNOPR-PAG        TO SWCV5581-MRNOPR-PAG
+           MOVE SWCV5580-MRNORD-PAG        TO SWCV5581-MRNORD-PAG
+           MOVE SWCV5580-CSEND             TO SWCV5581-CSEND
+           MOVE SWCV5580-CCONTA            TO SWCV5581-CCONTA
+           MOVE SWCV5580-CMOED             TO SWCV5581-CMOED
+           MOVE SWCV5580-CCODESTX          TO SWCV5581-CCODESTX
+
+AG         MOVE SWCV5580-CINTERV           TO SWCV5581-CINTERV.
+AG         MOVE SWCV5580-GUSERNAME         TO SWCV5581-GUSERNAME.
+AG         MOVE SWCV5580-CPERFIL           TO SWCV5581-CPERFIL.
+
+           MOVE SWCV5580-DDATAI            TO SWCV5581-DDATAI
+           MOVE SWCV5580-DDATAF            TO SWCV5581-DDATAF
+           MOVE SWCV5580-MRDMOV            TO SWCV5581-MRDMOV
+
+AG         MOVE SWCV5580-ITIPORECON        TO SWCV5581-ITIPORECON.
+      *
+
+
+PML   *    IF SWCV5580-CMOED NOT EQUAL SPACES OR
+ |    *       SWCV5580-CSEND NOT EQUAL ZEROES
+ |    *       PERFORM 2010-VALIDACOES
+ |    *          THRU 2019-VALIDACOES-EXIT
+ |    *    ELSE
+ |    *       SET SW-PRVALBOL-OK TO TRUE
+PML   *    END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2020-OPEN
+                 THRU 2029-OPEN-EXIT
+              PERFORM 2200-COUNT-TOTAL
+                 THRU 2299-COUNT-TOTAL-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2030-FETCH
+                 THRU 2039-FETCH-EXIT
+
+              IF VIAL0002-SEM-ERROS
+   RRM*          IF DB2-OK
+                    PERFORM 2040-CONTINUA
+                       THRU 2049-CONTINUA-EXIT
+                 ELSE
+                    COMPUTE SWCV5581-DIMINUI-LENGTH EQUAL
+                         SWCV5581-INDICE-INVERSO * SWCV5581-LENGTH-OCCUR
+                    COMPUTE SWCV5581-LENGTH EQUAL SWCV5581-LENGTH
+                         - SWCV5581-DIMINUI-LENGTH
+                    MOVE VIAK0002-ERROS-FUNCAO
+                                           TO VIAL0002-IND-ERROS
+                    MOVE SWCK0002-STATUS-ACTIVO
+                                           TO SWCV5581-CSEND-S
+                    MOVE SWCK0001-CSEND-N-EXISTS
+                                           TO SWCV5581-CSEND-MSG
+                    MOVE SWCK0002-CAPLIC   TO SWCV5581-CSEND-CAPLIC
+   RRM*          END-IF
+              END-IF
+              PERFORM 2070-CLOSE
+                 THRU 2079-CLOSE-EXIT
+           END-IF.
+
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+
+      *--------------------------------------------------------------
+      *                   2010-VALIDACOES
+      *--------------------------------------------------------------
+       2010-VALIDACOES.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2010-VALIDACOES' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+PRA        INITIALIZE DCLSWPARAM           REPLACING NUMERIC BY ZEROES
+PRA                                             ALPHANUMERIC BY SPACES.
+PRA   *
+PRA        MOVE SWCV5580-CSEND             TO WS-CSEND.
+PRA        MOVE WS-C2COD-CBAN              TO WS-CBAN.
+PRA        MOVE WS-C2COD-CSPAI             TO WS-CSPAI.
+PRA        MOVE SWCV5580-CMOED             TO WS-CMOED.
+PRA   *
+PRA        MOVE SWCK0002-CAPLIC            TO SWPARAM-PRCODPAR.
+PRA        MOVE WS-PRPARAM                 TO SWPARAM-PRPARAM.
+PRA   *
+PRA        EXEC SQL
+PRA           SELECT PRVALBOL
+PRA             INTO :SWPARAM-PRVALBOL
+PRA             FROM SWPARAM
+PRA            WHERE PRCODPAR  =  :SWPARAM-PRCODPAR
+PRA              AND PRPARAM   =  :SWPARAM-PRPARAM
+PRA        END-EXEC.
+PRA   *
+PRA        MOVE CON-SWPARAM                TO VIAL0002-TABLE-NAME.
+PRA   *
+PRA        PERFORM 9020-DB2CHECK
+PRA           THRU 9029-DB2CHECK-EXIT.
+PRA   *
+PRA        EVALUATE TRUE
+PRA           WHEN NOT VIAL0002-SEM-ERROS
+PRA              CONTINUE
+PRA           WHEN DB2-OK
+PRA              MOVE SWPARAM-PRVALBOL     TO SW-PRVALBOL-STATUS
+PRA           WHEN DB2-NOTFND
+PRA              SET  SW-PRVALBOL-NOTOK    TO TRUE
+PRA        END-EVALUATE.
+PRA   *
+PRA        EVALUATE TRUE
+PRA           WHEN NOT VIAL0002-SEM-ERROS
+PRA           WHEN SW-PRVALBOL-OK
+PRA              CONTINUE
+PRA  R*       WHEN SW-PRVALBOL-NOTOK
+PRA  R*          MOVE VIAK0002-ERROS-FUNCAO
+PRA  R*                                    TO VIAL0002-IND-ERROS
+PRA  R*          MOVE SWCK0002-STATUS-ACTIVO
+PRA  R*                                    TO SWCV5581-CSEND-S
+PRA  R*          MOVE SWCK0001-CSEND-N-EXISTS
+PRA  R*                                    TO SWCV5581-CSEND-MSG
+PRA  R*          MOVE SWCK0002-CAPLIC      TO SWCV5581-CSEND-CAPLIC
+PRA        END-EVALUATE.
+PRA   *
+       2019-VALIDACOES-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                     2020-OPEN
+      *--------------------------------------------------------------
+       2020-OPEN.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2020-OPEN' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           PERFORM 2021-INI-CURSOR
+              THRU 2021-INI-CURSOR-EXIT.
+
+           SET SW-CURSOR-NONE TO TRUE
+
+           IF SW-CURSOR-NONE
+              SET SW-CURSOR-1 TO TRUE
+           END-IF
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                        OPEN CURSWT01
+                    END-EXEC
+           END-EVALUATE.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 4000-APURAR-PAGINA
+                 THRU 4099-APURAR-PAGINA-EXIT
+      *
+              IF VIAL0002-SEM-ERROS
+                 PERFORM 4100-APURAR-TOT-PAGINAS
+                    THRU 4199-APURAR-TOT-PAGINAS-EXIT
+              END-IF
+      *
+           END-IF.
+      *
+       2029-OPEN-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2021-INI-CURSOR
+      *--------------------------------------------------------------
+       2021-INI-CURSOR.
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2021-INI-CURSOR'       TO VIAL0015-CALLER-ID
+DEBUG *       MOVE 'SWCV5580-ITIPORECON'   TO VIAL0015-CAMPO-NM(1)
+DEBUG *       MOVE  SWCV5580-ITIPORECON    TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+      * MRBALC MRCCB
+           IF SWCV5580-CCONTA EQUAL SPACES
+              MOVE ZEROES                  TO WS-MRBALC-MIN
+              MOVE 9999                    TO WS-MRBALC-MAX
+              MOVE SPACES                  TO WS-MRCCB-MIN
+              MOVE ALL '9'                 TO WS-MRCCB-MAX
+           ELSE
+              MOVE SWCV5580-CCONTA( 1: 4)  TO WS-CCOD-NCCCBALC
+              MOVE WS-CCOD-NCCCBALC        TO WS-MRBALC-MIN
+              MOVE WS-CCOD-NCCCBALC        TO WS-MRBALC-MAX
+              MOVE SWCV5580-CCONTA( 6:13)  TO WS-MRCCB-MIN
+              MOVE SWCV5580-CCONTA( 6:13)  TO WS-MRCCB-MAX
+           END-IF.
+
+      * NCCCCBAN
+           IF SWCV5580-CSEND(1:4) EQUAL SPACES
+              MOVE SPACES                  TO WS-NCCCCBAN-MIN
+              MOVE ALL '9'                 TO WS-NCCCCBAN-MAX
+           ELSE
+              MOVE SWCV5580-CSEND(1:4)     TO WS-NCCCCBAN-MIN
+              MOVE SWCV5580-CSEND(1:4)     TO WS-NCCCCBAN-MAX
+           END-IF.
+
+      * NCCCCSPAI
+           IF SWCV5580-CSEND(5:2) EQUAL SPACES
+              MOVE SPACES                  TO WS-NCCCCSPAI-MIN
+              MOVE ALL '9'                 TO WS-NCCCCSPAI-MAX
+           ELSE
+              MOVE SWCV5580-CSEND(5:2)     TO WS-NCCCCSPAI-MIN
+              MOVE SWCV5580-CSEND(5:2)     TO WS-NCCCCSPAI-MAX
+           END-IF.
+
+      * MRMOED
+           IF SWCV5580-CMOED EQUAL SPACES
+              MOVE SPACES                  TO WS-MRMOED-MIN
+              MOVE ALL '9'                 TO WS-MRMOED-MAX
+           ELSE
+              MOVE SWCV5580-CMOED          TO WS-MRMOED-MIN
+              MOVE SWCV5580-CMOED          TO WS-MRMOED-MAX
+           END-IF.
+
+      * CCODEST
+           MOVE CON-CCODEST-PENDENTE       TO WS-CCODEST1.
+           MOVE CON-CCODEST-RECONCILIADO   TO WS-CCODEST2.
+           MOVE CON-CCODEST-SUGERIDO       TO WS-CCODEST3.
+           EVALUATE SWCV5580-CCODESTX
+            WHEN CON-CCODEST-PENDENTE
+            WHEN CON-CCODEST-RECONCILIADO
+            WHEN CON-CCODEST-SUGERIDO
+              MOVE SWCV5580-CCODESTX       TO WS-CCODEST1
+              MOVE SWCV5580-CCODESTX       TO WS-CCODEST2
+              MOVE SWCV5580-CCODESTX       TO WS-CCODEST3
+           END-EVALUATE.
+
+      * CINTERV
+           IF SWCV5580-CINTERV EQUAL SPACES
+              MOVE SPACES                  TO WS-CINTERV-MIN
+              MOVE ALL '9'                 TO WS-CINTERV-MAX
+           ELSE
+              MOVE SWCV5580-CINTERV        TO WS-CINTERV-MIN
+              MOVE SWCV5580-CINTERV        TO WS-CINTERV-MAX
+           END-IF.
+
+      * CUSERIDINT
+           IF SWCV5580-GUSERNAME  EQUAL SPACES
+              MOVE SPACES                  TO WS-CUSERIDINT-MIN
+              MOVE ALL '9'                 TO WS-CUSERIDINT-MAX
+           ELSE
+              MOVE SWCV5580-GUSERNAME      TO WS-CUSERIDINT-MIN
+              MOVE SWCV5580-GUSERNAME      TO WS-CUSERIDINT-MAX
+           END-IF.
+
+      * MRDATL
+           MOVE SWCV5580-DDATAI            TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO WS-MRDATL-MIN.
+
+           MOVE CON-DATA-MAXIMA            TO WS-MRDATL-MAX.
+           IF SWCV5580-DDATAF NOT EQUAL VIAK0002-DATA-MINIMA
+              MOVE SWCV5580-DDATAF         TO AQCW0005-DTX10
+              PERFORM AQCP0005-CONV-DT10INDT8
+                 THRU AQCP0005-CONV-DT10INDT8-EXIT
+              MOVE AQCW0005-DT98           TO WS-MRDATL-MAX
+           END-IF.
+
+      * CNATREC
+           IF SWCV5580-ITIPORECON EQUAL SPACES
+              MOVE SPACES                  TO WS-CNATREC-MIN
+              MOVE ALL '9'                 TO WS-CNATREC-MAX
+           ELSE
+              MOVE SWCV5580-ITIPORECON     TO WS-CNATREC-MIN
+              MOVE SWCV5580-ITIPORECON     TO WS-CNATREC-MAX
+           END-IF.
+
+      * MRDMOV
+           MOVE ALL '%'                    TO WS-MRDMOV.
+           STRING FUNCTION TRIM(SWCV5580-MRDMOV)
+                                    DELIMITED BY SIZE
+                                         INTO WS-MRDMOV.
+
+      * Paginacao: MRDATL MRNOPR MRNORD
+           MOVE SWCV5580-MRDATL-PAG        TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO SWCD7204-MRDATL.
+           MOVE SWCV5580-MRNOPR-PAG        TO SWCD7204-MRNOPR.
+           MOVE SWCV5580-MRNORD-PAG        TO SWCD7204-MRNORD.
+
+
+DEBUG *    IF VIAL0001-DEBUG-SIM
+DEBUG *       MOVE '2021-INI-CURSOR PL'    TO VIAL0015-CALLER-ID
+DEBUG *       MOVE 'SWCV5580-ITIPORECON'   TO VIAL0015-CAMPO-NM(1)
+DEBUG *       MOVE  SWCV5580-ITIPORECON    TO VIAL0015-CAMPO-VLR(1)
+DEBUG *       PERFORM VIAP0016-TRATA-DEBUG
+DEBUG *          THRU VIAP0016-TRATA-DEBUG-EXIT
+DEBUG *    END-IF.
+
+       2021-INI-CURSOR-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2200-COUNT-TOTAL
+      *--------------------------------------------------------------
+       2200-COUNT-TOTAL.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-COUNT-TOTAL  ' TO VIAL0015-CALLER-ID
+              MOVE 'SWCD7204-MRBALC   ' TO VIAL0015-CAMPO-NM(1)
+              MOVE 'SWCD7204-MRCCB    ' TO VIAL0015-CAMPO-NM(2)
+              MOVE 'SWCD7204-NCCCCBAN ' TO VIAL0015-CAMPO-NM(3)
+              MOVE 'SWCD7204-NCCCCSPAI' TO VIAL0015-CAMPO-NM(4)
+              MOVE 'SWCD7204-MRMOED   ' TO VIAL0015-CAMPO-NM(5)
+              MOVE 'WS-CCODEST1       ' TO VIAL0015-CAMPO-NM(6)
+              MOVE 'WS-CCODEST2       ' TO VIAL0015-CAMPO-NM(7)
+              MOVE 'WS-CCODEST3       ' TO VIAL0015-CAMPO-NM(8)
+              MOVE 'WS-MRDATL-MIN     ' TO VIAL0015-CAMPO-NM(9)
+              MOVE  SWCD7204-MRBALC     TO VIAL0015-CAMPO-VLR(1)
+              MOVE  SWCD7204-MRCCB      TO VIAL0015-CAMPO-VLR(2)
+              MOVE  SWCD7204-NCCCCBAN   TO VIAL0015-CAMPO-VLR(3)
+              MOVE  SWCD7204-NCCCCSPAI  TO VIAL0015-CAMPO-VLR(4)
+              MOVE  SWCD7204-MRMOED     TO VIAL0015-CAMPO-VLR(5)
+              MOVE  WS-CCODEST1         TO VIAL0015-CAMPO-VLR(6)
+              MOVE  WS-CCODEST2         TO VIAL0015-CAMPO-VLR(7)
+              MOVE  WS-CCODEST3         TO VIAL0015-CAMPO-VLR(8)
+              MOVE  WS-MRDATL-MIN       TO VIAL0015-CAMPO-VLR(9)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+              MOVE 'WS-MRDATL-MAX     ' TO VIAL0015-CAMPO-NM(1)
+              MOVE 'WS-MRDMOV         ' TO VIAL0015-CAMPO-NM(2)
+              MOVE 'WS-CINTERV-MIN    ' TO VIAL0015-CAMPO-NM(3)
+              MOVE 'WS-CINTERV-MAX    ' TO VIAL0015-CAMPO-NM(4)
+              MOVE 'WS-CUSERIDINT-MIN ' TO VIAL0015-CAMPO-NM(5)
+              MOVE 'WS-CUSERIDINT-MAX ' TO VIAL0015-CAMPO-NM(6)
+              MOVE  WS-MRDATL-MAX       TO VIAL0015-CAMPO-VLR(1)
+              MOVE  WS-MRDMOV           TO VIAL0015-CAMPO-VLR(2)
+              MOVE  WS-CINTERV-MIN      TO VIAL0015-CAMPO-VLR(3)
+              MOVE  WS-CINTERV-MAX      TO VIAL0015-CAMPO-VLR(4)
+              MOVE  WS-CUSERIDINT-MIN   TO VIAL0015-CAMPO-VLR(5)
+              MOVE  WS-CUSERIDINT-MAX   TO VIAL0015-CAMPO-VLR(6)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+               SELECT  IFNULL(COUNT(*), 0)
+                 INTO  :WS-COUNT
+                 FROM SWVT7204
+PML              WHERE MRBALC      BETWEEN :WS-MRBALC-MIN
+ |                                     AND :WS-MRBALC-MAX
+ |                 AND MRCCB       BETWEEN :WS-MRCCB-MIN
+ |                                     AND :WS-MRCCB-MAX
+ |                 AND NCCCCBAN    BETWEEN :WS-NCCCCBAN-MIN
+ |                                     AND :WS-NCCCCBAN-MAX
+ |                 AND NCCCCSPAI   BETWEEN :WS-NCCCCSPAI-MIN
+ |                                     AND :WS-NCCCCSPAI-MAX
+ |                 AND MRMOED      BETWEEN :WS-MRMOED-MIN
+PML                                    AND :WS-MRMOED-MAX
+                   AND CCODEST     IN ( :WS-CCODEST1
+                                      , :WS-CCODEST2
+                                      , :WS-CCODEST3 )
+                   AND MRDATL      BETWEEN :WS-MRDATL-MIN
+                                       AND :WS-MRDATL-MAX
+                   AND MRDMOV      LIKE :WS-MRDMOV
+                   AND CINTERV     BETWEEN :WS-CINTERV-MIN
+                                       AND :WS-CINTERV-MAX
+                   AND CUSERIDINT  BETWEEN :WS-CUSERIDINT-MIN
+                                       AND :WS-CUSERIDINT-MAX
+PML                AND CNATREC     BETWEEN :WS-CNATREC-MIN
+PML                                    AND :WS-CNATREC-MAX
+           END-EXEC.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-COUNT-TOTAL  ' TO VIAL0015-CALLER-ID
+              MOVE 'SQLCODE           ' TO VIAL0015-CAMPO-NM(1)
+              MOVE  SQLCODE             TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+       2299-COUNT-TOTAL-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                     2030-FETCH
+      *--------------------------------------------------------------
+       2030-FETCH.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2030-FETCH' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                       FETCH CURSWT01
+                       INTO
+                           :SWCD7204-MRBALC
+                         , :SWCD7204-MRCCB
+                         , :SWCD7204-NCCCCBAN
+                         , :SWCD7204-NCCCCSPAI
+                         , :SWCD7204-NCCCCCONTA
+                         , :SWCD7204-MRTDOC
+                         , :SWCD7204-MRCOPE
+                         , :SWCD7204-MRNDOC
+                         , :SWCD7204-MRVLR
+                         , :SWCD7204-MRSALD
+                         , :SWCD7204-MRUSER
+                         , :SWCD7204-MRDTSIS
+                         , :SWCD7204-MRHORA
+                         , :SWCD7204-MRDATL
+                         , :SWCD7204-MRDRCX
+                         , :SWCD7204-MRETRB
+                         , :SWCD7204-MRBALM
+                         , :SWCD7204-MROBS
+                         , :SWCD7204-MRNOPR
+                         , :SWCD7204-MRNOPS
+                         , :SWCD7204-MRNORD
+                         , :SWCD7204-MREANL
+                         , :SWCD7204-MRDTCB
+                         , :SWCD7204-MREXCT
+                         , :SWCD7204-MRMOED
+                         , :SWCD7204-MRDMOV
+                         , :SWCD7204-GBMRINFC
+                         , :SWCD7204-CCHAVE
+                         , :SWCD7204-IRECONC
+                         , :SWCD7204-CCODMSG
+                         , :SWCD7204-DATVAL
+                         , :SWCD7204-COSN
+                         , :SWCD7204-COSNC
+                         , :SWCD7204-CREF
+                         , :SWCD7204-CREFOPR
+                         , :SWCD7204-CTIPREC
+                         , :SWCD7204-GOBS
+                         , :SWCD7204-CUSERID
+                         , :SWCD7204-HTIMEST
+AG                       , :SWCD7204-CINTERV
+|                        , :SWCD7204-CUSERIDINT
+|                        , :SWCD7204-CNATREC
+|                        , :SWCD7204-IDRECONC
+AG                       , :SWCD7204-CCODEST
+                    END-EXEC
+
+
+           END-EVALUATE.
+
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+       2039-FETCH-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                       2040-CONTINUA
+      *--------------------------------------------------------------
+       2040-CONTINUA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2040-CONTINUA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE ZEROES                     TO SWCV5581-INDICE.
+           PERFORM 2050-TRATA-OCCURS
+              THRU 2059-TRATA-OCCURS-EXIT
+             UNTIL DB2-NOTFND
+                OR SWCV5581-PAGINA-CHEIA
+                OR NOT VIAL0002-SEM-ERROS.
+
+           IF VIAL0002-SEM-ERROS
+              IF NOT SWCV5581-PAGINA-CHEIA
+                    COMPUTE SWCV5581-INDICE-INVERSO EQUAL
+                         SWCV5581-INDICE-INVERSO - SWCV5581-INDICE
+                    COMPUTE SWCV5581-DIMINUI-LENGTH EQUAL
+                         SWCV5581-INDICE-INVERSO * SWCV5581-LENGTH-OCCUR
+                    COMPUTE SWCV5581-LENGTH EQUAL SWCV5581-LENGTH -
+                         SWCV5581-DIMINUI-LENGTH
+                    SET  VIAL0002-FIM-CONSULTA TO TRUE
+              END-IF
+              IF DB2-NOTFND
+                    SET  VIAL0002-FIM-CONSULTA TO TRUE
+              END-IF
+           END-IF.
+
+       2049-CONTINUA-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *            2050-TRATA-OCCURS
+      *--------------------------------------------------------------
+       2050-TRATA-OCCURS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2050-TRATA-OCCURS' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           ADD 1                       TO SWCV5581-INDICE.
+PML   *
+PML        STRING SWCD7204-NCCCCBAN
+PML               SWCD7204-NCCCCSPAI DELIMITED BY SIZE
+PML          INTO SWCV5581-D-CSEND(SWCV5581-INDICE).
+PML
+PML        PERFORM 2051-TRATA-OCCURS-CONTA
+PML           THRU 2051-TRATA-OCCURS-CONTA-EXIT.
+PML
+           MOVE SWCD7204-MRMOED
+             TO SWCV5581-D-CMOED(SWCV5581-INDICE).
+
+           MOVE SWCD7204-MRDATL        TO AQCW0005-DT98.
+           PERFORM AQCP0005-CONV-DT8INDT10
+              THRU AQCP0005-CONV-DT8INDT10-EXIT.
+           MOVE AQCW0005-DTX10
+             TO SWCV5581-D-MRDATL(SWCV5581-INDICE)
+                SWCV5581-D-DATVALI(SWCV5581-INDICE).
+PML   *
+           MOVE SWCD7204-MRDMOV
+             TO SWCV5581-D-MRDMOV(SWCV5581-INDICE).
+      *
+           MOVE SWCD7204-MRVLR         TO WS-MONTANTE.
+           IF SWCD7204-MRVLR LESS THAN ZEROES
+              MOVE WS-MONTANTE
+                TO SWCV5581-D-MDEBITO(SWCV5581-INDICE)
+           ELSE
+              MOVE WS-MONTANTE
+                TO SWCV5581-D-MCREDITO(SWCV5581-INDICE)
+           END-IF.
+      *
+           MULTIPLY SWCD7204-MRVLR  BY -1
+                    GIVING SWCV5581-D-MVLRB(SWCV5581-INDICE)
+      *
+           MOVE SWCD7204-MRNOPR
+             TO SWCV5581-D-NOPR(SWCV5581-INDICE)
+                SWCV5581-D-MRNOPR(SWCV5581-INDICE).
+           MOVE SWCD7204-MRNORD
+             TO SWCV5581-D-MRNORD(SWCV5581-INDICE).
+      *
+           MOVE SWCD7204-MRUSER
+             TO SWCV5581-D-MRUSER(SWCV5581-INDICE).
+           MOVE SWCD7204-NCCCCBAN
+             TO SWCV5581-D-CBAN(SWCV5581-INDICE).
+           MOVE SWCD7204-NCCCCSPAI
+             TO SWCV5581-D-CSPAI(SWCV5581-INDICE).
+           MOVE SWCD7204-MRVLR
+             TO SWCV5581-D-MVLR(SWCV5581-INDICE).
+      *
+AG         MOVE SWCD7204-CCODEST
+PML          TO SWCV5581-D-CCODEST(SWCV5581-INDICE)
+      *
+           MOVE SWCD7204-CCODMSG
+             TO SWCV5581-D-CCODMSG(SWCV5581-INDICE).
+           MOVE SWCD7204-DATVAL            TO AQCW0005-DT98.
+           PERFORM AQCP0005-CONV-DT8INDT10
+              THRU AQCP0005-CONV-DT8INDT10-EXIT.
+           MOVE AQCW0005-DTX10
+             TO SWCV5581-D-DATVAL(SWCV5581-INDICE).
+           MOVE SWCD7204-COSN
+             TO SWCV5581-D-COSN(SWCV5581-INDICE).
+           MOVE SWCD7204-COSNC
+             TO SWCV5581-D-COSNC(SWCV5581-INDICE).
+           MOVE SWCD7204-CREF
+             TO SWCV5581-D-CREF(SWCV5581-INDICE).
+           MOVE SWCD7204-CREFOPR
+             TO SWCV5581-D-CREFOPR(SWCV5581-INDICE).
+
+      * Construcao da chave
+           MOVE SWCD7204-MRNOPR            TO WS-MRNOPR.
+           MOVE SWCD7204-MRNORD            TO WS-MRNORD.
+           MOVE WS-CCHAVE
+             TO SWCV5581-D-CCHAVE(SWCV5581-INDICE).
+
+AG         MOVE SWCD7204-CINTERV
+|                               TO SWCV5581-D-CINTERV(SWCV5581-INDICE).
+|          MOVE SWCD7204-CUSERIDINT
+|                             TO SWCV5581-D-GUSERNAME(SWCV5581-INDICE).
+|          MOVE SWCD7204-CNATREC
+|            TO SWCV5581-D-ITIPORECON(SWCV5581-INDICE).
+|          MOVE SWCD7204-IDRECONC
+AG           TO SWCV5581-D-IDRECON(SWCV5581-INDICE).
+      *
+           IF VIAL0002-SEM-ERROS
+              PERFORM 5000-OBTER-DOC
+                 THRU 5099-OBTER-DOC-EXIT
+           END-IF.
+      *
+AG         IF VIAL0002-SEM-ERROS
+|             PERFORM 5100-OBTER-MSG
+|                THRU 5199-OBTER-MSG-EXIT
+AG         END-IF.
+      *
+           IF VIAL0002-SEM-ERROS
+              PERFORM 5200-OBTER-DESCRITIVO
+                 THRU 5299-OBTER-DESCRITIVO-EXIT
+           END-IF.
+      *
+           PERFORM 2030-FETCH
+              THRU 2039-FETCH-EXIT.
+      *
+       2059-TRATA-OCCURS-EXIT.
+           EXIT.
+
+PML   *--------------------------------------------------------------
+ |    *            2051-TRATA-OCCURS-CONTA
+ |    *--------------------------------------------------------------
+ |     2051-TRATA-OCCURS-CONTA.
+ |
+ |         IF VIAL0001-DEBUG-SIM
+ |            MOVE '2051-TRATA-OCCURS-CONTA' TO VIAL0015-CALLER-ID
+ |            PERFORM VIAP0016-TRATA-DEBUG
+ |               THRU VIAP0016-TRATA-DEBUG-EXIT
+ |         END-IF.
+ |
+ |         MOVE SWCD7204-NCCCCBAN          TO WS-2120-CBAN.
+ |         MOVE SWCD7204-NCCCCSPAI         TO WS-2120-CSPAI.
+ |         MOVE SWCD7204-MRMOED            TO WS-2120-CMOED.
+ |
+ |         PERFORM 2120-OBTEM-CONTA
+ |            THRU 2120-OBTEM-CONTA-EXIT.
+ |
+ |         IF DB2-OK
+ |            MOVE WS-2120-BALC            TO WS-2120-BALCX
+ |            STRING WS-2120-BALCX
+ |                   '-'
+ |                   WS-2120-CCB           DELIMITED BY SIZE
+ |             INTO SWCV5581-D-CCONTA(SWCV5581-INDICE)
+ |         END-IF.
+ |
+ |     2051-TRATA-OCCURS-CONTA-EXIT.
+ |         EXIT.
+PML
+      *--------------------------------------------------------------
+      *                     2070-CLOSE
+      *--------------------------------------------------------------
+       2070-CLOSE.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2070-CLOSE' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EVALUATE TRUE
+               WHEN SW-CURSOR-1
+                    EXEC SQL
+                        CLOSE CURSWT01
+                    END-EXEC
+           END-EVALUATE.
+
+       2079-CLOSE-EXIT.
+           EXIT.
+
+PML   *--------------------------------------------------------------
+ |    *            2120-OBTEM-CONTA
+ |    *--------------------------------------------------------------
+ |     2120-OBTEM-CONTA.
+ |
+ |         IF VIAL0001-DEBUG-SIM
+ |            MOVE '2120-OBTEM-CONTA'      TO VIAL0015-CALLER-ID
+ |            PERFORM VIAP0016-TRATA-DEBUG
+ |               THRU VIAP0016-TRATA-DEBUG-EXIT
+ |         END-IF.
+ |
+ |         EXEC SQL
+ |            SELECT NCCCBALC
+ |                 , NCCCCCB
+ |              INTO :WS-2120-BALC
+ |                 , :WS-2120-CCB
+ |              FROM NCCCBCOR
+ |             WHERE NCCCCBAN   =  :WS-2120-CBAN
+ |               AND NCCCCSPAI  =  :WS-2120-CSPAI
+ |               AND NCCCMOED   =  :WS-2120-CMOED
+ |         END-EXEC.
+ |
+ |    *    MOVE CON-NCCCBCOR               TO VIAL0002-TABLE-NAME.
+ |    *
+ |         PERFORM 9020-DB2CHECK
+ |            THRU 9029-DB2CHECK-EXIT.
+ |
+ |     2120-OBTEM-CONTA-EXIT.
+ |         EXIT.
+PML
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF SWCV5580-NMAXLIST EQUAL ZEROES
+              MOVE VIAL0001-CAPLIC         TO ARCL0039-CAPLIC
+              MOVE VIAL0001-COPCAO         TO ARCL0039-COPCAO
+              PERFORM ARCR0039-NMAXLIST
+                 THRU ARCR0039-NMAXLIST-EXIT
+
+              IF ETCL0002-ABEND-DB2
+                 MOVE ETCL0002-TABLE-NAME  TO VIAL0002-TABLE-NAME
+                 MOVE ETCL0002-SQLCA       TO VIAL0002-SQLCA
+              END-IF
+
+              MOVE ARCL0039-NMAXLIST       TO SWCV5581-NMAXLIST
+           ELSE
+              MOVE SWCV5580-NMAXLIST       TO SWCV5581-NMAXLIST
+           END-IF.
+      * valida se o download excel eh possivel
+      *    SUBTRACT 1 from SWCV5581-PAGINA-CHEIA GIVING WS-MAX-RECORDS
+           SUBTRACT 1 from SWCV5581-INDICE-INVERSO
+                                                 GIVING WS-MAX-RECORDS
+
+           MULTIPLY WS-MAX-RECORDS  BY SWCV5581-NMAXLIST
+                    GIVING WS-MAX-RECORDS
+
+           ADD 1 TO WS-MAX-RECORDS
+
+           IF WS-COUNT GREATER THAN WS-MAX-RECORDS
+              MOVE 'N'                     TO SWCV5581-IEXCEL
+           ELSE
+              MOVE 'S'                     TO SWCV5581-IEXCEL
+           END-IF.
+      *
+           COMPUTE WS-NPAG
+                 = WS-NPAGINA   / WS-PAGESIZE + 1.
+           COMPUTE SWCV5581-NPAG
+                 = WS-NPAGINA   / WS-PAGESIZE + 1.
+           COMPUTE WS-DIFF
+                 = WS-NPAG - SWCV5581-NPAG.
+           IF WS-DIFF EQUAL ZERO
+              COMPUTE SWCV5581-NPAG = SWCV5581-NPAG - 1
+           END-IF.
+      *
+           COMPUTE WS-NTOTPAG
+                 = WS-NTPAGINAS / WS-PAGESIZE + 1
+           COMPUTE SWCV5581-NTOTPAG
+                 = WS-NTPAGINAS / WS-PAGESIZE + 1
+           COMPUTE WS-DIFF
+                 = WS-NTOTPAG - SWCV5581-NTOTPAG.
+           IF WS-DIFF EQUAL ZERO
+              COMPUTE SWCV5581-NTOTPAG = SWCV5581-NTOTPAG - 1
+           END-IF.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+      *       MOVE 'WS-COUNT           ' TO VIAL0015-CAMPO-NM (1)
+      *       MOVE  WS-COUNT             TO VIAL0015-CAMPO-VLR(1)
+      *       MOVE 'WS-MAX-RECORDS     ' TO VIAL0015-CAMPO-NM (2)
+      *       MOVE  WS-MAX-RECORDS       TO VIAL0015-CAMPO-VLR(2)
+      *       MOVE 'SWCV5581-IEXCEL    ' TO VIAL0015-CAMPO-NM (3)
+      *       MOVE  SWCV5581-IEXCEL      TO VIAL0015-CAMPO-VLR(3)
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV5581-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5581-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV5581-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+           MOVE SWCV5581-INDICE            TO VIAL0001-OCORRENCIAS.
+      *
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                    4000-APURAR-PAGINA
+      *--------------------------------------------------------------
+       4000-APURAR-PAGINA.
+      *
+           EXEC SQL
+              SELECT COUNT(*)
+                INTO :WS-NPAGINA
+                FROM SWVT7204
+               WHERE MRBALC      BETWEEN :WS-MRBALC-MIN
+                                     AND :WS-MRBALC-MAX
+                 AND MRCCB       BETWEEN :WS-MRCCB-MIN
+                                     AND :WS-MRCCB-MAX
+                 AND NCCCCBAN    BETWEEN :WS-NCCCCBAN-MIN
+                                     AND :WS-NCCCCBAN-MAX
+                 AND NCCCCSPAI   BETWEEN :WS-NCCCCSPAI-MIN
+                                     AND :WS-NCCCCSPAI-MAX
+                 AND MRMOED      BETWEEN :WS-MRMOED-MIN
+                                     AND :WS-MRMOED-MAX
+                 AND CCODEST     IN ( :WS-CCODEST1
+                                    , :WS-CCODEST2
+                                    , :WS-CCODEST3 )
+                 AND MRDATL      BETWEEN :WS-MRDATL-MIN
+                                     AND :WS-MRDATL-MAX
+                 AND MRDMOV      LIKE :WS-MRDMOV
+                 AND CINTERV     BETWEEN :WS-CINTERV-MIN
+                                     AND :WS-CINTERV-MAX
+                 AND CUSERIDINT  BETWEEN :WS-CUSERIDINT-MIN
+                                     AND :WS-CUSERIDINT-MAX
+PML              AND CNATREC     BETWEEN :WS-CNATREC-MIN
+PML                                  AND :WS-CNATREC-MAX
+                 AND (     MRDATL      <  :SWCD7204-MRDATL
+
+                       OR  MRDATL      =  :SWCD7204-MRDATL
+                       AND MRNOPR      <  :SWCD7204-MRNOPR
+
+                       OR  MRDATL      =  :SWCD7204-MRDATL
+                       AND MRNOPR      =  :SWCD7204-MRNOPR
+                       AND MRNORD      <= :SWCD7204-MRNORD
+                 )
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 ADD  +1                   TO WS-NPAGINA
+              ELSE
+                 MOVE 1                    TO WS-NPAGINA
+              END-IF
+           ELSE
+              MOVE ZEROES                  TO WS-NPAGINA
+           END-IF.
+      *
+       4099-APURAR-PAGINA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                    4100-APURAR-TOT-PAGINAS
+      *--------------------------------------------------------------
+       4100-APURAR-TOT-PAGINAS.
+      *
+           EXEC SQL
+              SELECT COUNT(*)
+                INTO :WS-NTPAGINAS
+                FROM SWVT7204
+               WHERE MRBALC      BETWEEN :WS-MRBALC-MIN
+                                     AND :WS-MRBALC-MAX
+                 AND MRCCB       BETWEEN :WS-MRCCB-MIN
+                                     AND :WS-MRCCB-MAX
+                 AND NCCCCBAN    BETWEEN :WS-NCCCCBAN-MIN
+                                     AND :WS-NCCCCBAN-MAX
+                 AND NCCCCSPAI   BETWEEN :WS-NCCCCSPAI-MIN
+                                     AND :WS-NCCCCSPAI-MAX
+                 AND MRMOED      BETWEEN :WS-MRMOED-MIN
+                                     AND :WS-MRMOED-MAX
+                 AND CCODEST     IN ( :WS-CCODEST1
+                                    , :WS-CCODEST2
+                                    , :WS-CCODEST3 )
+                 AND MRDATL      BETWEEN :WS-MRDATL-MIN
+                                     AND :WS-MRDATL-MAX
+                 AND MRDMOV      LIKE :WS-MRDMOV
+                 AND CINTERV     BETWEEN :WS-CINTERV-MIN
+                                     AND :WS-CINTERV-MAX
+                 AND CUSERIDINT  BETWEEN :WS-CUSERIDINT-MIN
+                                     AND :WS-CUSERIDINT-MAX
+PML              AND CNATREC     BETWEEN :WS-CNATREC-MIN
+PML                                  AND :WS-CNATREC-MAX
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 ADD  +1                   TO WS-NTPAGINAS
+              ELSE
+                 MOVE 1                    TO WS-NTPAGINAS
+              END-IF
+           ELSE
+              MOVE ZEROES                  TO WS-NTPAGINAS
+           END-IF.
+      *
+       4199-APURAR-TOT-PAGINAS-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *                    5000-OBTER-DOC
+      *--------------------------------------------------------------
+       5000-OBTER-DOC.
+      *
+           MOVE SWCV5581-D-CCHAVE(SWCV5581-INDICE)
+                                           TO ARCD4102-CCHAVE.
+      *
+           EXEC SQL
+                SELECT 1
+                  INTO :WS-DOC-EXIST
+                  FROM ARVT4102
+                 WHERE CCHAVE  = :ARCD4102-CCHAVE
+                 FETCH FIRST ROW ONLY
+           END-EXEC.
+      *
+           MOVE CON-ARVT4102               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE CON-SIM       TO SWCV5581-D-CDOC(SWCV5581-INDICE)
+              ELSE
+                 IF DB2-NOTFND
+                    MOVE CON-NAO    TO SWCV5581-D-CDOC(SWCV5581-INDICE)
+                 ELSE
+                    MOVE CON-NAO    TO SWCV5581-D-CDOC(SWCV5581-INDICE)
+                 END-IF
+              END-IF
+           ELSE
+              MOVE CON-NAO          TO SWCV5581-D-CDOC(SWCV5581-INDICE)
+           END-IF.
+      *
+       5099-OBTER-DOC-EXIT.
+           EXIT.
+      *
+AG    *--------------------------------------------------------------
+|     *                    5100-OBTER-MSG
+|     *--------------------------------------------------------------
+|      5100-OBTER-MSG.
+|     *
+|          MOVE SWCV5581-D-CCHAVE(SWCV5581-INDICE)
+|                                          TO SWCD8101-CCODMSG.
+|     *
+|          EXEC SQL
+|               SELECT 1
+|                 INTO :WS-MSG-EXIST
+|                 FROM SWVT8101
+|                WHERE CCODMSG = :SWCD8101-CCODMSG
+|                FETCH FIRST ROW ONLY
+|          END-EXEC.
+|     *
+|          MOVE CON-SWVT8101               TO VIAL0002-TABLE-NAME.
+|
+|          PERFORM 9020-DB2CHECK
+|             THRU 9029-DB2CHECK-EXIT.
+|
+|          IF VIAL0002-SEM-ERROS
+|             IF DB2-OK
+|                MOVE CON-SIM       TO SWCV5581-D-CMSG(SWCV5581-INDICE)
+|             ELSE
+|                IF DB2-NOTFND
+|                   MOVE CON-NAO    TO SWCV5581-D-CMSG(SWCV5581-INDICE)
+|                ELSE
+|                   MOVE CON-NAO    TO SWCV5581-D-CMSG(SWCV5581-INDICE)
+|                END-IF
+|             END-IF
+|          ELSE
+|             MOVE CON-NAO          TO SWCV5581-D-CMSG(SWCV5581-INDICE)
+|          END-IF.
+|     *
+|      5199-OBTER-MSG-EXIT.
+|          EXIT.
+AG    *
+      *--------------------------------------------------------------
+      *                    5200-OBTER-DESCRITIVO
+      *--------------------------------------------------------------
+       5200-OBTER-DESCRITIVO.
+      *
+           MOVE SWCD7204-CCODMSG           TO SWCD5807-CCODMSG.
+           MOVE SWCD7204-DATVAL            TO SWCD5807-DATVAL.
+           MOVE SWCD7204-COSN              TO SWCD5807-COSN.
+           MOVE SWCD7204-COSNC             TO SWCD5807-COSNC.
+      *
+           EXEC SQL
+                SELECT GDESC
+                  INTO :SWCD5807-GDESC
+                  FROM SWVT5807
+                 WHERE CCODMSG  =  :SWCD5807-CCODMSG
+                   AND DATVAL   =  :SWCD5807-DATVAL
+                   AND COSN     =  :SWCD5807-COSN
+                   AND COSNC    =  :SWCD5807-COSNC
+                 FETCH FIRST ROW ONLY
+           END-EXEC.
+      *
+           MOVE CON-SWVT5807               TO VIAL0002-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              IF DB2-OK
+                 MOVE SWCD5807-GDESC
+                                    TO SWCV5581-D-GDESC(SWCV5581-INDICE)
+              END-IF
+           END-IF.
+      *
+       5299-OBTER-DESCRITIVO-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0015.
+           COPY ARCR0039.
+           COPY AQCP0005.

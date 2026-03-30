@@ -1,0 +1,274 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI58901.
+      ******************************************************************
+      *     PROGRAMA SWI58901.
+      *
+      *      Movimentos/Correspondente
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI58901         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV5890.
+       COPY SWCV5891.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY TGCL1000.
+       COPY TGCL2000.
+       COPY TGCK0002.
+      *
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 WS-PROGNAME           PIC X(08) VALUE 'SWI58901'.
+           05 CON-CTABELA-CSEND     PIC X(05) VALUE 'BM004'.
+           05 CON-CTABELA-CCONTA    PIC X(05) VALUE 'BM025'.
+           05 CON-CTABELA-CMOED     PIC X(05) VALUE 'BM028'.
+PML   *    05 CON-CTABELA-IRECONC   PIC X(05) VALUE 'SW005'.
+PML        05 CON-CTABELA-CCODEST   PIC X(05) VALUE 'SW082'.
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-CTABELA                   PIC X(05) VALUE SPACES.
+           05 WS-CCOD                      PIC X(40) VALUE SPACES.
+           05 WS-C2COD                     PIC X(40) VALUE SPACES.
+           05 WS-OCORRENCIAS               PIC 9(02) VALUE ZEROS.
+           05 WS-CINTERV                   PIC X(12) VALUE SPACES.
+      *--------------------------------------------------------------
+       01  FILLER                        PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI58901         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+
+      *    IF VIAL0001-DEBUG-SIM
+      *       PERFORM VIAP0016-TRATA-DEBUG
+      *          THRU VIAP0016-TRATA-DEBUG-EXIT
+      *    END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV5890-MSG.
+           MOVE VIAL0001-MENSAGEM-OUTPUT   TO SWCV5891-MSG.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+
+      *    IF VIAL0001-DEBUG-SIM
+      *       PERFORM VIAP0016-TRATA-DEBUG
+      *          THRU VIAP0016-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2100-DESC-CAMPOS
+                 THRU 2100-DESC-CAMPOS-EXIT
+           END-IF.
+
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                   2100-DESC-CAMPOS
+      *--------------------------------------------------------------
+       2100-DESC-CAMPOS.
+      *
+           MOVE '2100-DESC-CAMPOS' TO VIAL0015-CALLER-ID
+
+      *    IF VIAL0001-DEBUG-SIM
+      *       PERFORM VIAP0016-TRATA-DEBUG
+      *          THRU VIAP0016-TRATA-DEBUG-EXIT
+      *    END-IF.
+      *
+
+           IF  VIAL0002-SEM-ERROS
+           AND SWCV5891-XDESCCSEND EQUAL SPACES
+           AND SWCV5891-CSEND NOT EQUAL SPACES
+              MOVE CON-CTABELA-CSEND
+                TO WS-CTABELA
+              MOVE SWCV5891-CSEND
+                TO WS-CCOD
+              MOVE SPACES
+                TO WS-C2COD
+              PERFORM 2300-VAL-TAB-OUTRA
+                 THRU 2300-VAL-TAB-OUTRA-EXIT
+              IF VIAL0002-SEM-ERROS
+                 MOVE TGCL1000-GDESC
+                   TO SWCV5891-XDESCCSEND
+              END-IF
+           END-IF.
+
+
+           IF  VIAL0002-SEM-ERROS
+           AND SWCV5891-XDESCCCONTA EQUAL SPACES
+           AND SWCV5891-CCONTA NOT EQUAL SPACES
+              MOVE CON-CTABELA-CCONTA
+                TO WS-CTABELA
+              MOVE SWCV5891-CCONTA
+                TO WS-CCOD
+              MOVE SWCV5891-CSEND
+                TO WS-C2COD
+              PERFORM 2300-VAL-TAB-OUTRA
+                 THRU 2300-VAL-TAB-OUTRA-EXIT
+              IF VIAL0002-SEM-ERROS
+                 MOVE TGCL1000-GDESC
+                   TO SWCV5891-XDESCCCONTA
+              END-IF
+           END-IF.
+
+
+           IF  VIAL0002-SEM-ERROS
+           AND SWCV5891-XDESCCMOED EQUAL SPACES
+           AND SWCV5891-CMOED NOT EQUAL SPACES
+              MOVE CON-CTABELA-CMOED
+                TO WS-CTABELA
+              MOVE SWCV5891-CMOED
+                TO WS-CCOD
+              MOVE SWCV5891-CCONTA
+                TO WS-C2COD
+              PERFORM 2300-VAL-TAB-OUTRA
+                 THRU 2300-VAL-TAB-OUTRA-EXIT
+              IF VIAL0002-SEM-ERROS
+                 MOVE TGCL1000-GDESC
+                   TO SWCV5891-XDESCCMOED
+              END-IF
+           END-IF.
+
+           IF  VIAL0002-SEM-ERROS
+           AND SWCV5891-XDESCCCODEST EQUAL SPACES
+           AND SWCV5891-CCODEST NOT EQUAL SPACES
+              MOVE CON-CTABELA-CCODEST
+                TO WS-CTABELA
+              MOVE SWCV5891-CCODEST
+                TO WS-CCOD
+              MOVE SPACES
+                TO WS-C2COD
+              PERFORM 2200-VAL-TAB-ART05
+                 THRU 2200-VAL-TAB-ART05-EXIT
+              IF VIAL0002-SEM-ERROS
+                 MOVE TGCL2000-GDESC
+                   TO SWCV5891-XDESCCCODEST
+              END-IF
+           END-IF.
+
+      *DESCODIFICA OCORRENCIAS
+
+
+       2100-DESC-CAMPOS-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2200-VAL-TAB-ART05
+      *--------------------------------------------------------------
+       2200-VAL-TAB-ART05.
+      *
+           INITIALIZE TGCL2000-MSG       REPLACING  NUMERIC BY ZEROES
+                                               ALPHANUMERIC BY SPACES.
+
+           MOVE WS-CTABELA                TO TGCL2000-CTABELA
+           MOVE WS-CCOD                   TO TGCL2000-CCOD
+           MOVE WS-C2COD                  TO TGCL2000-C2COD
+
+           PERFORM CALL-TGCP2000
+              THRU CALL-TGCP2000-EXIT.
+
+       2200-VAL-TAB-ART05-EXIT.
+           EXIT.
+
+      *--------------------------------------------------------------
+      *                   2300-VAL-TAB-OUTRA
+      *--------------------------------------------------------------
+       2300-VAL-TAB-OUTRA.
+      *
+
+           INITIALIZE TGCL1000-MSG       REPLACING  NUMERIC BY ZEROES
+                                               ALPHANUMERIC BY SPACES.
+
+           MOVE WS-CTABELA                TO TGCL1000-CTABELA
+           MOVE WS-CCOD                   TO TGCL1000-CCOD
+           MOVE WS-C2COD                  TO TGCL1000-C2COD
+
+           PERFORM CALL-TGCP1000
+              THRU CALL-TGCP1000-EXIT.
+
+       2300-VAL-TAB-OUTRA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+
+      *    IF VIAL0001-DEBUG-SIM
+      *       MOVE 'SWCV5891-MSG' TO VIAL0015-CAMPO-NM(1)
+      *       MOVE  SWCV5891-MSG  TO VIAL0015-CAMPO-VLR(1)
+      *       PERFORM VIAP0016-TRATA-DEBUG
+      *          THRU VIAP0016-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           MOVE SWCV5891-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV5890-MSG               TO VIAL0001-MENSAGEM-INPUT.
+
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY TGCP1000.
+           COPY TGCP2000.
+

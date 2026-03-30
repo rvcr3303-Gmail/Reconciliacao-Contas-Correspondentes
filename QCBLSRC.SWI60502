@@ -1,0 +1,299 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.    SWI60502.
+      ******************************************************************
+      *     PROGRAMA SWI60502.                                         *
+      *                                                                *
+      *     Criar Nova Reconciliação                                   *
+      ******************************************************************
+      *     LOG ALTERACOES:                                            *
+      *   USER     / DATA     /   REFERENCIA / OBSERVACOES             *
+      *                                                                *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      *
+       DATA DIVISION.
+      *--------------------------------------------------------------
+       WORKING-STORAGE SECTION.
+      *--------------------------------------------------------------
+       01  FILLER                          PIC X(40) VALUE
+           'INICIO WORKING-STORAGE SWI60502         '.
+      *--------------------------------------------------------------
+      *            DECLARACOES DE DB2
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE SWCD7204 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            MENSAGEM DE INPUT E  OUTPUT
+      *--------------------------------------------------------------
+       COPY SWCV6050.
+       COPY SWCV6051.
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+       COPY VIAL0015.
+       COPY VIAL0030.
+       COPY VIAW0005.
+       COPY VIAK0001.
+       COPY VIAK0002.
+       COPY SWCK0001.
+       COPY SWCK0002.
+      *
+       COPY ARCL0039.
+       COPY ETCL0002.
+       COPY AQCW0005.
+      *
+      *--------------------------------------------------------------
+      *            AREAS DE TRABALHO
+      *--------------------------------------------------------------
+
+      *--------------------------------------------------------------
+      *            SWITCH
+      *--------------------------------------------------------------
+      *01  SW-SWITCH.
+      *
+      *--------------------------------------------------------------
+      *            CONSTANTES
+      *--------------------------------------------------------------
+       01  WS-CONSTANTES.
+           05 CON-SWVT8201                PIC  X(08) VALUE 'SWVT8201'.
+      *
+      *--------------------------------------------------------------
+      *            VARIAVEIS
+      *--------------------------------------------------------------
+       01  WS-VARIAVEIS.
+           05 WS-IDRECONC-AUX          PIC 9(17).
+           05 WS-IDRECONC              PIC X(17).
+           05 FILLER REDEFINES WS-IDRECONC.
+              10 WS-IDRECONC-DATA      PIC X(06).
+              10 WS-IDRECONC-SEQ       PIC 9(11).
+
+           05 WS-DTRECONC              PIC 9(08) VALUE ZEROS.
+           05 FILLER REDEFINES WS-DTRECONC.
+              10 FILLER                PIC X(02).
+              10 WS-DTRECONC-ANT       PIC X(06).
+      *
+      *--------------------------------------------------------------
+      *            PROGRAM CONTROL
+      *--------------------------------------------------------------
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                 PIC  X(08) VALUE 'SWI60502'.
+      *--------------------------------------------------------------
+      *              DECLARACOES DE CURSORES DB2                     *
+      *--------------------------------------------------------------
+      *
+      *--------------------------------------------------------------
+       01  FILLER                         PIC X(40) VALUE
+           'FIM DA WORKING-STORAGE SWI60502         '.
+      *--------------------------------------------------------------
+       LINKAGE SECTION.
+      *--------------------------------------------------------------
+      *
+       COPY VIAL0004.
+      *
+            EXEC SQL INCLUDE VIAP0009 END-EXEC.
+      *
+      *--------------------------------------------------------------
+      *            0000-MAINLINE
+      *--------------------------------------------------------------
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT.
+
+           PERFORM 3000-FINAL-PROGRAMA
+              THRU 3099-FINAL-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           COPY VIAP0004.
+      *--------------------------------------------------------------
+      *            1000-INICIO-PROGRAMA
+      *--------------------------------------------------------------
+       1000-INICIO-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '1000-INICIO-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE VIAL0001-MENSAGEM-INPUT    TO SWCV6050-MSG.
+           MOVE SWCV6050-ADE               TO SWCV6051-ADE.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *            2000-PROC-PROGRAMA
+      *--------------------------------------------------------------
+       2000-PROC-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 2100-VALIDACOES
+              THRU 2100-VALIDACOES-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              PERFORM 2200-APRESENTA-DADOS
+                 THRU 2200-APRESENTA-DADOS-EXIT
+           END-IF.
+      *
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                   2100-VALIDACOES
+      *--------------------------------------------------------------
+       2100-VALIDACOES.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2100-VALIDACOES' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           IF SWCV6050-MRNOPR EQUAL SPACES
+              AND SWCV6050-MRNORD EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO VIAL0002-IND-ERROS
+              MOVE SWCK0002-STATUS-ACTIVO  TO SWCV6051-MRNOPR-S
+              MOVE SWCK0001-COSN-N-EXISTS  TO SWCV6051-MRNOPR-MSG
+              MOVE SWCK0002-CAPLIC         TO SWCV6051-MRNOPR-CAPLIC
+           END-IF.
+      *
+       2100-VALIDACOES-EXIT.
+           EXIT.
+      *--------------------------------------------------------------
+      *                     2200-APRESENTA-DADOS
+      *--------------------------------------------------------------
+       2200-APRESENTA-DADOS.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '2200-APRESENTA-DADOS'  TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCV6050-MRNOPR            TO SWCV6051-MRNOPR.
+           MOVE SWCV6050-MRNORD            TO SWCV6051-MRNORD.
+      *
+           MOVE VIAL0001-DATA-PROCESSO-I   TO WS-DTRECONC
+      *
+           PERFORM 2210-SOMA-SEQ-RECONC
+              THRU 2210-SOMA-SEQ-RECONC-EXIT.
+      *
+           IF VIAL0002-SEM-ERROS
+              MOVE VIAL0030-NSEQUEN-1      TO WS-IDRECONC
+           END-IF.
+      *
+           EVALUATE TRUE
+              WHEN VIAL0002-SEM-ERROS
+                 CONTINUE
+              WHEN OTHER
+                 COMPUTE WS-IDRECONC-AUX    = WS-DTRECONC
+                                            * 10000000
+                                            + 1
+                 MOVE WS-IDRECONC-AUX      TO WS-IDRECONC
+                 PERFORM 2220-FORCA-SEQ-RECONC
+                    THRU 2220-FORCA-SEQ-RECONC-EXIT
+           END-EVALUATE.
+      *
+           MOVE WS-IDRECONC                TO SWCV6051-IDRECON
+                                              SWCV6051-IDRECONC.
+           MOVE VIAL0001-DATA-PROCESSO-I   TO SWCV6051-DATAOPE.
+      *
+       2200-APRESENTA-DADOS-EXIT.
+           EXIT.
+      *****************************************************************
+       2210-SOMA-SEQ-RECONC.
+      *****************************************************************
+      *
+           MOVE '2210-SOMA-SEQ-RECONC'     TO VIAL0015-CALLER-ID.
+      *
+           IF VIAL0001-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCK0002-CSEQ-ID-RECONC    TO VIAL0030-CSEQUEN.
+           SET  VIAL0030-SOMA-1            TO TRUE.
+      *
+           CALL VIAL0030-ROTINA-SEQ
+              USING ETCL0002-COMMAREA
+                    VIAL0030-COMMAREA
+           END-CALL.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SEM-ERROS
+                 CONTINUE
+              WHEN OTHER
+                 SET VIAL0002-ABEND-DB2       TO TRUE
+           END-EVALUATE.
+      *
+       2210-SOMA-SEQ-RECONC-EXIT.
+           EXIT.
+      *
+      *****************************************************************
+       2220-FORCA-SEQ-RECONC.
+      *****************************************************************
+      *
+           MOVE '2220-FORCA-SEQ-RECONC '   TO VIAL0015-CALLER-ID.
+      *
+           IF VIAL0001-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCK0002-CSEQ-ID-RECONC    TO VIAL0030-CSEQUEN.
+           SET  VIAL0030-FORCA-VALOR       TO TRUE.
+      *
+           MOVE WS-IDRECONC                TO VIAL0030-VALOR-ACUM.
+      *
+           CALL VIAL0030-ROTINA-SEQ
+              USING ETCL0002-COMMAREA
+                    VIAL0030-COMMAREA
+           END-CALL.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SEM-ERROS
+                 CONTINUE
+              WHEN OTHER
+                 SET VIAL0002-ABEND-DB2       TO TRUE
+           END-EVALUATE.
+      *
+      *
+       2220-FORCA-SEQ-RECONC-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+      *            3000-FINAL-PROGRAMA
+      *--------------------------------------------------------------
+       3000-FINAL-PROGRAMA.
+      *
+           IF VIAL0001-DEBUG-SIM
+              MOVE '3000-FINAL-PROGRAMA' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0016-TRATA-DEBUG
+                 THRU VIAP0016-TRATA-DEBUG-EXIT
+           END-IF.
+
+           MOVE SWCV6051-MSG               TO VIAL0001-MENSAGEM-OUTPUT.
+           MOVE SWCV6051-LENGTH            TO VIAL0001-LENGTH-MSG.
+           MOVE SWCV6051-NR-CAMPOS         TO VIAL0001-NR-CAMPOS.
+      *
+       3099-FINAL-PROGRAMA-EXIT.
+           EXIT.
+      *
+      *--------------------------------------------------------------
+           EXEC SQL INCLUDE VIAP0003 END-EXEC.
+      *==============================================================
+           COPY VIAP0016.
+           COPY VIAP0015.
+           COPY ARCR0039.
+           COPY AQCP0005.

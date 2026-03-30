@@ -1,0 +1,928 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWB4015.
+      ******************************************************************
+      *                                                                *
+      *                      - MENSAGENS SWIFT -                       *
+      *                                                                *
+      ******************************************************************
+      * Formatação de Chaves de movimentos (Ctas Corresp)              *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+           CLASS NUMER                '0' THRU '9'.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+      ******************************************************************
+      *                      INPUT-OUTPUT SECTION                      *
+      ******************************************************************
+       FILE-CONTROL.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       FILE SECTION.
+      ******************************************************************
+      *                          FILE SECTION                          *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+       01  FILLER              PIC X(40) VALUE 'INICIO WORKING-STORAGE'.
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(10) VALUE 'SWB4015'.
+      *
+      ******************************************************************
+      * TABELAS
+      ******************************************************************
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+           EXEC SQL INCLUDE SWCD7204  END-EXEC.
+           EXEC SQL INCLUDE SWCDPARAM END-EXEC.
+      *
+      ******************************************************************
+      * APIS
+      ******************************************************************
+      *
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 CON-SWVT7204                 PIC  X(10) VALUE 'SWVT7204'.
+           05 CON-SWM04015                 PIC  X(10) VALUE 'SWM04015'.
+           05 CON-SWPARAM                  PIC  X(10) VALUE 'SWPARAM'.
+      *
+           05 CON-BMOC                     PIC  X(04) VALUE 'BMOC'.
+           05 CON-DLIMITE                  PIC  9(08) VALUE 20190424.
+           05 CON-PRPARAM                  PIC  X(10) VALUE
+                                                        'EXESWB4015'.
+           05 CON-RECUPERA                 PIC  X(01) VALUE 'R'.
+           05 CON-PD                       PIC  X(02) VALUE 'PD'.
+
+      *    05 CON-STF                      PIC  X(04) VALUE 'STF'.
+      *    05 CON-MTR                      PIC  X(04) VALUE 'MTR'.
+      *
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01  WS-VARIAVEIS.
+           05 WS-PARAGRAPH-NAME            PIC  X(30) VALUE SPACES.
+           05 WS-CODIGO                    PIC  X(03) VALUE SPACES.
+           05 WS-X                         PIC S9(04) COMP VALUE 0.
+           05 WS-DATE-START                PIC  X(10) VALUE SPACES.
+      *
+      *    05 WS-STR1                      PIC  X(200).
+      *    05 WS-STR2                      PIC  X(200).
+      *    05 WS-STR3                      PIC  X(200).
+      *
+      *    05 WS-POS                       PIC S9(03) COMP-3.
+      *    05 WS-LEN                       PIC S9(03) COMP-3.
+      *
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  WS-SWITCHES.
+           05 SW-SWT72                     PIC S9(04) COMP VALUE  0.
+              88 SW-SWT72-OK                               VALUE  0.
+              88 SW-SWT72-END                              VALUE -1.
+      *
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+           COPY AQCL0001.
+           COPY AQCK0001.
+           COPY SWCK0002.
+           COPY SWCK0003.
+           COPY SWCL5000.
+           COPY SWCL4015.
+           COPY SWCW4015.
+           COPY VIAW0050.
+           COPY VIAW0030.
+           COPY VIAL0015.
+           COPY BRCL1020.
+           COPY AQCW0109.
+      *    COPY AQCW0009.
+           COPY AQCW0011.
+           COPY SXCL1000.
+           COPY ETCL9221.
+      *
+      ******************************************************************
+      * DB2
+      ******************************************************************
+      *
+           EXEC SQL
+              DECLARE CRS_SWT72    CURSOR WITH HOLD FOR
+                 SELECT MRBALC
+                      , MRCCB
+                      , NCCCCBAN
+                      , NCCCCSPAI
+                      , NCCCCCONTA
+                      , MRTDOC
+                      , MRCOPE
+                      , MRNDOC
+                      , MRVLR
+                      , MRSALD
+                      , MRUSER
+                      , MRDTSIS
+                      , MRHORA
+                      , MRDATL
+                      , MRDRCX
+                      , MRETRB
+                      , MRBALM
+                      , MROBS
+                      , MRNOPR
+                      , MRNOPS
+                      , MRNORD
+                      , MREANL
+                      , MRDTCB
+                      , MREXCT
+                      , MRMOED
+                      , MRDMOV
+                      , GBMRINFC
+                      , CCHAVE
+                      , IRECONC
+                      , CCODMSG
+                      , DATVAL
+                      , COSN
+                      , COSNC
+                      , CREF
+                      , CREFOPR
+                      , CTIPREC
+                      , GOBS
+                      , CUSERID
+                      , HTIMEST
+                   FROM SWVT7204
+                  WHERE MRDATL   >= :SWCD7204-MRDATL
+                    AND CCODEST  =  :SWCD7204-CCODEST
+                    AND CCHAVE   =  :SWCD7204-CCHAVE
+           END-EXEC.
+      *
+      ******************************************************************
+       01  FILLER                          PIC X(40)
+                                         VALUE 'FIM DA WORKING-STORAGE'.
+      *
+      ******************************************************************
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+       LINKAGE SECTION.
+           COPY AQCW0009.
+
+      ******************************************************************
+       PROCEDURE DIVISION USING AQCW0009-DATA.
+
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1099-INICIO-PROGRAMA-EXIT.
+      *
+           PERFORM 2000-PROC-PROGRAMA
+              THRU 2099-PROC-PROGRAMA-EXIT
+             UNTIL SW-SWT72-END
+                OR NOT AQCW0009-SEM-ERROS.
+      *
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3099-FIM-PROGRAMA-EXIT.
+      *
+       0099-MAINLINE-EXIT.
+           GOBACK.
+      *
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '1000-INICIO-PROGRAMA'     TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE WS-VARIAVEIS         REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+      *
+           SET  AQCW0009-RCODE-OK          TO TRUE.
+      *
+           PERFORM AQCP0100-OBT-DADOS-ARQ
+              THRU AQCP0100-OBT-DADOS-ARQ-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-INICIO
+                 THRU AQCP0100-REG-INICIO-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 1100-OBTER-EXECUCAO
+                 THRU 1199-OBTER-EXECUCAO-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 4100-ABRIR-SWT72
+                 THRU 4199-ABRIR-SWT72-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 4200-LER-SWT72
+                 THRU 4299-LER-SWT72-EXIT
+           END-IF.
+      *
+       1099-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       1100-OBTER-EXECUCAO.
+      ******************************************************************
+      *
+           MOVE '1100-OBTER-EXECUCAO'      TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE AQCW0100-AT-DTOP           TO AQCW0005-DT98.
+           PERFORM AQCP0005-CONV-DT8INDT10
+              THRU AQCP0005-CONV-DT8INDT10-EXIT.
+           MOVE AQCW0005-DTX10             TO WS-DATE-START.
+      *
+           EXEC SQL
+              SET  :WS-DATE-START = DATE( :WS-DATE-START ) - 3 DAYS
+           END-EXEC.
+      *
+           MOVE WS-DATE-START              TO AQCW0005-DTX10.
+           PERFORM AQCP0005-CONV-DT10INDT8
+              THRU AQCP0005-CONV-DT10INDT8-EXIT.
+           MOVE AQCW0005-DT98              TO SWCD7204-MRDATL.
+      *
+           MOVE SWCK0002-CAPLIC            TO SWPARAM-PRCODPAR.
+           MOVE CON-PRPARAM                TO SWPARAM-PRPARAM.
+      *
+           EXEC SQL
+              SELECT PRVALALF
+                   , PRVALDAT
+                INTO :SWPARAM-PRVALALF
+                   , :SWPARAM-PRVALDAT
+                FROM SWPARAM
+               WHERE PRCODPAR  =  :SWPARAM-PRCODPAR
+                 AND PRPARAM   =  :SWPARAM-PRPARAM
+           END-EXEC.
+      *
+           MOVE CON-SWPARAM               TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-NOTFND
+                 CONTINUE
+              WHEN AQCW0011-OK
+                 IF SWPARAM-PRVALALF EQUAL CON-RECUPERA
+                    MOVE SWPARAM-PRVALDAT  TO SWCD7204-MRDATL
+                 END-IF
+              WHEN OTHER
+                 SET  AQCW0009-RCODE-APL
+                      VIAW0030-DB2-ERROR   TO TRUE
+                 MOVE WS-PROGNAME          TO VIAW0030-PGMNAME
+                 MOVE VIAL0015-CALLER-ID   TO VIAW0030-PARAGRAPH-NAME
+                 MOVE AQCW0011-TABLE-NAME  TO VIAW0030-TABLE-NAME
+                 MOVE AQCW0011-SQLCODE     TO VIAW0030-SQLCODE
+                 MOVE 'Erro OBTER Exec'    TO VIAW0030-DESC1
+                 PERFORM VIAP0030-ESCREVE-SPOOL
+                    THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       1199-OBTER-EXECUCAO-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '2000-PROC-PROGRAMA'       TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 5100-FORMATAR-CHAVE
+              THRU 5199-FORMATAR-CHAVE-EXIT.
+      *
+           IF  SWCD7204-CCHAVE   NOT EQUAL SPACES
+              PERFORM 5200-ACTUALIZAR-CHAVE
+                 THRU 5299-ACTUALIZAR-CHAVE-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 4200-LER-SWT72
+                 THRU 4299-LER-SWT72-EXIT
+           END-IF.
+      *
+       2099-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '3000-FIM-PROGRAMA'        TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              MOVE 'AQCW0009-RCODE'        TO VIAL0015-CAMPO-NM(1)
+              MOVE AQCW0009-RCODE          TO VIAL0015-CAMPO-VLR(1)
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 4300-FECHAR-SWT72
+              THRU 4399-FECHAR-SWT72-EXIT.
+      *
+           PERFORM AQCP0009-TRATA-RCODE
+              THRU AQCP0009-TRATA-RCODE-EXIT.
+      *
+           PERFORM AQCP0002-TRATA-SYNCPOINT
+              THRU AQCP0002-TRATA-SYNCPOINT-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-FIM
+                 THRU AQCP0100-REG-FIM-EXIT
+           END-IF.
+      *
+       3099-FIM-PROGRAMA-EXIT.
+            EXIT.
+      *
+      ******************************************************************
+       4100-ABRIR-SWT72.
+      ******************************************************************
+      *
+           MOVE '4100-ABRIR-SWT72'         TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           SET  SW-SWT72-OK                TO TRUE.
+      *
+      *    MOVE SWCK0002-NAO               TO SWCD7204-IRECONC.
+           MOVE CON-PD                     TO SWCD7204-CCODEST.
+           MOVE SPACES                     TO SWCD7204-CCHAVE.
+      *
+           EXEC SQL
+              OPEN CRS_SWT72
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204              TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           IF NOT AQCW0011-OK
+              SET  AQCW0009-RCODE-APL
+                   VIAW0030-DB2-ERROR      TO TRUE
+              MOVE WS-PROGNAME             TO VIAW0030-PGMNAME
+              MOVE VIAL0015-CALLER-ID      TO VIAW0030-PARAGRAPH-NAME
+              MOVE AQCW0011-TABLE-NAME     TO VIAW0030-TABLE-NAME
+              MOVE AQCW0011-SQLCODE        TO VIAW0030-SQLCODE
+              MOVE 'Erro OPEN Cursor'      TO VIAW0030-DESC1
+              PERFORM VIAP0030-ESCREVE-SPOOL
+                 THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-IF.
+      *
+       4199-ABRIR-SWT72-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       4200-LER-SWT72.
+      ******************************************************************
+      *
+           MOVE '4200-LER-SWT72'           TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              FETCH CRS_SWT72
+               INTO :SWCD7204-MRBALC
+                  , :SWCD7204-MRCCB
+                  , :SWCD7204-NCCCCBAN
+                  , :SWCD7204-NCCCCSPAI
+                  , :SWCD7204-NCCCCCONTA
+                  , :SWCD7204-MRTDOC
+                  , :SWCD7204-MRCOPE
+                  , :SWCD7204-MRNDOC
+                  , :SWCD7204-MRVLR
+                  , :SWCD7204-MRSALD
+                  , :SWCD7204-MRUSER
+                  , :SWCD7204-MRDTSIS
+                  , :SWCD7204-MRHORA
+                  , :SWCD7204-MRDATL
+                  , :SWCD7204-MRDRCX
+                  , :SWCD7204-MRETRB
+                  , :SWCD7204-MRBALM
+                  , :SWCD7204-MROBS
+                  , :SWCD7204-MRNOPR
+                  , :SWCD7204-MRNOPS
+                  , :SWCD7204-MRNORD
+                  , :SWCD7204-MREANL
+                  , :SWCD7204-MRDTCB
+                  , :SWCD7204-MREXCT
+                  , :SWCD7204-MRMOED
+                  , :SWCD7204-MRDMOV
+                  , :SWCD7204-GBMRINFC
+                  , :SWCD7204-CCHAVE
+                  , :SWCD7204-IRECONC
+                  , :SWCD7204-CCODMSG
+                  , :SWCD7204-DATVAL
+                  , :SWCD7204-COSN
+                  , :SWCD7204-COSNC
+                  , :SWCD7204-CREF
+                  , :SWCD7204-CREFOPR
+                  , :SWCD7204-CTIPREC
+                  , :SWCD7204-GOBS
+                  , :SWCD7204-CUSERID
+                  , :SWCD7204-HTIMEST
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN AQCW0011-OK
+                 CONTINUE
+              WHEN AQCW0011-NOTFND
+                 SET  SW-SWT72-END         TO TRUE
+              WHEN OTHER
+                SET  AQCW0009-RCODE-APL
+                     VIAW0030-DB2-ERROR    TO TRUE
+                MOVE WS-PROGNAME           TO VIAW0030-PGMNAME
+                MOVE VIAL0015-CALLER-ID    TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME   TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE      TO VIAW0030-SQLCODE
+                MOVE 'Erro FETCH Cursor'   TO VIAW0030-DESC1
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+      *
+       4299-LER-SWT72-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       4300-FECHAR-SWT72.
+      ******************************************************************
+      *
+           MOVE '4200-FECHAR-SWT72'        TO VIAL0015-CALLER-ID.
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              CLOSE CRS_SWT72
+           END-EXEC.
+      *
+       4399-FECHAR-SWT72-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       5100-FORMATAR-CHAVE.
+      ******************************************************************
+      *
+           MOVE '5100-FORMATAR-CHAVE'      TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCD7204-MRDMOV            TO SWCL4015-STRING
+           CALL CON-SWM04015  USING  SWCL4015-REC
+           MOVE SWCL4015-CCHAVE            TO SWCD7204-CCHAVE
+      *
+           PERFORM 5110-STF-MTR-MOC
+              THRU 5110-STF-MTR-MOC-EXIT.
+      *
+       5199-FORMATAR-CHAVE-EXIT.
+           EXIT.
+      *
+
+      ******************************************************************
+       5110-STF-MTR-MOC.
+      ******************************************************************
+           MOVE '5110-STF-MTR-MOC'         TO VIAL0015-CALLER-ID.
+           IF ( AQCW0100-AT-DEBUG-SIM )
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF ( SWCD7204-NCCCCBAN   = CON-BMOC     AND
+                SWCD7204-MRDATL     > CON-DLIMITE  AND
+      *         SWCD7204-MROBS(1:1) IS NUMER )
+                FUNCTION TRIM(SWCD7204-MROBS) IS NUMER )
+
+      *       MOVE SWCD7204-MRDMOV         TO WS-STR1
+      ** STF
+      *       MOVE CON-STF                 TO WS-STR2
+      *       PERFORM 5120-STRCHR1
+      *          THRU 5120-STRCHR1-EXIT
+      *       IF ( WS-POS > 0 )
+      *          MOVE SWCD7204-MROBS       TO SWCD7204-CCHAVE
+      *       END-IF
+      ** MTR
+      *       MOVE CON-MTR                 TO WS-STR2
+      *       PERFORM 5120-STRCHR1
+      *          THRU 5120-STRCHR1-EXIT
+      *       IF ( WS-POS > 0 )
+      *          MOVE SWCD7204-MROBS       TO SWCD7204-CCHAVE
+      *       END-IF
+
+              MOVE SWCD7204-MROBS          TO SWCD7204-CCHAVE
+           END-IF.
+
+       5110-STF-MTR-MOC-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *5120-STRCHR1.
+      ******************************************************************
+      * Char search in string (1-based)
+      ******************************************************************
+      *    MOVE '5120-STRCHR1'             TO VIAL0015-CALLER-ID.
+      *    IF ( AQCW0100-AT-DEBUG-SIM )
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+      *
+      *    INITIALIZE WS-POS.
+      *    UNSTRING     WS-STR1
+      *    DELIMITED BY WS-STR2(1:3)
+      *            INTO WS-STR3
+      *        COUNT IN WS-POS
+      *    END-UNSTRING.
+      *
+      *    ADD 1 TO WS-POS.
+      *
+      **not found (0)
+      *    IF WS-POS > LENGTH OF WS-STR1
+      *       MOVE 0 TO WS-POS
+      *    END-IF.
+      *
+      *5120-STRCHR1-EXIT.
+      *    EXIT.
+
+      ******************************************************************
+      *51000-FORMATAR-CHAVE-OLD.
+      ******************************************************************
+      **
+      *     MOVE '51000-FORMATAR-CHAVE-OLD'  TO VIAL0015-CALLER-ID
+      **
+      *     IF AQCW0100-AT-DEBUG-SIM
+      *        PERFORM VIAP0015-TRATA-DEBUG
+      *           THRU VIAP0015-TRATA-DEBUG-EXIT
+      *     END-IF.
+      **
+      *     EVALUATE TRUE
+      *        WHEN SWCD7204-MRDMOV( 10 : 9 ) EQUAL '/TRF-CORR'
+      *           STRING 'TRF-CO/'          DELIMITED BY SIZE
+      *              SWCD7204-MRDMOV( 1 : 9 )
+      *                                     DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'OPI'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'CDI'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'OPM'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'OPR'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'SPO'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'RDI'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'CQA'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'EMP'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN SWCD7204-MRDMOV( 1 : 3 ) EQUAL 'RD-'
+      *           STRING SWCD7204-MRDMOV    DELIMITED BY SPACE
+      *                                   INTO SWCD7204-CCHAVE
+      *        WHEN OTHER
+      *           PERFORM 6100-PROCURAR-CODIGOS
+      *              THRU 6199-PROCURAR-CODIGOS-EXIT
+      *     END-EVALUATE.
+      **
+      * 51999-FORMATAR-CHAVE-OLD-EXIT.
+      *     EXIT.
+      **
+      *******************************************************************
+       5200-ACTUALIZAR-CHAVE.
+      *******************************************************************
+      *
+           MOVE '5200-ACTUALIZAR-CHAVE'    TO VIAL0015-CALLER-ID
+      *
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-PROGNAME                TO SWCD7204-CUSERID.
+      *
+           EXEC SQL
+              UPDATE SWVT7204
+                 SET CCHAVE   =  :SWCD7204-CCHAVE
+                   , CUSERID  =  :SWCD7204-CUSERID
+                   , HTIMEST  =  CURRENT TIMESTAMP
+               WHERE MRNOPR   =  :SWCD7204-MRNOPR
+                 AND MRNORD   =  :SWCD7204-MRNORD
+           END-EXEC.
+      *
+           MOVE CON-SWVT7204               TO AQCW0011-TABLE-NAME.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT
+      *
+           EVALUATE TRUE
+              WHEN DB2-OK
+              WHEN DB2-DUPREC
+                 CONTINUE
+              WHEN OTHER
+                 MOVE WS-PROGNAME          TO AQCW0100-PGMNAME
+                 SET  AQCW0009-RCODE-APL   TO TRUE
+                 MOVE VIAL0015-CALLER-ID   TO AQCW0100-PARAGRAPH
+                 MOVE AQCW0011-TABLE-NAME  TO AQCW0100-NM-ENTIDADE
+                 MOVE AQCW0011-SQLCODE     TO AQCW0100-SQLCODE
+                 MOVE 'Erro UPDATE tabela' TO AQCW0100-DESC1
+                 PERFORM AQCP0100-ESCREVE-MSG
+                    THRU AQCP0100-ESCREVE-MSG-EXIT
+           END-EVALUATE.
+      *
+       5299-ACTUALIZAR-CHAVE-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      *6100-PROCURAR-CODIGOS.
+      ******************************************************************
+      **
+      *     MOVE '6100-PROCURAR-CODIGOS'    TO VIAL0015-CALLER-ID
+      **
+      *     IF AQCW0100-AT-DEBUG-SIM
+      *        PERFORM VIAP0015-TRATA-DEBUG
+      *           THRU VIAP0015-TRATA-DEBUG-EXIT
+      *     END-IF.
+      **
+      *     PERFORM 6130-PROCURAR-ACQUIRER
+      *        THRU 6139-PROCURAR-ACQUIRER-EXIT.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'OPI'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'OPM'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'OPR'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'EXT'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'CQA'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'CDI'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'SUB'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'GAR'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'GAB'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'SPO'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE '/TR'                   TO WS-CODIGO
+      *        PERFORM 6120-PROCURAR-SUFIXO
+      *           THRU 6129-PROCURAR-SUFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE 'TRF'                   TO WS-CODIGO
+      *        PERFORM 6110-PROCURAR-PREFIXO
+      *           THRU 6119-PROCURAR-PREFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE '/CE'                   TO WS-CODIGO
+      *        PERFORM 6120-PROCURAR-SUFIXO
+      *           THRU 6129-PROCURAR-SUFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE '/IM'                   TO WS-CODIGO
+      *        PERFORM 6120-PROCURAR-SUFIXO
+      *           THRU 6129-PROCURAR-SUFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE '/SW'                   TO WS-CODIGO
+      *        PERFORM 6120-PROCURAR-SUFIXO
+      *           THRU 6129-PROCURAR-SUFIXO-EXIT
+      *     END-IF.
+      **
+      *     IF SWCD7204-CCHAVE EQUAL SPACES
+      *        MOVE '/C '                   TO WS-CODIGO
+      *        PERFORM 6120-PROCURAR-SUFIXO
+      *           THRU 6129-PROCURAR-SUFIXO-EXIT
+      *     END-IF.
+      **
+      * 6199-PROCURAR-CODIGOS-EXIT.
+      *     EXIT.
+      **
+      ******************************************************************
+      *6110-PROCURAR-PREFIXO.
+      ******************************************************************
+      **
+      *     MOVE '6110-PROCURAR-PREFIXO'    TO VIAL0015-CALLER-ID
+      **
+      *     IF AQCW0100-AT-DEBUG-SIM
+      *        PERFORM VIAP0015-TRATA-DEBUG
+      *           THRU VIAP0015-TRATA-DEBUG-EXIT
+      *     END-IF.
+      **
+      *     MOVE ZEROES                     TO WS-X.
+      **
+      *     INSPECT SWCD7204-MRDMOV TALLYING WS-X
+      *        FOR ALL WS-CODIGO.
+      **
+      *     IF WS-X GREATER THAN ZEROES
+      *        PERFORM VARYING WS-X
+      *           FROM +1 BY +1
+      *          UNTIL SWCD7204-MRDMOV( WS-X : 3 ) EQUAL WS-CODIGO
+      *           CONTINUE
+      *        END-PERFORM
+      **
+      *        PERFORM VARYING WS-X
+      *           FROM WS-X  BY +1
+      *          UNTIL WS-X GREATER THAN +40
+      *             OR SWCD7204-MRDMOV( WS-X : 1 ) EQUAL SPACE
+      *           STRING SWCD7204-CCHAVE    DELIMITED BY SPACE
+      *                  SWCD7204-MRDMOV( WS-X : 1 )
+      *                                     DELIMITED BY SIZE
+      *                                   INTO SWCD7204-CCHAVE
+      *        END-PERFORM
+      **
+      *     END-IF.
+      **
+      * 6119-PROCURAR-PREFIXO-EXIT.
+      *     EXIT.
+      **
+      ******************************************************************
+      *6120-PROCURAR-SUFIXO.
+      ******************************************************************
+      **
+      *     MOVE '6120-PROCURAR-SUFIXO'     TO VIAL0015-CALLER-ID
+      **
+      *     IF AQCW0100-AT-DEBUG-SIM
+      *        PERFORM VIAP0015-TRATA-DEBUG
+      *           THRU VIAP0015-TRATA-DEBUG-EXIT
+      *     END-IF.
+      **
+      *     MOVE ZEROES                     TO WS-X.
+      **
+      *     INSPECT SWCD7204-MRDMOV TALLYING WS-X
+      *        FOR ALL WS-CODIGO.
+      **
+      *     IF SWCD7204-MRDMOV( 1 : 3 ) NOT EQUAL    WS-CODIGO AND
+      *                             WS-X GREATER THAN ZEROES
+      *        PERFORM VARYING WS-X
+      *           FROM +1 BY +1
+      *          UNTIL SWCD7204-MRDMOV( WS-X : 3 ) EQUAL WS-CODIGO
+      *             OR WS-X GREATER THAN +37
+      *           STRING SWCD7204-CCHAVE    DELIMITED BY SPACE
+      *                  SWCD7204-MRDMOV( WS-X : 1 )
+      *                                     DELIMITED BY SIZE
+      *                                   INTO SWCD7204-CCHAVE
+      *        END-PERFORM
+      **
+      *        PERFORM VARYING WS-X
+      *           FROM WS-X  BY +1
+      *          UNTIL SWCD7204-MRDMOV( WS-X : 1 ) EQUAL SPACE
+      *             OR WS-X GREATER THAN +40
+      *           STRING SWCD7204-CCHAVE    DELIMITED BY SPACE
+      *                  SWCD7204-MRDMOV( WS-X : 1 )
+      *                                     DELIMITED BY SIZE
+      *                                   INTO SWCD7204-CCHAVE
+      *        END-PERFORM
+      **
+      *     END-IF.
+      **
+      * 6129-PROCURAR-SUFIXO-EXIT.
+      *     EXIT.
+      **
+      ******************************************************************
+      *6130-PROCURAR-ACQUIRER.
+      ******************************************************************
+      **
+      *     MOVE '6130-PROCURAR-ACQUIRER'   TO VIAL0015-CALLER-ID
+      **
+      *     IF AQCW0100-AT-DEBUG-SIM
+      *        PERFORM VIAP0015-TRATA-DEBUG
+      *           THRU VIAP0015-TRATA-DEBUG-EXIT
+      *     END-IF.
+      **
+      *     MOVE ZEROES                     TO WS-X.
+      **
+      *     INSPECT SWCD7204-MRDMOV TALLYING WS-X
+      *        FOR ALL 'ACQUIRER'.
+      **
+      *     IF WS-X GREATER THAN ZEROES
+      *        MOVE SWCD7204-MRDMOV( 35 : 6 )
+      *                                     TO SWCD7204-CCHAVE
+      *     END-IF.
+      **
+      * 6139-PROCURAR-ACQUIRER-EXIT.
+      *     EXIT.
+      **
+      ******************************************************************
+      *    EXEC SQL INCLUDE VIAP9999 END-EXEC
+           EXEC SQL INCLUDE AQCP0002 END-EXEC
+           COPY VIAP0015.
+           COPY VIAP0030.
+           COPY AQCP0011.
+           COPY AQCP0109.
+           COPY AQCP0009.
+           COPY SXCP1000.
+           COPY ETCP9221.
+      ******************************************************************

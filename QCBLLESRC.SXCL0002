@@ -1,0 +1,51 @@
+      ******************************************************************
+      *                                                                *
+      *       SXCL0002   AREA COMUNICACAO INTERNA DE PGM COM FUNCAO    *
+      *                                                                *
+      ******************************************************************
+       01  SXCL0002-COMMAREA.
+           05 SXCL0002-IND-ERROS                   PIC  X(02).
+              88 SXCL0002-ABEND                  VALUE 'A1'.
+              88 SXCL0002-ABEND-DB2              VALUE 'A2'.
+              88 SXCL0002-ERROS-ARQ              VALUE 'AT'.
+              88 SXCL0002-ERROS-VALIDOS          VALUE 'FU' 'FC' 'OK'.
+              88 SXCL0002-ERROS-FUNCAO           VALUE 'FU'.
+              88 SXCL0002-FIM-CONSULTA           VALUE 'FC'.
+              88 SXCL0002-SEM-ERROS              VALUE '  ' 'OK'.
+              88 SXCL0002-ERROS-ABEND            VALUE 'A1' 'A2'.
+           05 SXCL0002-COD-APLI                    PIC  X(02).
+           05 SXCL0002-COD-ERRO                    PIC S9(03).
+              88 SXCL0002-OK                     VALUE +0.
+              88 SXCL0002-NOTFND                 VALUE +100.
+              88 SXCL0002-DUPREC                 VALUE -803.
+              88 SXCL0002-MULTROW                VALUE -811.
+              88 SXCL0002-DB2-NOT-EXIST          VALUE -924.
+              88 SXCL0002-FKNTFND                VALUE -530.
+              88 SXCL0002-FNC-NOT-FND            VALUE -305.
+              88 SXCL0002-RESTRICT               VALUE -532.
+              88 SXCL0002-DATAS                  VALUE -180 -181.
+           05 SXCL0002-OBJECT-NAME                 PIC  X(16).
+           05 SXCL0002-INFO-ADIC                   PIC  X(40).
+           05 SXCL0002-SQLCA.
+              10 SXCL0002-SQLAID                   PIC  X(08).
+              10 SXCL0002-SQLABC                   PIC S9(09) BINARY.
+              10 SXCL0002-SQLCODE                  PIC S9(09) BINARY.
+              10 SXCL0002-SQLERRM.
+                 49 SXCL0002-SQLERRM-LEN           PIC S9(04) BINARY.
+                 49 SXCL0002-SQLERRM-DATA          PIC  X(70).
+              10 SXCL0002-SQLERRP                  PIC  X(08).
+              10 SXCL0002-SQLERDD                  OCCURS 6 TIMES.
+                 15 SXCL0002-SQLERRD-ITEM          PIC S9(09) BINARY.
+              10 SXCL0002-SQLWARN.
+                 15 SXCL0002-SQLWARN0              PIC  X(01).
+                 15 SXCL0002-SQLWARN1              PIC  X(01).
+                 15 SXCL0002-SQLWARN2              PIC  X(01).
+                 15 SXCL0002-SQLWARN3              PIC  X(01).
+                 15 SXCL0002-SQLWARN4              PIC  X(01).
+                 15 SXCL0002-SQLWARN5              PIC  X(01).
+                 15 SXCL0002-SQLWARN6              PIC  X(01).
+                 15 SXCL0002-SQLWARN7              PIC  X(01).
+                 15 SXCL0002-SQLWARN8              PIC  X(01).
+                 15 SXCL0002-SQLWARN9              PIC  X(01).
+                 15 SXCL0002-SQLWARNA              PIC  X(01).
+              10 SXCL0002-SQLSTATE                 PIC  X(05).

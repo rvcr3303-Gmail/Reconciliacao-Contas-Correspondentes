@@ -1,0 +1,22 @@
+      *****************************************************************
+      * NOME:      AQCW0001                                           *
+      * DESCRICAO: CAMPOS USADOS PARA CHAMADA DAS ROTINAS DE TRATAMENT*
+      *            DE RCODES                                          *
+      *            VERSÃO 2.03 (                       )              *
+      *            VERSÃO 3.00                                        *
+      * CRICAO:    28-12-2011                                         *
+      * AUTOR:     DIOGO ARCO                                         *
+      *===============================================================*
+      *****************************************************************
+      *    AQCW0009 - TRATAMENTO DE RCODES                            *
+      *****************************************************************
+       01  AQCW0009-DATA.
+      *V203
+         05 AQCW0009-RCODE          PIC S9(01) COMP-3 VALUE ZEROES.
+            88 AQCW0009-SEM-ERROS             VALUE 0, 1.
+            88 AQCW0009-COM-ERROS             VALUE 2, 3.
+            88 AQCW0009-RCODE-OK              VALUE 0.
+            88 AQCW0009-RCODE-INF             VALUE 1.
+            88 AQCW0009-RCODE-VAL             VALUE 2.
+            88 AQCW0009-RCODE-APL             VALUE 3.
+      *---

@@ -1,0 +1,15 @@
+      ****************************************************************
+      * NOME:      ARCL5072                                          *
+      * DESCRICAO: Área de ligação com a rotina ARR05072             *
+      * AUTOR:     VIA CONSULTING                                    *
+      ****************************************************************
+       01 ARCL5072-NM-ROTINA               PIC  X(10) VALUE 'ARM5072'.
+      *
+       01 ARCL5072-DATA.
+          05 ARCL5072-I-CPROCESSO          PIC  X(20).
+      *
+          05 ARCL5072-O-CPROCESSO          PIC  X(20).
+          05 ARCL5072-O-CDIASEMANA         PIC  X(01).
+          05 ARCL5072-O-HTIMEINI           PIC  X(08).
+          05 ARCL5072-O-NCOMMITINT         PIC S9(09) COMP.
+      *

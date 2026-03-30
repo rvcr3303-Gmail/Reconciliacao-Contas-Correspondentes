@@ -1,0 +1,10 @@
+      ******************************************************************
+      * NOME:       SWCL4015                                           *
+      * DESCRICAO:  LINKAGE SWM04015                                   *
+      * CRIACAO:    11-12-2018                                         *
+      * AUTOR:      VIA CONSULTING                                     *
+      ******************************************************************
+       01  SWCL4015-ROTINA                  PIC X(10)  VALUE 'SWM04015'.
+       01  SWCL4015-REC.
+           05 SWCL4015-STRING               PIC X(40).
+           05 SWCL4015-CCHAVE               PIC X(30).

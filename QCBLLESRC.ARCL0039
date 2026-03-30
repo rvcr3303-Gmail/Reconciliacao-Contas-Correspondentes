@@ -1,0 +1,20 @@
+      ******************************************************************
+      *  APLICAÇÃO:        ARQUITECTURA                                *
+      *  MÓDULO:           MÓDULO DE CONSULTA ART39                    *
+      *  FUNÇÃO:           LINKAGE                                     *
+      *  PROGRAMA:         ARM00039                                    *
+      *  CRIACAO:          2015.02.12                                  *
+      *  AUTOR:            VIA CONSULTING                              *
+      *  DESCRIÇÃO:        LINKAGE COM CAMPOS INDIVIDUAIS              *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      ******************************************************************
+       01 ARCL0039-COMMAREA.
+          05 ARCL0039-CAPLIC               PIC  X(02).
+          05 ARCL0039-COPCAO               PIC  X(03).
+          05 ARCL0039-NMAXLIST             PIC  9(03).
+      *
+       01 ARCL0039-ROTINA                  PIC  X(10) VALUE 'ARM00039'.

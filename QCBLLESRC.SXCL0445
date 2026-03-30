@@ -1,0 +1,36 @@
+      *****************************************************************
+      * NOME:      SXCL0445                                           *
+      * DESCRICAO: OBTENCAO DO BANCO DA INSTALAÇÃO                    *
+      *            VERSÃO 2.03 ($PPAEMP)                              *
+      *            VERSÃO 3.00 ($PPAEMP)                              *
+      * CRICAO:    16-10-2011                                         *
+      * AUTOR:     VIA CONSULTING                                     *
+      *===============================================================*
+      * CALL SXCL0445-ROTINA USING SXCL0002-COMMAREA                  *
+      *                          , SXCL0455-DATA                      *
+      *****************************************************************
+       01  SXCL0445-DATA.
+           05 SXCL0445-VERSAO           PIC  X(03) VALUE SPACES.
+              88 SXCL0445-VERSAO-V203     VALUE '203'.
+              88 SXCL0445-VERSAO-V300     VALUE '300'.
+              88 SXCL0445-VERSAO-ALNOVA   VALUE 'ALN'.
+              88 SXCL0445-VERSAO-ALTAMIRA VALUE 'ALT'.
+              88 SXCL0445-VERSAO-HOGAN    VALUE 'HOG'.
+              88 SXCL0445-VERSAO-VIA      VALUE 'VIA'.
+              88 SXCL0445-VERSAO-VALIDA   VALUE '203', '300',
+                                                'ALN', 'ALT',
+                                                'HOG', 'VIA'.
+      *---
+           05 SXCL0445-ENTRADA.
+              10 SXCL0445-PGMQC         PIC  X(10).
+              10 SXCL0445-RCODE         PIC S9(01) COMP-3.
+                 88 SXCL0445-RCODE-OK              VALUE 0.
+                 88 SXCL0445-RCODE-INF             VALUE 1.
+                 88 SXCL0445-RCODE-VAL             VALUE 2.
+                 88 SXCL0445-RCODE-APL             VALUE 3.
+                 88 SXCL0445-RCODE-ERR             VALUE 2 3.
+           05 SXCL0445-SAIDA.
+              10 SXCL0445-2CEMP         PIC  X(04).
+              10 SXCL0445-2ESWF         PIC  X(11).
+      *---
+       01  SXCL0445-ROTINA              PIC  X(08) VALUE 'SXRM0445'.

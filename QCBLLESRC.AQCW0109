@@ -1,0 +1,34 @@
+      ******************************************************************
+      * NOME:      AQCW0109                                            *
+      * DESCRICAO: OBTENCAO DADOS STANDARD ARQUITECTURA BATCH          *
+      ******************************************************************
+      * ************* ARQUITECTURA BATCH ******************************
+           COPY AQCW0100.
+      * ACEDE CONVERTE DATA 8 - 10 - 8
+           COPY AQCW0005.
+      * ACEDE PARAMETROS GERAIS
+           COPY ARCL2205.
+      * AREA DE COMUNICACAO STANDARD DA ARQUITECTURA DE INTEGRACAO
+           COPY ETCL0002.
+      * OBTEM DATA DO DIA
+           COPY ETCL9050.
+      * OBTEM BANCO DA INSTALACAO
+           COPY ETCL9057.
+      * OBTEM MOEDA DA INSTALACAO
+           COPY ETCL9056.
+      * OBTEM PARAMETRO DE TRANSACTION RECOVERY
+           COPY ETCL9068.
+      * OBTEM PAIS DA INSTALACAO
+           COPY ETCL9113.
+      * AREA STANDARD DE ERROS DE ROTINAS DA ARQUITECTURA VIA
+           COPY VIAL0002.
+      * CONVERTE RCODE EM VIAL0002-IND-ERROS
+           COPY VIAW0020.
+      * CONSTANTES DE ERRO DA ARQUITECTURA
+           COPY VIACK001.
+      * CONSTANTES DE ERRO DA ARQUITECTURA
+           COPY VIAK0001.
+      * CONSTANTES DA ARQUITECTURA
+           COPY VIAK0002.
+      * ACEDE AO INDICADOR DE DEBUG
+           COPY ARCL4400.

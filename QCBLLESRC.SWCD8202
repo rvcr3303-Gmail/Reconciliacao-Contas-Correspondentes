@@ -1,0 +1,39 @@
+           EXEC SQL DECLARE SWVT8202 TABLE
+           (
+               IDRECONC   DECIMAL(13,0)   NOT NULL
+             , NSEQ       DECIMAL(7,0)    NOT NULL
+             , MRNOPR     DECIMAL(9,0)    NOT NULL
+             , MRNORD     DECIMAL(7,0)    NOT NULL
+             , COSN       CHAR(10)        NOT NULL
+             , COSNC      CHAR(10)        NOT NULL
+             , DATREC     DATE            NOT NULL
+             , CUSERID    CHAR(20)        NOT NULL
+             , HTIMEST    TIMESTAMP       NOT NULL
+             , DATSUG     DATE            NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      *  COBOL DECLARATION FOR TABLE SWVT8202
+      *  ::: SWT82
+      *  ::: Reconciliações por ID
+      ******************************************************************
+       01  DCLSWCD8202.
+           05 SWCD8202-IDRECONC             PIC S9(13)        COMP-3.
+           05 SWCD8202-NSEQ                 PIC S9(07)        COMP-3.
+           05 SWCD8202-MRNOPR               PIC S9(09)        COMP-3.
+           05 SWCD8202-MRNORD               PIC S9(07)        COMP-3.
+           05 SWCD8202-COSN                 PIC  X(10).
+           05 SWCD8202-COSNC                PIC  X(10).
+           05 SWCD8202-DATREC               PIC  X(10).
+           05 SWCD8202-CUSERID              PIC  X(20).
+           05 SWCD8202-HTIMEST              PIC  X(26).
+           05 SWCD8202-DATSUG               PIC  X(10).
+      * ...IDRECONC     ID de Reconciliação
+      * ...NSEQ         Sequência de reconciliações
+      * ...MRNOPR       Numero de operação interna
+      * ...MRNORD       Numero de documento interno
+      * ...COSN         Numero seq. Ficheiro SWIFT
+      * ...COSNC        Numero seq. movimentos SWIFT
+      * ...DATREC       Data de reconciliação
+      * ...CUSERID      Utilizador Última Actualização
+      * ...HTIMEST      TimeStamp Última Actualização
+      * ...DATSUG       Data de sugestão

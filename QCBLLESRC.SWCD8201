@@ -1,0 +1,26 @@
+           EXEC SQL DECLARE SWVT8201 TABLE
+           (
+               IDRECONC DECIMAL(13,0) NOT NULL
+             , NSEQ     DECIMAL(7,0) NOT NULL
+             , MRNOPR   DECIMAL(9,0) NOT NULL
+             , MRNORD   DECIMAL(7,0) NOT NULL
+             , COSN     CHAR(10) NOT NULL
+             , COSNC    CHAR(10) NOT NULL
+             , DATREC   DATE NOT NULL
+             , CUSERID  CHAR(20) NOT NULL
+             , HTIMEST  TIMESTAMP NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT8201
+      ******************************************************************
+       01  DCLSWCD8201.
+            05 SWCD8201-IDRECONC PIC S9(13) COMP-3.
+            05 SWCD8201-NSEQ     PIC S9(07) COMP-3.
+            05 SWCD8201-MRNOPR   PIC S9(09) COMP-3.
+            05 SWCD8201-MRNORD   PIC S9(07) COMP-3.
+            05 SWCD8201-COSN     PIC X(10).
+            05 SWCD8201-COSNC    PIC X(10).
+            05 SWCD8201-DATREC   PIC X(10).
+            05 SWCD8201-CUSERID  PIC X(20).
+            05 SWCD8201-HTIMEST  PIC X(26).
+

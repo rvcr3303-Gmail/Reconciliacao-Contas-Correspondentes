@@ -1,0 +1,59 @@
+      ****************************************************************
+      *                                                              *
+      *  AREA DE LINKAGE DA ROTINA TRG20000                          *
+      *                                                              *
+      ****************************************************************
+      *
+
+       01  TGCL2000-LENGTH                       PIC  9(05) VALUE 200.
+       01  TGCL2000-NR-CAMPOS                    PIC  9(05) VALUE 5.
+      *
+       01  TGCL2000-MSG.
+           05 TGCL2000-ASE.
+              10 TGCL2000-CTABELA-ST.
+                 15 TGCL2000-CTABELA-S         PIC  X(01).
+                    88 TGCL2000-CTABELA-0      VALUE '0'.
+                    88 TGCL2000-CTABELA-1      VALUE '1' ' '.
+                 15 TGCL2000-CTABELA-CAPLIC    PIC X(02).
+                 15 TGCL2000-CTABELA-MSG       PIC 9(04).
+
+              10 TGCL2000-CCOD-ST.
+                 15 TGCL2000-CCOD-S         PIC  X(01).
+                    88 TGCL2000-CCOD-0      VALUE '0'.
+                    88 TGCL2000-CCOD-1      VALUE '1' ' '.
+                 15 TGCL2000-CCOD-CAPLIC    PIC X(02).
+                 15 TGCL2000-CCOD-MSG       PIC 9(04).
+
+              10 TGCL2000-C2COD-ST.
+                 15 TGCL2000-C2COD-S         PIC  X(01).
+                    88 TGCL2000-C2COD-0      VALUE '0'.
+                    88 TGCL2000-C2COD-1      VALUE '1' ' '.
+                 15 TGCL2000-C2COD-CAPLIC    PIC X(02).
+                 15 TGCL2000-C2COD-MSG       PIC 9(04).
+
+              10 TGCL2000-CLINGUA-ST.
+                 15 TGCL2000-CLINGUA-S         PIC  X(01).
+                    88 TGCL2000-CLINGUA-0      VALUE '0'.
+                    88 TGCL2000-CLINGUA-1      VALUE '1' ' '.
+                 15 TGCL2000-CLINGUA-CAPLIC    PIC X(02).
+                 15 TGCL2000-CLINGUA-MSG       PIC 9(04).
+
+              10 TGCL2000-GDESC-ST.
+                 15 TGCL2000-GDESC-S         PIC  X(01).
+                    88 TGCL2000-GDESC-0      VALUE '0'.
+                    88 TGCL2000-GDESC-1      VALUE '1' ' '.
+                 15 TGCL2000-GDESC-CAPLIC    PIC X(02).
+                 15 TGCL2000-GDESC-MSG       PIC 9(04).
+
+      *
+          05  TGCL2000-ADE.
+                10 TGCL2000-CACCAO PIC X(01).
+                10 TGCL2000-CTABELA PIC X(05).
+                10 TGCL2000-CCOD PIC X(50).
+                10 TGCL2000-C2COD PIC X(50).
+                10 TGCL2000-CLINGUA PIC X(10).
+                10 TGCL2000-GDESC PIC X(50).
+      *
+       01  TGCL2000-ROTINA              PIC  X(10) VALUE 'TGR20000'.
+       01  TGCL2000-ROTINA-2            PIC  X(10) VALUE 'TG2R2000'.
+

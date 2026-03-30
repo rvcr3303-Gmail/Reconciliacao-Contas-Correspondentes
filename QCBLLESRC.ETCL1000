@@ -1,0 +1,112 @@
+      ******************************************************************00010000
+      *          AREA DE COMUNICACAO - PGM ETR01000                     *0020000
+      ******************************************************************00030000
+      **                                                              **00040000
+      **  CAMPOS DE ENTRADA                                           **00050000
+      **                                                              **00060000
+      **    ETCL1000-COD-PROCESSO  -   CODIGO DO PROCESSAMENTO A      **00070000
+      **                               EFECTUAR                       **00080000
+      **                                                              **00090000
+      **    ETCL1000-DAT-INPUT1    -   DATA INICIAL                   **00100000
+      **                                                              **00110000
+      **                                                              **00200000
+      **  CAMPOS DE SAIDA                                             **00210000
+      **                                                              **00220000
+      **    ETCL1000-DAT-RES       -   DATA RESULTANTE                **00240000
+      **    ETCL1000-DAT-RES-ED    -   DATA RESULTANTE EDITADA        **00250000
+      **    ETCL1000-DAT-RES-SEM   -   DIA DA SEMANA (2,3,4,5,6,S,D)  **00250000
+      **    ETCL1000-DAT-RES-DESC  -   DATA POR EXTENSO               **00250000
+      **         EX.(12 DE NOVEMBRO 2013)                             **00250000
+      **                                                              **00470000
+      **   CAMPOS DE STATUS                                           **00480000
+      **                                                              **00490000
+      **    ETCL1000-IND-ERROS     -   CODIGO DE RETORNO              **00500000
+      **                             VALORES POSSIVEIS:               **00510000
+      **                                  'AT' - ERRO ARQUITECTURA    **00520000
+      **                                  '  ' - CALCULO EFECTUADO    **00540000
+      **                                                              **00550000
+      **    ETCL1000-MSG           -   MENSAGEM DE ERRO               **00560000
+      **                                                              **00570000
+      ******************************************************************00580000
+      **                                                              **00590000
+      **  FORMA DE UTILIZACAO:                                        **00600000
+      **                                                              **00610000
+      **   CAMPOS DE ENTRADA NECESSARIOS:                             **00620000
+      **                                                              **00630000
+      **    ETCL1000-COD-PROCESSO                                     **00640000
+      **    ETCL1000-DAT-INPUT1                                       **00650000
+      **                                                              **00810000
+      **--------------------------------------------------------------**00820000
+      **                                                              **00830000
+      **  -  PASSAR OS CAMPOS DE ENTRADA NECESSARIOS                  **00840000
+      **  -  PERFORM ETCP1000-ROTINA-DATAS THRU ETCP1000-EXIT.        **00850000
+      **                                                              **00860000
+      ******************************************************************00870000
+      **                                                              **00880000
+      **   DESCRICAO DO  PROCESSO                                     **00890000
+      **                                                              **00900000
+      **    00  -  VALIDA DATA                                        **01120000
+      **    09  -  RETORNA O ULTIMO DIA DO MES                        **01120000
+      **    21  -  CALCULA A DATA RESULTANTE DA ADICAO DE UM PRAZO    **01120000
+      **           A UMA DATA                                         **01120000
+      **    23  -  CALCULA A DATA RESULTANTE DA SUBTRACCAO DUM PRAZO  **01120000
+      **           A UMA DATA                                         **01120000
+      **    98  -  INDICA O TRIMESTRE DA DATA RECEBIDA                **01120000
+      **                                                              **01960000
+      ******************************************************************01970000
+       01  ETCL1000-AREA-COMUNICACAO.                                   01980000
+           05  ETCL1000-ENTRADA.                                        01990000
+               10  ETCL1000-COD-PROCESSO    PIC X(02).                  02000000
+                   88  ETCL1000-VALIDA-DATA            VALUE '00'.      02420000
+                   88  ETCL1000-ULT-DIA-MES            VALUE '09'.      02420000
+                   88  ETCL1000-SOMA-PRAZO             VALUE '21'.      02420000
+                   88  ETCL1000-SUBTRAI-PRAZO          VALUE '23'.      02420000
+                   88  ETCL1000-INDICA-TRIMESTRE       VALUE '98'.      02420000
+               10  ETCL1000-DAT-INPUT1.                                 02010000
+                   15  ETCL1000-I1-A        PIC 9(04).                  02020000
+                   15  ETCL1000-I1-M        PIC 9(02).                  02030000
+                   15  ETCL1000-I1-D        PIC 9(02).                  02040000
+               10  ETCL1000-DAT-INPUT2.                                 02050000
+                   15  ETCL1000-I2-A        PIC 9(04).                  02060000
+                   15  ETCL1000-I2-M        PIC 9(02).                  02070000
+                   15  ETCL1000-I2-D        PIC 9(02).                  02080000
+               10  ETCL1000-DAT-JULIANA     PIC 9(06).                  02090000
+               10  ETCL1000-PRAZOS.                                     02100000
+                   15  ETCL1000-COD-PRZ     PIC X(03).                  02110000
+                   15  ETCL1000-PRZ-A       PIC 9(01).                  02120000
+                   15  ETCL1000-PRZ-M       PIC 9(02).                  02130000
+                   15  ETCL1000-PRZ-D       PIC 9(03).                  02140000
+               10  ETCL1000-COD-BALCAO      PIC 9(04).                  02150000
+               10  ETCL1000-COD-PAIS        PIC X(03).                  02170000
+           05  ETCL1000-SAIDA.                                          02180000
+               10  ETCL1000-DIAS-RES        PIC 9(04).                  02190000
+               10  ETCL1000-DAT-JUL-RES     PIC 9(06).                  02200000
+               10  ETCL1000-DAT-RES.                                    02210000
+                   15  ETCL1000-DAT-RES-A   PIC 9(04).                  02220000
+                   15  ETCL1000-DAT-RES-M   PIC 9(02).                  02230000
+                   15  ETCL1000-DAT-RES-D   PIC 9(02).                  02240000
+               10  ETCL1000-DAT-RES-ED      PIC X(10).                  02250000
+               10  ETCL1000-DAT-RES-TIPO    PIC X(01).                  02260000
+               10  ETCL1000-DAT-RES-SEM     PIC X(10).                  02270000
+               10  ETCL1000-DAT-RES-DESC    PIC X(20).                  02280000
+               10  ETCL1000-DAT-UT-ANT.                                 02290000
+                   15  ETCL1000-DAT-UT-ANT-A PIC 9(04).                 02300000
+                   15  ETCL1000-DAT-UT-ANT-M PIC 9(02).                 02310000
+                   15  ETCL1000-DAT-UT-ANT-D PIC 9(02).                 02320000
+               10  ETCL1000-DAT-UT-ANT-ED    PIC X(10).                 02330000
+               10  ETCL1000-DAT-UT-POS.                                 02340000
+                   15  ETCL1000-DAT-UT-POS-A PIC 9(04).                 02350000
+                   15  ETCL1000-DAT-UT-POS-M PIC 9(02).                 02360000
+                   15  ETCL1000-DAT-UT-POS-D PIC 9(02).                 02370000
+               10  ETCL1000-DAT-UT-POS-ED    PIC X(10).                 02380000
+               10  ETCL1000-PRAZO-OUTPUT.                               02340000
+                   15  ETCL1000-PRAZ-ANO     PIC 9(04).                 02350000
+                   15  ETCL1000-PRAZ-FILLER  PIC X(01).                 02360000
+                   15  ETCL1000-PRAZ-RESULT  PIC 9(01).                 02370000
+           05  ETCL1000-ESTADO.                                         02390000
+               10  ETCL1000-IND-ERROS        PIC X(02).                 02400000
+                   88  CALCULO-EFECTUADO               VALUE SPACES.    02410000
+                   88  ERRO-ARQUITECTURA               VALUE 'AT'.      02420000
+               10  ETCL1000-MSG              PIC X(40).
+           05  FILLER                        PIC X(200).
+       01  ETCL1000-ROTINA-ETR01000          PIC X(08) VALUE 'ETR01000'.

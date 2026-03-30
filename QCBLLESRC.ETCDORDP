@@ -1,0 +1,7 @@
+      *****************************************************************
+      *                                                               *
+      *  OEORDPAG DECLARACAO DA TABELA ORDENS DE PAGAMENTO            *
+      *                                                               *
+      *****************************************************************
+       01  REG-OEORDPAG.
+           COPY DDS-ALL-FORMATS OF OEORDPAG PREFIX BY 'OEORDPAG-'.

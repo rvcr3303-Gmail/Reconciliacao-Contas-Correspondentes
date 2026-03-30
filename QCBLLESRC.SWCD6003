@@ -1,0 +1,60 @@
+           EXEC SQL DECLARE SWVT6003 TABLE
+           (
+               FXCODMSG CHAR(6) NOT NULL
+             , FXDATVAL DECIMAL(8,0) NOT NULL
+             , FXREFOPR CHAR(16) NOT NULL
+             , FXREF CHAR(16) NOT NULL
+             , FXREF940 CHAR(16) NOT NULL
+             , FXCSEND CHAR(15) NOT NULL
+             , FXCODEST CHAR(2) NOT NULL
+             , FXTIPOP CHAR(10) NOT NULL
+             , FXVALOR DECIMAL(15,2) NOT NULL
+             , FXCMOED CHAR(3) NOT NULL
+             , FXDATREC DECIMAL(8,0) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEEST CHAR(26) NOT NULL
+             , FXTRATYP CHAR(4) NOT NULL
+             , FXOSN CHAR(10) NOT NULL
+             , FXOSNC CHAR(10) NOT NULL
+             , FXCODOPE CHAR(2) NOT NULL
+             , FXDBCR CHAR(2) NOT NULL
+             , FXDREG DECIMAL(8,0) NOT NULL
+             , FXREFREL CHAR(16) NOT NULL
+             , CUSRINT CHAR(10) NOT NULL
+             , HTIMINT CHAR(26) NOT NULL
+             , COSN CHAR(10) NOT NULL
+             , COSNC CHAR(10) NOT NULL
+             , CEXT CHAR(05) NOT NULL
+             , CPAG  CHAR(05) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT6003
+      ******************************************************************
+       01  DCLSWCD6003.
+            05 SWCD6003-FXCODMSG PIC X(06).
+            05 SWCD6003-FXDATVAL PIC S9(08) COMP-3.
+            05 SWCD6003-FXREFOPR PIC X(16).
+            05 SWCD6003-FXREF PIC X(16).
+            05 SWCD6003-FXREF940 PIC X(16).
+            05 SWCD6003-FXCSEND PIC X(15).
+            05 SWCD6003-FXCODEST PIC X(02).
+            05 SWCD6003-FXTIPOP PIC X(10).
+            05 SWCD6003-FXVALOR PIC S9(13)V9(2) COMP-3.
+            05 SWCD6003-FXCMOED PIC X(03).
+            05 SWCD6003-FXDATREC PIC S9(08) COMP-3.
+            05 SWCD6003-CUSERID PIC X(20).
+            05 SWCD6003-HTIMEEST PIC X(26).
+            05 SWCD6003-FXTRATYP PIC X(04).
+            05 SWCD6003-FXOSN PIC X(10).
+            05 SWCD6003-FXOSNC PIC X(10).
+            05 SWCD6003-FXCODOPE PIC X(02).
+            05 SWCD6003-FXDBCR PIC X(02).
+            05 SWCD6003-FXDREG PIC S9(08) COMP-3.
+            05 SWCD6003-FXREFREL PIC X(16).
+            05 SWCD6003-CUSRINT PIC X(10).
+            05 SWCD6003-HTIMINT PIC X(26).
+            05 SWCD6003-COSN PIC X(10).
+            05 SWCD6003-COSNC PIC X(10).
+            05 SWCD6003-CEXT PIC X(05).
+            05 SWCD6003-CPAG  PIC X(05).
+

@@ -1,0 +1,23 @@
+      *****************************************************************
+      * NOME:      SWCL5600                                           *
+      *****************************************************************
+       01  SWCL5600-DATA.
+             05  SWCL5600.
+                 10 SWCL5600-RCODE       PIC S9(01).
+      *                  RETURN CODE
+                 10 SWCL5600-OSN         PIC X(10).
+      *                  OSN
+                 10 SWCL5600-ICE01       PIC X(01).
+      *                  ICE
+                 10 SWCL5600-CREF        PIC X(16).
+      *                  REFERENCIA
+                 10 SWCL5600-CDBCR       PIC X(01).
+      *                  DEBITO/CREDITO
+                 10 SWCL5600-CDATE       PIC X(06).
+      *                  DATA
+                 10 SWCL5600-CMOED       PIC X(03).
+      *                  MOEDA
+                 10 SWCL5600-MSALD       PIC S9(17)V9(02).
+      *                  SALDO
+      *---
+       01  SWCL5600-ROTINA              PIC  X(08) VALUE 'SWM5600'.

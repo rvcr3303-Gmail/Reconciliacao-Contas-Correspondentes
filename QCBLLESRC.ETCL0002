@@ -1,0 +1,180 @@
+      ******************************************************************
+      *  FUNÇÃO:           LINKAGE ARQUITECTURA                       **
+      *  AUTOR:            VIA CONSULTING                             **
+      *  DESCRIÇÃO:        LINKAGE STANDARD DE INTERFACES EXTERNOS    **
+      ******************************************************************
+       01 ETCL0002-COMMAREA.
+         05 ETCL0002-HEADER.
+           10 ETCL0002-BALM                    PIC S9(04) COMP-3.
+           10 ETCL0002-CMOE                    PIC  X(03).
+           10 ETCL0002-CPAIS-A                 PIC  X(03).
+           10 ETCL0002-DOPER                   PIC  X(10).
+           10 ETCL0002-DCONTAB                 PIC  X(10).
+           10 ETCL0002-USER-EXTRN              PIC  X(20).
+           10 ETCL0002-CBAL-ETRAB              PIC S9(04) COMP-3.
+           10 ETCL0002-CBAN                    PIC  X(04).
+           10 ETCL0002-DEBUG                   PIC  X(01).
+              88 ETCL0002-DEBUG-SIM            VALUE 'S'.
+           10 ETCL0002-ZAUTR                   PIC S9(10) COMP-3.
+           10 ETCL0002-CVERSAO                 PIC  X(03).
+              88 ETCL0002-VERSAO-V203          VALUE '203'.
+              88 ETCL0002-VERSAO-V300          VALUE '300'.
+              88 ETCL0002-VERSAO-ALNOVA        VALUE 'ALN'.
+              88 ETCL0002-VERSAO-ALTAMIRA      VALUE 'ALT'.
+              88 ETCL0002-VERSAO-HOGAN         VALUE 'HOG'.
+              88 ETCL0002-VERSAO-VIA           VALUE 'VIA'.
+              88 ETCL0002-VERSAO-BIM           VALUE 'BIM'.
+              88 ETCL0002-VERSAO-NOCORE        VALUE 'NOC'.
+              88 ETCL0002-VERSAO-BANKA         VALUE '203', '300'.
+              88 ETCL0002-VERSAO-VALIDA        VALUE '203', '300',
+                                                     'ALN', 'ALT',
+                                                     'HOG', 'VIA',
+                                                     'NOC', 'BIM'.
+           10 ETCL0002-AMBIENTE                PIC  X(01).
+              88 ETCL0002-AMBIENTE-5250            VALUE '5'.
+              88 ETCL0002-AMBIENTE-3270            VALUE '3'.
+              88 ETCL0002-AMBIENTE-WEB             VALUE 'W'.
+              88 ETCL0002-AMBIENTE-BATCH           VALUE 'B'.
+           10 ETCL0002-CPROGRAM                PIC  X(10).
+           10 ETCL0002-CCANAL                  PIC  X(10).
+         05 ETCL0002-TRACE                     PIC  X(02).
+         05 FILLER                             PIC  X(68).
+
+         05 ETCL0002-NR-ELECTRONICO.
+           10 ETCL0002-CUTILIZA                PIC  X(20).
+           10 ETCL0002-DATA-PROCESSO           PIC  X(10).
+           10 ETCL0002-NR-SEQUENCIA            PIC S9(10) COMP-3.
+
+         05 ETCL0002-AREA-ERRO.
+           10 ETCL0002-IND-ERROS               PIC  X(02).
+              88 ETCL0002-ABEND                  VALUE 'A1'.
+              88 ETCL0002-ABEND-DB2              VALUE 'A2'.
+              88 ETCL0002-ERROS-ARQ              VALUE 'AT'.
+              88 ETCL0002-ERROS-VALIDOS          VALUE 'FU' 'FC' 'OK'.
+              88 ETCL0002-ERROS-FUNCAO           VALUE 'FU'.
+              88 ETCL0002-FIM-CONSULTA           VALUE 'FC'.
+              88 ETCL0002-SEM-ERROS              VALUE 'OK' '  '.
+              88 ETCL0002-ERROS-ABEND            VALUE 'A1' 'A2'.
+              88 ETCL0002-ERROS-OK               VALUE 'OK'.
+           10 ETCL0002-NR-ERRO                 PIC S9(04) COMP-3.
+           10 ETCL0002-CAPLIC-ERRO             PIC  X(02).
+           10 ETCL0002-GINFO-ERRO              PIC  X(40).
+           10 ETCL0002-ST-ERRO                 PIC S9(04) COMP-3.
+         05 FILLER                             PIC  X(77).
+
+         05 ETCL0002-ESPEC-AMB                 PIC  X(130).
+      ******************************************************************
+      *  AREA DE COMUNICACAO ESPECIFICA CORE ALNOVA                    *
+      ******************************************************************
+         05 ETCL0002-ESPEC-AMB-A REDEFINES ETCL0002-ESPEC-AMB.
+            10 ETCL0002-C-TIPO-ERR-BBN         PIC  X(02).
+            10 ETCL0002-C-RTNO-EVEN-SWAL       PIC S9(03) COMP-3.
+            10 ETCL0002-C-APL-ERR              PIC  X(02).
+            10 FILLER                          PIC  X(124).
+      ******************************************************************
+      *  AREA DE COMUNICACAO ESPECIFICA CORE BANKA                     *
+      ******************************************************************
+         05 ETCL0002-ESPEC-AMB-B REDEFINES ETCL0002-ESPEC-AMB.
+      * O PGMC DEVE SER SEMPRE ALTERADO PARA O PROGRAMA CHAMADOR MODULO
+            10 ETCL0002-PGMC                   PIC  X(10).
+      * O JOBNC DEVE CONTER A ESTACAO DE TRABALHO
+            10 ETCL0002-JOBNC                  PIC  X(10).
+      * O PGMQC E O NOME DA QUEUE E POR ISSO DEVE SER O PRIMEIRO
+      * PROGRAMA E NUNCA DEVE SER ALTERADO
+            10 ETCL0002-PGMQC                  PIC  X(10).
+            10 ETCL0002-RCODE                  PIC S9(01) COMP-3.
+               88 ETCL0002-RCODE-OK              VALUE 0.
+               88 ETCL0002-RCODE-INF             VALUE 1.
+               88 ETCL0002-RCODE-VAL             VALUE 2.
+               88 ETCL0002-RCODE-APL             VALUE 3.
+            10 ETCL0002-ESTR                   PIC  X(01).
+               88 ETCL0002-ESTR-EXE                      VALUE '1'.
+               88 ETCL0002-ESTR-NEXE                     VALUE '0'.
+            10 ETCL0002-APTR                   PIC  X(01).
+               88 ETCL0002-APTR-APL                      VALUE 'A'.
+               88 ETCL0002-APTR-VAL                      VALUE 'V'.
+            10 ETCL0002-COD-ERRO-B             PIC  X(07).
+            10 ETCL0002-WRMG                   PIC  X(80).
+            10 FILLER                          PIC  X(07).
+      ******************************************************************
+      *  AREA DE COMUNICACAO ESPECIFICA CORE HOGAN                     *
+      ******************************************************************
+         05 ETCL0002-ESPEC-AMB-H REDEFINES ETCL0002-ESPEC-AMB.
+            10 ETCL0002-FIXA-NOM-TRS           PIC  X(04).
+            10 ETCL0002-FIXA-MSG-LEN           PIC  9(05).
+            10 ETCL0002-FIXA-FUNCAO.
+               15 ETCL0002-FIXA-COD-REN-ANU    PIC  9(01).
+               15 ETCL0002-FIXA-TRS            PIC  9(03).
+            10 ETCL0002-FIXA-DATA              PIC  9(08).
+            10 ETCL0002-FIXA-HORA              PIC  9(06).
+            10 ETCL0002-FIXA-DT-TRS            PIC  9(08).
+            10 ETCL0002-FIXA-HR-TRS            PIC  9(06).
+            10 ETCL0002-FIXA-COMP-MAQ          PIC  9(02).
+            10 ETCL0002-FIXA-REDE-MAQ          PIC  X(03).
+            10 ETCL0002-FIXA-COD-MAQ           PIC  X(07).
+            10 ETCL0002-FIXA-NUM-TRANSAC       PIC  9(07).
+            10 ETCL0002-FIXA-FLAG-DESDOB       PIC  X(01).
+            10 ETCL0002-FIXA-NUM-BLOCO         PIC  9(05).
+            10 ETCL0002-FIXA-COD-ERRO          PIC  9(03).
+            10 ETCL0002-FIXA-ACCAO             PIC  9(03).
+            10 ETCL0002-FIXA-IND-VAR           PIC  9(01).
+            10 ETCL0002-FIXA-VER-SW-MAQ        PIC  9(05).
+            10 FILLER                          PIC  X(52).
+         05 FILLER                             PIC  X(80).
+
+         05 ETCL0002-AREA-DIALOGO.
+           10 ETCL0002-TIPO-OPCAO              PIC  X(01).
+              88 ETCL0002-CONVERSACAO              VALUE 'C'.
+              88 ETCL0002-PERG-RESPOSTA            VALUE 'P'.
+           10 ETCL0002-CACCAO                  PIC  X(01).
+              88 ETCL0002-VISUALIZACAO             VALUE 'V'.
+              88 ETCL0002-CRIACAO                  VALUE 'C'.
+              88 ETCL0002-MODIFICACAO              VALUE 'M'.
+              88 ETCL0002-ANULACAO                 VALUE 'A'.
+              88 ETCL0002-ELIMINACAO               VALUE 'E'.
+              88 ETCL0002-CONSULTALISTA            VALUE 'L'.
+           10 ETCL0002-DATA-SESSAO             PIC  9(08).
+           10 ETCL0002-ANUL                    PIC  X(01).
+              88 ETCL0002-ANUL-SIM                 VALUE 'S'.
+              88 ETCL0002-ANUL-NAO                 VALUE 'N'.
+           10 ETCL0002-MESS-FILE               PIC  X(07).
+           05 ETCL0002-APLICACAO               PIC  X(02).
+           05 ETCL0002-COPCAO                  PIC  X(03).
+         05 FILLER                             PIC  X(77).
+
+         05 ETCL0002-DB2-LOG.
+           10 ETCL0002-TABLE-NAME              PIC  X(16).
+           10 ETCL0002-SQLCA.
+             15 ETCL0002-SQLAID                PIC  X(08).
+             15 ETCL0002-SQLABC                PIC S9(09) BINARY.
+             15 ETCL0002-SQLCODE               PIC S9(09) BINARY.
+                88 ETCL0002-SQL-NOTFND            VALUE +100.
+                88 ETCL0002-SQL-OK                VALUE +0.
+                88 ETCL0002-SQL-DUPREC            VALUE -803.
+                88 ETCL0002-SQL-MULTROW           VALUE -811.
+                88 ETCL0002-SQL-DB2-NOT-EXIST     VALUE -924.
+                88 ETCL0002-SQL-FKNTFND           VALUE -530.
+                88 ETCL0002-SQL-FNC-NOT-FND       VALUE -305.
+                88 ETCL0002-SQL-RESTRICT          VALUE -532.
+                88 ETCL0002-SQL-DATAS             VALUE -180 -181.
+             15 ETCL0002-SQLERRM.
+               20 ETCL0002-SQLERRM-LEN         PIC S9(04) BINARY.
+               20 ETCL0002-SQLERRM-DATA        PIC  X(70).
+             15 ETCL0002-SQLERRP               PIC  X(08).
+             15 ETCL0002-SQLERDDG.
+               20 ETCL0002-SQLERDD  OCCURS 6 TIMES.
+                 25 ETCL0002-SQLERRD-ITEM      PIC S9(09) BINARY.
+             15 ETCL0002-SQLWARN.
+               20 ETCL0002-SQLWARN0            PIC  X(01).
+               20 ETCL0002-SQLWARN1            PIC  X(01).
+               20 ETCL0002-SQLWARN2            PIC  X(01).
+               20 ETCL0002-SQLWARN3            PIC  X(01).
+               20 ETCL0002-SQLWARN4            PIC  X(01).
+               20 ETCL0002-SQLWARN5            PIC  X(01).
+               20 ETCL0002-SQLWARN6            PIC  X(01).
+               20 ETCL0002-SQLWARN7            PIC  X(01).
+               20 ETCL0002-SQLWARN8            PIC  X(01).
+               20 ETCL0002-SQLWARN9            PIC  X(01).
+               20 ETCL0002-SQLWARNA            PIC  X(01).
+             15 ETCL0002-SQLSTATE              PIC  X(05).
+         05 FILLER                             PIC  X(80).

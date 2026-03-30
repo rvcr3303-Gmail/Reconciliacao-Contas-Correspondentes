@@ -1,0 +1,17 @@
+      ******************************************************************
+      * NOME:      ETCL9203                                            *
+      * DESCRICAO: CAMPOS USADOS PARA O MODULO ETR00203                *
+      * CRIACAO:   22-01-2014                                          *
+      * AUTOR:     VIA CONSULTING                                      *
+      ******************************************************************
+       01  ETCL9203-ROTINA              PIC  X(10)  VALUE 'ETR90203'.
+      *
+       01  ETCL9203-DATA.
+           05 ETCL9203-ENTRADA.
+              10 ETCL9203-BALC          PIC  9(04).
+              10 ETCL9203-CCB           PIC  X(13).
+              10 ETCL9203-MOED          PIC  X(03).
+              10 ETCL9203-CBAN          PIC  X(04).
+              10 ETCL9203-CSPAI         PIC  X(02).
+              10 ETCL9203-CCONTA        PIC  X(05).
+              10 ETCL9203-BUFFER        PIC  X(256).

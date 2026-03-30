@@ -1,0 +1,23 @@
+      ***************************************************************
+      * DESCRICAO: TRATA ERROS BANKA
+      * CRICAO:    17-03-2011
+      * AUTOR:     VIA CONSULTING
+      ***************************************************************
+       01 VIAW0050-ERROS-BANKA.
+          05 VIAW0050-MSG-TOT             PIC  X(40) VALUE SPACES.
+          05 FILLER REDEFINES VIAW0050-MSG-TOT.
+             10 VIAW0050-MSG              PIC  X(07) VALUE SPACES.
+             10 FILLER                    PIC  X(33) VALUE SPACES.
+      *
+          05 FILLER REDEFINES VIAW0050-MSG-TOT.
+             10 VIAW0050-MSG-INI          PIC  X(05) VALUE SPACES.
+             10 FILLER                    PIC  X(01) VALUE SPACES.
+             10 VIAW0050-MSG-CONTA        PIC  X(14) VALUE SPACES.
+             10 FILLER                    PIC  X(01) VALUE SPACES.
+             10 VIAW0050-MSG-FIM          PIC  X(11) VALUE SPACES.
+             10 FILLER                    PIC  X(08) VALUE SPACES.
+          05 VIAW0050-MSGQ                PIC  X(10) VALUE SPACES.
+          05 VIAW0050-CONTA               PIC S9(14) VALUE ZEROES.
+          05 VIAW0050-INDEX               PIC S9(05) VALUE ZEROES.
+          05 VIAW0050-COD-ERR             PIC S9(04) VALUE ZEROES.
+          05 VIAW0050-INDEX2              PIC S9(05) VALUE ZEROES.

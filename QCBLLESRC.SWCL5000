@@ -1,0 +1,43 @@
+      *****************************************************************
+      * NOME:      SWCL5000                                           *
+      * DESCRICAO: AREA COMUM DA API                                  *
+      * CRIACAO:   27-03-2014                                         *
+      * AUTOR:     VIA CONSULTING                                     *
+      *****************************************************************
+       01  SWCL5000-ROTINA                  PIC X(10) VALUE '       '.
+       01  SWCL5000-DATA.
+      *    CAMPOS STANDARD DE API BANKA
+           05 SWCL5000-STD-BANKA.
+      *       NOME DO PROGRAMA CALLER
+              10 SWCL5000-PGMC              PIC  X(10).
+      *       CODIGO DA TRANSACCAO
+              10 SWCL5000-TTR               PIC  X(05).
+      *       JOBNAME DO CALLER (ESTACAO)
+              10 SWCL5000-JOBNC             PIC  X(10).
+      *       UTILIZADOR DO CALLER
+              10 SWCL5000-USERC             PIC  X(10).
+      *       PROGRAM QUEUE DO CALLER
+              10 SWCL5000-PGMQC             PIC  X(10).
+      *       RETURN CODE
+              10 SWCL5000-RCODE             PIC S9(01) COMP-3.
+                 88 SWCL5000-RCODE-OK                  VALUE 0.
+                 88 SWCL5000-RCODE-INF                 VALUE 1.
+                 88 SWCL5000-RCODE-VAL                 VALUE 2.
+                 88 SWCL5000-RCODE-APL                 VALUE 3.
+                 88 SWCL5000-RCODE-ERR                 VALUE 2 THRU 3.
+      *       EXECUTAR TRANSACTION RECOVERY
+              10 SWCL5000-ESTR              PIC  X(01).
+      *       APLICACAO DA TRANSACCAO
+              10 SWCL5000-APTR              PIC  X(01).
+      *    CAMPOS STANDARD DE ARQ VIA CONSULTING
+           05 SWCL5000-VARIAVEIS.
+              07 SWCL5000-CODMSG      PIC  X(06).
+      **R
+              07 SWCL5000-EMSG        PIC X(01).
+      *          MENSAGEM
+              07 SWCL5000-MSG          PIC X(10000).
+      *          MENSAGEM
+              07 SWCL5000-TIPOPER      PIC X(10).
+      *          TIPO DE OPERAÇÃO
+              07 SWCL5000-NOPR         PIC S9(9) COMP-3.
+      *          NUMERO DE OPERAÇÃO

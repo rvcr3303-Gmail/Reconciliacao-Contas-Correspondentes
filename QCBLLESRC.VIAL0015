@@ -1,0 +1,42 @@
+      *****************************************************************
+      * NOME:      VIAL0015                                           *
+      * DESCRICAO: VARIAVEIS DE LINKAGE DO MODULO DE DEBUG            *
+      * CRICAO:    2011-01-02                                         *
+      * AUTOR:     ANTONIO RODRIGUES                                  *
+      *===============================================================*
+      *****************************************************************
+      *    VIAL0015 - TRATAMENTO DE DEBUG                             *
+      *****************************************************************
+       01  VIAL0015-DATA.
+           05 VIAL0015-PROGRAMA.
+              10 VIAL0015-CAPLIC-PRG       PIC  X(02) VALUE SPACES.
+              10 VIAL0015-CTIPO-PRG        PIC  X(01) VALUE 'I'.
+              10 VIAL0015-COPCAO-PRG       PIC  X(03) VALUE SPACES.
+              10 VIAL0015-CACCAO-PRG       PIC  X(02) VALUE SPACES.
+                 88 VIAL0015-VISUALIZACAO    VALUE '02'.
+                 88 VIAL0015-CRIACAO         VALUE '04'.
+                 88 VIAL0015-MODIFICACAO     VALUE '06'.
+                 88 VIAL0015-ANULACAO        VALUE '08'.
+                 88 VIAL0015-CONSULTALISTA   VALUE '00'.
+              10 VIAL0015-CFILLER-PRG      PIC  X(02) VALUE '  '.
+           05 VIAL0015-CALLER-ID           PIC  X(30) VALUE SPACES.
+           05 VIAL0015-CUTILIZA            PIC  X(20) VALUE SPACES.
+           05 VIAL0015-CAMPOS-CHAVE.
+              10 VIAL0015-CAMPOS         OCCURS 10 TIMES.
+                 15 VIAL0015-CAMPO-NM      PIC  X(30).
+                 15 VIAL0015-CAMPO-VLR     PIC  X(50).
+           05 VIAL0015-CAMPOS-CHAVE-R REDEFINES VIAL0015-CAMPOS-CHAVE.
+              10 VIAL0015-CAMPOS-R       OCCURS 10 TIMES.
+                 15 VIAL0015-CAMPO-R       PIC  X(80).
+           05 VIAL0015-I-DEBUG             PIC  X(01) VALUE SPACES.
+              88 VIAL0015-DEBUG-SIM                   VALUE 'S'.
+              88 VIAL0015-DEBUG-NAO                   VALUE 'N'.
+           05 VIAL0015-TIMESTAMP           PIC  X(26).
+           05 VIAL0015-DATA-PROC           PIC  X(10) VALUE SPACES.
+           05 VIAL0015-NUM-SEQ             PIC  9(10) VALUE ZEROES.
+           05 VIAL0015-TRACE               PIC  X(02) VALUE SPACES.
+           05 VIAL0015-CAPLIC              PIC  X(02) VALUE SPACES.
+           05 VIAL0015-COPCAO              PIC  X(03) VALUE SPACES.
+           05 VIAL0015-CACCAO              PIC  X(02) VALUE SPACES.
+       01  VIAL0015-CON.
+           05 VIAL0015-ROTINA-DEBUG        PIC  X(10) VALUE 'VIAM0015'.

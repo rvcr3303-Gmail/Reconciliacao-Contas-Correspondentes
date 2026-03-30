@@ -1,0 +1,528 @@
+      ******************************************************************
+      *                                                                *
+      *       SWCK0003   Constantes de erros para o Banka (MSGQ)       *
+      *                                                                *
+      ******************************************************************
+       01  SWCK0003-CONSTANTES.
+      * SW00001 - Erro no numero de cliente
+           05 SWCK0003-ERR-NCLI             PIC  X(07) VALUE 'SW00001'.
+      * SW00002 - Erro no TIPO DE OPERACAO
+           05 SWCK0003-ERR-TIPOP            PIC  X(07) VALUE 'SW00002'.
+      * SW00003 - Erro no SENDER
+           05 SWCK0003-ERR-CSEND            PIC  X(07) VALUE 'SW00003'.
+      * SW00004 - Erro no CAE
+           05 SWCK0003-ERR-CAE              PIC  X(07) VALUE 'SW00004'.
+      * SW00005 - Erro no ACESSO AO FICHEIRO DE CLIENTE
+           05 SWCK0003-SELECT-SWCLIENTE     PIC  X(07) VALUE 'SW00005'.
+      * SW00006 - Erro no numero de REMETENTE
+           05 SWCK0003-SELECT-SWREMETE      PIC  X(07) VALUE 'SW00006'.
+      * SW00007 - Erro no CODIGO DO BANCO
+           05 SWCK0003-ERR-CBAN             PIC  X(07) VALUE 'SW00007'.
+      * SW00008 - Erro no UPDATE A TABELA DA MENSAGEN MT103
+           05 SWCK0003-UPDATE-SWMT103       PIC  X(07) VALUE 'SW00008'.
+      * SW00009 - Erro no CODIGO DA MENSAGEM
+           05 SWCK0003-ERR-CODMSG           PIC  X(07) VALUE 'SW00009'.
+      * SW00010 - Erro NA DATA VALOR
+           05 SWCK0003-ERR-DATVAL           PIC  X(07) VALUE 'SW00010'.
+      * SW00011 - Erro na REFERENCIA DA OPERAÇÃO
+           05 SWCK0003-ERR-REFOPR           PIC  X(07) VALUE 'SW00011'.
+      * SW00012 - Erro NA REFERENCIA DA MENSAGEM
+           05 SWCK0003-ERR-REF              PIC  X(07) VALUE 'SW00012'.
+      * SW00013 - Erro NO ACESSO A TABELA DE CONTAS NOSTRO
+           05 SWCK0003-SELECT-FGNOST        PIC  X(07) VALUE 'SW00013'.
+      * SW00014 - Erro no OPEN A TABELA DA MENSAGEM MT103
+           05 SWCK0003-OPEN-SWMT103         PIC  X(07) VALUE 'SW00014'.
+      * SW00015 - Erro no FETCH A TABELA DA MENSAGEM MT103
+           05 SWCK0003-FETCH-SWMT103        PIC  X(07) VALUE 'SW00015'.
+      * SW00016 - Erro na chamada ao módulo SXRM0380
+           05 SWCK0003-ERRO-SXRM0380        PIC  X(07) VALUE 'SW00016'.
+      * SW00017 - Erro na chamada ao módulo SXRM0365
+           05 SWCK0003-ERRO-SXRM0365        PIC  X(07) VALUE 'SW00017'.
+      * SW00018 - Erro na chamada ao módulo SWM5005
+           05 SWCK0003-ERR-SWM5005          PIC  X(07) VALUE 'SW00018'.
+      * SW00019 - Erro no CLOSE A TABELA DA MENSAGEM MT103
+           05 SWCK0003-CLOSE-SWMT103        PIC  X(07) VALUE 'SW00019'.
+      * SW00020 - Validação data valor com atribuição de tipo de operação
+           05 SWCK0003-ERR-SWM5020          PIC  X(07) VALUE 'SW00020'.
+      * SW00021 - Erro no nome de comparação
+           05 SWCK0003-ERR-NOME             PIC  X(07) VALUE 'SW00021'.
+      * SW00022 - Erro NA CHAMADA AO MODULO OBTEM DADOS DE CONTA
+           05 SWCK0003-ERRO-SXCL0170        PIC  X(07) VALUE 'SW00022'.
+      * SW00023 - Erro NO NUMERO DE SEQUENCIA
+           05 SWCK0003-ERR-NSEQ             PIC  X(07) VALUE 'SW00023'.
+      * SW00024 - Erro NA DATA DO DIA
+           05 SWCK0003-ERR-DATDIA           PIC  X(07) VALUE 'SW00024'.
+      * SW00025 - Erro NA MOEDA DA OPERACAO
+           05 SWCK0003-ERR-CMOED            PIC  X(07) VALUE 'SW00025'.
+      * SW00026 - Erro NA MOEDA DA INSTALACAO
+           05 SWCK0003-ERR-MOEO             PIC  X(07) VALUE 'SW00026'.
+      * SW00027 - Erro NA NATUREZA
+           05 SWCK0003-ERR-NATR             PIC  X(07) VALUE 'SW00027'.
+      * SW00028 - Erro NO ACCESSO A TABELA DE PARAMETROS DA INSTALACAO
+           05 SWCK0003-SELECT-DPPAEMP       PIC  X(07) VALUE 'SW00028'.
+      * SW00029 - Erro na obtenção do banco da instalação
+           05 SWCK0003-ERR-BANCO            PIC  X(07) VALUE 'SW00029'.
+      * SW00030 - Erro no acesso à tabela SWMT202
+           05 SWCK0003-SELECT-SWVT1502       PIC  X(07) VALUE 'SW00030'.
+      * SW00031 - Deseja eliminar o registo? (ENTER para confirmar)
+           05 SWCK0003-CONF-DEL             PIC  X(07) VALUE 'SW00031'.
+      * SW00032 - PROBLEMAS NA ABERTURA DO MONITOR TRANSACCIONAL
+           05 SWCK0003-ERRO-ECR             PIC  X(07) VALUE 'SW00032'.
+      * SW00033 - NÃO EXISTEM OS DADOS PRETENDIDOS NA TABELA
+           05 SWCK0003-FETC-001             PIC  X(07) VALUE 'SW00033'.
+      * SW00034 - Erro no FETCH do CURSOR da tabela de Países
+           05 SWCK0003-PAIS-ERFE            PIC  X(07) VALUE 'SW00034'.
+      * SW00035 - Erro na abertura do cursor da tabela de Países
+           05 SWCK0003-OPEN-001             PIC  X(07) VALUE 'SW00035'.
+      * SW00036 - Transacção Inexistente
+           05 SWCK0003-INEX-TTR             PIC  X(07) VALUE 'SW00036'.
+      * SW00037 - Erro no acesso à tabela SWPAIS
+           05 SWCK0003-SELECT-SWPAIS        PIC  X(07) VALUE 'SW00037'.
+      * SW00038 - Erro no acesso ao módulo SWM5075
+           05 SWCK0003-CALL-SWM5075         PIC  X(07) VALUE 'SW00038'.
+      * SW00039 - O campo País é de preenchimento obrigatório
+           05 SWCK0003-PAIS-OBR             PIC  X(07) VALUE 'SW00039'.
+      * SW00040 - O campo Evento é de preenchimento obrigatório
+           05 SWCK0003-EVNT-OBR             PIC  X(07) VALUE 'SW00040'.
+      * SW00041 - O campo Moeda é de preenchimento obrigatório
+           05 SWCK0003-MOED-OBR             PIC  X(07) VALUE 'SW00041'.
+      * SW00042 - Erro no acesso ao módulo SWM5065
+           05 SWCK0003-ERR-SWM5065          PIC  X(07) VALUE 'SW00042'.
+      * SW00043 - Mensagem ignorada
+           05 SWCK0003-ERR-IGNORADA         PIC  X(07) VALUE 'SW00043'.
+      * SW00044 - Mensagem mal formatada
+           05 SWCK0003-ERR-FORMATO          PIC  X(07) VALUE 'SW00044'.
+      * SW00045 - Erro na criação da MT103
+           05 SWCK0003-INSERT-SWMT103       PIC  X(07) VALUE 'SW00045'.
+      * SW00046 - Erro na criação da MT202
+           05 SWCK0003-INSERT-SWVT1502       PIC  X(07) VALUE 'SW00046'.
+      * SW00047 - Mensagem mal Formatada
+           05 SWCK0003-ERR-MENSAGEM         PIC  X(07) VALUE 'SW00047'.
+      * SW00048 - Erro no acesso ao módulo SWM5080
+           05 SWCK0003-CALL-SWM5080         PIC  X(07) VALUE 'SW00048'.
+      * SW00049 - Erro no acesso à tabela SWSENDER
+           05 SWCK0003-SELECT-SWSENDER      PIC  X(07) VALUE 'SW00049'.
+      * SW00050 - Erro no acesso à tabela SWSTAND
+           05 SWCK0003-SELECT-SWSTAND       PIC  X(07) VALUE 'SW00050'.
+      * SW00051 - Já existe o País pretendido
+           05 SWCK0003-DUPREC-SWPAIS        PIC  X(07) VALUE 'SW00051'.
+      * SW00052 - Erro na criação do País
+           05 SWCK0003-INSERT-SWPAIS        PIC  X(07) VALUE 'SW00052'.
+      * SW00053 - O País escolhido não existe.
+           05 SWCK0003-NOTFND-SWPAIS        PIC  X(07) VALUE 'SW00053'.
+      * SW00054 - Erro ao tentar eliminar o País
+           05 SWCK0003-DELETE-SWPAIS        PIC  X(07) VALUE 'SW00054'.
+      * SW00055 - Registo eliminado com sucesso
+           05 SWCK0003-DELETE-OK            PIC  X(07) VALUE 'SW00055'.
+      * SW00056 - Valor mal formatado
+           05 SWCK0003-ERR-VALOR            PIC  X(07) VALUE 'SW00056'.
+      * SW00057 - Erro na chamada ao módulo SXCP1000
+           05 SWCK0003-CALL-SXCP1000        PIC  X(07) VALUE 'SW00057'.
+      * SW00058 - Erro na actualização da mensagem MT191
+           05 SWCK0003-UPDATE-SWMT191       PIC  X(07) VALUE 'SW00058'.
+      * SW00059 - Erro na leitura da mensagem MT191
+           05 SWCK0003-SELECT-SWMT191       PIC  X(07) VALUE 'SW00059'.
+      * SW00060 - Erro na escrita da mensagem MT191
+           05 SWCK0003-INSERT-SWMT191       PIC  X(07) VALUE 'SW00060'.
+      * SW00061 - Erro na criação da MT940
+           05 SWCK0003-INSERT-SWVT1603       PIC  X(07) VALUE 'SW00061'.
+      * SW00062 - Erro na criação da MT950
+           05 SWCK0003-INSERT-SWVT1703       PIC  X(07) VALUE 'SW00062'.
+      * SW00063 - Erro NO REGISTO DA MENSAGEM SWIFT
+           05 SWCK0003-ERRO-SXCL0420        PIC  X(07) VALUE 'SW00063'.
+      * SW00064 - ERRO NO CAMPO BALCAO DO MOIVIMENTO
+           05 SWCK0003-ERR-BALM             PIC  X(07) VALUE 'SW00064'.
+      * SW00065 - ERRO NO CAMPO TIPO DE OPERACAO
+           05 SWCK0003-ERR-TOPR             PIC  X(07) VALUE 'SW00065'.
+      * SW00066 - ERRO NO CAMPO VALOR
+           05 SWCK0003-ERR-VLR              PIC  X(07) VALUE 'SW00066'.
+      * SW00067 - ERRO NO CAMPO REFERENCIA DE CLIENTE
+           05 SWCK0003-ERR-RCLI             PIC  X(07) VALUE 'SW00067'.
+      * SW00068 - ERRO NO CAMPO REFERENCIA DE OPERACAO
+           05 SWCK0003-ERR-ROPR             PIC  X(07) VALUE 'SW00068'.
+      * SW00069 - ERRO NO CAMPO BANCO ORDENANTE
+           05 SWCK0003-ERR-BNCOO            PIC  X(07) VALUE 'SW00069'.
+      * SW00070 - Remetente já existe
+           05 SWCK0003-DUPREC-SWSENDER      PIC  X(07) VALUE 'SW00070'.
+      * SW00071 - ERRO NO CAMPO TIPO DE CREDITO
+           05 SWCK0003-ERR-TCRE             PIC  X(07) VALUE 'SW00071'.
+      * SW00072 - ERRO NA ACTUALIZACAO DA SWPARAM
+           05 SWCK0003-UPDATE-SWPARAM       PIC  X(07) VALUE 'SW00072'.
+      * SW00073 - ERRO NA OBTENCAO DE REFERENCIA DA OPERACAO
+           05 SWCK0003-ERR-SWM5085          PIC  X(07) VALUE 'SW00073'.
+      * SW00074 - Dados não existentes na tabela de mensagens MT103
+           05 SWCK0003-NOTFND-MT103         PIC  X(07) VALUE 'SW00074'.
+      * SW00075 - Erro no acesso à tabela de mensagens MT103
+           05 SWCK0003-SELECT-MT103         PIC  X(07) VALUE 'SW00075'.
+      * SW00076 - Erro no acesso à rotina SWM5090
+           05 SWCK0003-ERR-SWM5090          PIC  X(07) VALUE 'SW00076'.
+      * SW00077 - Mensagem sem Utilizador atribuído.
+           05 SWCK0003-USER-SPACES          PIC  X(07) VALUE 'SW00077'.
+      * SW00078 - Erro na leitura à tabela SWMT191
+           05 SWCK0003-FETCH-SWMT191        PIC  X(07) VALUE 'SW00078'.
+      * SW00079 - Erro no acesso ao módulo ETR90206
+           05 SWCK0003-CALL-ETR90206        PIC  X(07) VALUE 'SW00079'.
+      * SW00080 - Data Valor inválida.
+           05 SWCK0003-DATVAL-INV           PIC  X(07) VALUE 'SW00080'.
+      * SW00081 - Erro na consulta da MT103
+           05 SWCK0003-SELECT-SWMT103       PIC  X(07) VALUE 'SW00081'.
+      * SW00082 - Erro na validação do nome
+           05 SWCK0003-ERR-SWM5015          PIC  X(07) VALUE 'SW00082'.
+      * SW00083 - Erro no registo de OPR
+           05 SWCK0003-ERR-SWM5030          PIC  X(07) VALUE 'SW00083'.
+      * SW00084 - Erro na obtenção do balcão
+           05 SWCK0003-ERR-SXRM0180         PIC  X(07) VALUE 'SW00084'.
+      * SW00085 - Erro na reconciliação com MT202
+           05 SWCK0003-ERR-SWM5050          PIC  X(07) VALUE 'SW00085'.
+      * SW00086 - Verificação de Banco Correspondente
+           05 SWCK0003-ERR-SWM5010          PIC  X(07) VALUE 'SW00086'.
+      * SW00087 - Evento Inválido
+           05 SWCK0003-EVNT-INV             PIC  X(07) VALUE 'SW00087'.
+      * SW00088 - Erro na consulta à MT940
+           05 SWCK0003-SELECT-SWMT940       PIC  X(07) VALUE 'SW00088'.
+      * SW00089 - Erro na actualização da MT940
+           05 SWCK0003-UPDATE-SWMT940       PIC  X(07) VALUE 'SW00089'.
+      * SW00090 - Erro na consulta à MT950
+           05 SWCK0003-SELECT-SWMT950       PIC  X(07) VALUE 'SW00090'.
+      * SW00091 - Erro na actualização da MT950
+           05 SWCK0003-UPDATE-SWMT950       PIC  X(07) VALUE 'SW00091'.
+      * SW00092 - Erro a inserir remetente
+           05 SWCK0003-INSERT-SWSENDER      PIC  X(07) VALUE 'SW00092'.
+      * SW00093 - Erro na actualização da MT202
+           05 SWCK0003-UPDATE-SWVT1502       PIC  X(07) VALUE 'SW00093'.
+      * SW00094 - Erro no acesso ao módulo SWM5070
+           05 SWCK0003-ERR-SWM5070          PIC  X(07) VALUE 'SW00094'.
+      * SW00095 - Erro no acesso ao módulo SXRM0450
+           05 SWCK0003-CALL-SXRM0450        PIC  X(07) VALUE 'SW00095'.
+      * SW00096 - É obrigatório preencher o sender
+           05 SWCK0003-SENDER-OBR           PIC  X(07) VALUE 'SW00096'.
+      * SW00097 - O sender não existe
+           05 SWCK0003-NOTFND-SWSENDER      PIC  X(07) VALUE 'SW00097'.
+      * SW00098 - Erro a eliminar o sender
+           05 SWCK0003-DELETE-SWSENDER      PIC  X(07) VALUE 'SW00098'.
+      * SW00099 - Erro no acesso ao módulo SWM5120
+           05 SWCK0003-CALL-SWM5120         PIC  X(07) VALUE 'SW00099'.
+      * SW00100 - Erro no FETCH do CURSOR da tabela de Remetente
+           05 SWCK0003-SENDER-ERFE          PIC  X(07) VALUE 'SW00100'.
+      * SW00101 - O utilizador &7 não tem permissão para modificar/tratar
+      * a mensagem
+           05 SWCK0003-UTILIZ-INV           PIC  X(07) VALUE 'SW00101'.
+      * SW00102 - É obrigatório preencher o código standard
+           05 SWCK0003-STAND-OBR            PIC  X(07) VALUE 'SW00102'.
+      * SW00103 - O código standard não existe
+           05 SWCK0003-NOTFND-SWSTAND       PIC  X(07) VALUE 'SW00103'.
+      * SW00104 - Erro a eliminar o código standard
+           05 SWCK0003-DELETE-SWSTAND       PIC  X(07) VALUE 'SW00104'.
+      * SW00105 - Erro no FETCH do CURSOR da tabela de códigos standard
+           05 SWCK0003-STAND-ERFE           PIC  X(07) VALUE 'SW00105'.
+      * SW00106 - Erro a inserir código standard
+           05 SWCK0003-INSERT-SWSTAND       PIC  X(07) VALUE 'SW00106'.
+      * SW00107 - Código standard já existe
+           05 SWCK0003-DUPREC-SWSTAND       PIC  X(07) VALUE 'SW00107'.
+      * SW00108 - Erro no FETCH do CURSOR da tabela de CLIENTE
+           05 SWCK0003-CLIENTE-ERFE         PIC  X(07) VALUE 'SW00108'.
+      * SW00109 - É obrigatório preencher o cliente
+           05 SWCK0003-CLIENTE-OBR          PIC  X(07) VALUE 'SW00109'.
+      * SW00110 - O cliente não existe
+           05 SWCK0003-NOTFND-SWCLIENTE     PIC  X(07) VALUE 'SW00110'.
+      * SW00111 - Erro a eliminar o cliente
+           05 SWCK0003-DELETE-SWCLIENTE     PIC  X(07) VALUE 'SW00111'.
+      * SW00112 - Erro a inserir cliente
+           05 SWCK0003-INSERT-SWCLIENTE     PIC  X(07) VALUE 'SW00112'.
+      * SW00113 - Cliente já existe
+           05 SWCK0003-DUPREC-SWCLIENTE     PIC  X(07) VALUE 'SW00113'.
+      * SW00114 - É obrigatório preencher o código estatístico
+           05 SWCK0003-CESTAT-OBR           PIC  X(07) VALUE 'SW00114'.
+      * SW00115 - É obrigatório preencher o tipo de operação
+           05 SWCK0003-TIPOP-OBR            PIC  X(07) VALUE 'SW00115'.
+      * SW00116 - Erro a actualizar o cliente
+           05 SWCK0003-UPDATE-SWCLIENTE     PIC  X(07) VALUE 'SW00116'.
+      * SW00117 - Erro no FETCH do CURSOR da tabela de REMETENTES
+           05 SWCK0003-REMETE-ERFE          PIC  X(07) VALUE 'SW00117'.
+      * SW00118 - É obrigatório preencher o remetente
+           05 SWCK0003-REMETE-OBR           PIC  X(07) VALUE 'SW00118'.
+      * SW00119 - O remetente não existe
+           05 SWCK0003-NOTFND-SWREMETE      PIC  X(07) VALUE 'SW00119'.
+      * SW00120 - Erro a eliminar o remetente
+           05 SWCK0003-DELETE-SWREMETE      PIC  X(07) VALUE 'SW00120'.
+      * SW00121 - Erro a inserir remetente
+           05 SWCK0003-INSERT-SWREMETE      PIC  X(07) VALUE 'SW00121'.
+      * SW00122 - Remetente já existe
+           05 SWCK0003-DUPREC-SWREMETE      PIC  X(07) VALUE 'SW00122'.
+      * SW00123 - É obrigatório preencher o CAE
+           05 SWCK0003-CAE-OBR              PIC  X(07) VALUE 'SW00123'.
+      * SW00124 - Erro a actualizar o remetente
+           05 SWCK0003-UPDATE-SWREMETE      PIC  X(07) VALUE 'SW00124'.
+      * SW00125 - Utilizador Inexistente
+           05 SWCK0003-UTILIZ-INX           PIC  X(07) VALUE 'SW00125'.
+      * SW00126 - Tipo de operação Inexistente
+           05 SWCK0003-TIPOP-INV            PIC  X(07) VALUE 'SW00126'.
+      * SW00127 - Erro no OPEN A TABELA DA MENSAGEM MT191
+           05 SWCK0003-OPEN-SWMT191         PIC  X(07) VALUE 'SW00127'.
+      * SW00128 - Despesa inexistente
+           05 SWCK0003-NOTFND-MT191         PIC  X(07) VALUE 'SW00128'.
+      * SW00129 - Erro na consulta da despesa
+           05 SWCK0003-SELECT-MT191         PIC  X(07) VALUE 'SW00129'.
+      * SW00130 - Data de reconciliação inválida
+           05 SWCK0003-DATREC-INV           PIC  X(07) VALUE 'SW00130'.
+      * SW00131 - Data de reenvio de despesa inválida
+           05 SWCK0003-PRXENV-INV           PIC  X(07) VALUE 'SW00131'.
+      * SW00132 - Referência da operação inexistente
+           05 SWCK0003-REFOPR-INV           PIC  X(07) VALUE 'SW00132'.
+      * SW00133 - Erro na actualização da despesa
+           05 SWCK0003-UPDATE-MT191         PIC  X(07) VALUE 'SW00133'.
+      * SW00134 - Erro no código standard
+           05 SWCK0003-ERR-CSTAND           PIC  X(07) VALUE 'SW00134'.
+      * SW00135 - Mensagem MT191 inexistente
+           05 SWCK0003-MT191-INEXIST        PIC  X(07) VALUE 'SW00135'.
+      * SW00136 - Mensagem MT191 duplicada
+           05 SWCK0003-MT191-DUPLIC         PIC  X(07) VALUE 'SW00136'.
+      * SW00137 - Erro na chamada ao módulo SWM5055
+           05 SWCK0003-ERR-SWM5055          PIC  X(07) VALUE 'SW00137'.
+      * SW00138 - Erro na chamada ao módulo SWM5060
+           05 SWCK0003-ERR-SWM5060          PIC  X(07) VALUE 'SW00138'.
+      * SW00139 - Erro no fecho do cursor a tabela MT191
+           05 SWCK0003-CLOSE-SWMT191        PIC  X(07) VALUE 'SW00139'.
+      * SW00140 - Campo automatização é de preenchimento obrigatório
+           05 SWCK0003-IAUTOM-OBR           PIC  X(07) VALUE 'SW00140'.
+      * SW00141 - Acção Inválida. Alteração de Cód.Estatístico e Utilizador
+           05 SWCK0003-ACCAO-INV            PIC  X(07) VALUE 'SW00141'.
+      * SW00142 - O Utilizador &1 não tem permissão para esta alteração.
+           05 SWCK0003-USER-PERMIT          PIC  X(07) VALUE 'SW00142'.
+      * SW00143 - ERRO NO ACESSO A MENSAGEM BANKA
+           05 SWCK0003-ERR-MSG-BNK          PIC  X(07) VALUE 'SW00143'.
+      * SW00144 - MENSAGEM JA REGISTADA NA SWMT103
+           05 SWCK0003-MT103-DUPL           PIC  X(07) VALUE 'SW00144'.
+      * SW00145 - Erro na consulta à conta DO
+           05 SWCK0003-ERR-SXRM0170         PIC  X(07) VALUE 'SW00145'.
+      * SW00146 - Erro na obtenção do país nacional
+           05 SWCK0003-ERR-PAIS             PIC  X(07) VALUE 'SW00146'.
+      * SW00147 - Operação Registada com Sucesso
+           05 SWCK0003-REG-OK               PIC  X(07) VALUE 'SW00147'.
+      * SW00148 - ERRO NO NUMERO DE OPERACAO
+           05 SWCK0003-ERR-NOPR             PIC  X(07) VALUE 'SW00148'.
+      * SW00149 - Erro no insert da MT199
+           05 SWCK0003-INSERT-SWMT199       PIC  X(07) VALUE 'SW00149'.
+      * SW00150 - Erro no insert da DT940
+           05 SWCK0003-INSERT-SWVT6003      PIC  X(07) VALUE 'SW00150'.
+      * SW00151 - Erro no insert da DT950
+           05 SWCK0003-INSERT-SWVT6103      PIC  X(07) VALUE 'SW00151'.
+      * SW00152 - Erro no CAMPO MENSAGEM
+           05 SWCK0003-ERRO-MSG             PIC  X(07) VALUE 'SW00152'.
+      * SW00153 - Erro no CAMPO ACCAO
+           05 SWCK0003-ERR-ACCAO            PIC  X(07) VALUE 'SW00153'.
+      * SW00154 - Erro no open das entradas do SWIFT
+           05 SWCK0003-OPEN-FWESWF          PIC  X(07) VALUE 'SW00154'.
+      * SW00155 - Erro na leitura das mensagens de SWIFT
+           05 SWCK0003-FETCH-FWESWF         PIC  X(07) VALUE 'SW00155'.
+      * SW00156 - Erro na leitura de parametro de data para extractos
+           05 SWCK0003-SELECT-SWPARAM       PIC  X(07) VALUE 'SW00156'.
+      * SW00157 - Erro na leitura de detalhes de MT940
+           05 SWCK0003-SELECT-SWDT940       PIC  X(07) VALUE 'SW00157'.
+      * SW00158 - Erro na leitura de detalhes de MT950
+           05 SWCK0003-SELECT-SWDT950       PIC  X(07) VALUE 'SW00158'.
+      * SW00159 - Erro na actualização de detalhes de MT940
+           05 SWCK0003-UPDATE-SWDT940       PIC  X(07) VALUE 'SW00159'.
+      * SW00160 - Erro na actualização de detalhes de MT950
+           05 SWCK0003-UPDATE-SWDT950       PIC  X(07) VALUE 'SW00160'.
+      * SW00161 - Erro no acesso à reconciliação de detalhe com MT940
+           05 SWCK0003-ERR-SWM5150          PIC  X(07) VALUE 'SW00161'.
+      * SW00162 - Erro no acesso à reconciliação de detalhe com MT950
+           05 SWCK0003-ERR-SWM5155          PIC  X(07) VALUE 'SW00162'.
+      * SW00163 - Deseja Cancelar o reenvio da despesa? (ENTER para Confirmar)
+           05 SWCK0003-CONF-CAN             PIC  X(07) VALUE 'SW00163'.
+      * SW00164 - Erro no formato da TAG 59
+           05 SWCK0003-ERR-TAG59            PIC  X(07) VALUE 'SW00164'.
+      * SW00165 - Erro no acesso a informação da TAG 59
+           05 SWCK0003-ERR-SWML59           PIC  X(07) VALUE 'SW00165'.
+      * SW00166 - Erro no insert do registo de LOG
+           05 SWCK0003-INSERT-SWMSGLOG      PIC  X(07) VALUE 'SW00166'.
+      * SW00167 - Erro no formato da TAG 59A
+           05 SWCK0003-ERR-TAG59A           PIC  X(07) VALUE 'SW00167'.
+      * SW00168 - Erro no acesso a informação da TAG 59A
+           05 SWCK0003-ERR-SWML59A          PIC  X(07) VALUE 'SW00168'.
+      * SW00169 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML50K          PIC  X(07) VALUE 'SW00169'.
+      * SW00170 - Dados do ordenante mal formatados
+           05 SWCK0003-ERR-TAG50K           PIC  X(07) VALUE 'SW00170'.
+      * SW00171 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML50F          PIC  X(07) VALUE 'SW00171'.
+      * SW00172 - Dados do ordenante mal formatados
+           05 SWCK0003-ERR-TAG50F           PIC  X(07) VALUE 'SW00172'.
+      * SW00173 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML54A          PIC  X(07) VALUE 'SW00173'.
+      * SW00174 - Dados do correspondente mal formatados
+           05 SWCK0003-ERR-TAG54A           PIC  X(07) VALUE 'SW00174'.
+      * SW00175 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML53A          PIC  X(07) VALUE 'SW00175'.
+      * SW00176 - Dados do correspondente mal formatados
+           05 SWCK0003-ERR-TAG53A           PIC  X(07) VALUE 'SW00176'.
+      * SW00177 - Dados da taxa de câmbio mal formatados
+           05 SWCK0003-ERR-TAG36            PIC  X(07) VALUE 'SW00177'.
+      * SW00178 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML36           PIC  X(07) VALUE 'SW00178'.
+      * SW00179 - Tipo de Operação deve ser &7
+           05 SWCK0003-TIPOP-INVALIDO       PIC  X(07) VALUE 'SW00179'.
+      * SW00180 - Erro na obtenção do codigo de nota
+           05 SWCK0003-NOTFND-GBNOTASE      PIC  X(07) VALUE 'SW00180'.
+      * SW00181 - Erro na validação do indicador de operacao manual
+           05 SWCK0003-VAL-MANUAL           PIC  X(07) VALUE 'SW00181'.
+      * SW00182 - Código de estado inválido
+           05 SWCK0003-CODEST-INV           PIC  X(07) VALUE 'SW00182'.
+      * SW00183 - Erro grave no sistema central
+           05 SWCK0003-CALL-SXRM0625        PIC  X(07) VALUE 'SW00183'.
+      * SW00184 - Erro grave no sistema central
+           05 SWCK0003-CALL-SXRM0430        PIC  X(07) VALUE 'SW00184'.
+      * SW00185 - Erro grave no sistema central
+           05 SWCK0003-CALL-SXRM0445        PIC  X(07) VALUE 'SW00185'.
+      * SW00186 - Erro grave no sistema central
+           05 SWCK0003-CALL-SXRM0550        PIC  X(07) VALUE 'SW00186'.
+      * SW00187 - Erro grave no sistema central
+           05 SWCK0003-CALL-SXRM0615        PIC  X(07) VALUE 'SW00187'.
+      * SW00188 - Erro na escrita na insercao da MT191 no historico
+           05 SWCK0003-INSERT-SWMT191H      PIC  X(07) VALUE 'SW00188'.
+      * SW00189 - Erro na eliminacao da tabela de despesas activas
+           05 SWCK0003-DELETE-SWMT191       PIC  X(07) VALUE 'SW00189'.
+      * SW00190 - Validação data valor com atribuição de tipo de operação
+           05 SWCK0003-ERR-SWM5025          PIC  X(07) VALUE 'SW00190'.
+      * SW00191 - ERRO NA CRIACAO DA SWPARAM
+           05 SWCK0003-INSERT-SWPARAM       PIC  X(07) VALUE 'SW00191'.
+      * SW00192 - ERRO NA ANULACAO DA SWPARAM
+           05 SWCK0003-DELETE-SWPARAM       PIC  X(07) VALUE 'SW00192'.
+      * SW00193 - ERRO NO OPEN DA SWPARAM
+           05 SWCK0003-OPEN-SWPARAM         PIC  X(07) VALUE 'SW00193'.
+      * SW00194 - ERRO NO FETCH DA SWPARAM
+           05 SWCK0003-FETCH-SWPARAM        PIC  X(07) VALUE 'SW00194'.
+      * SW00195 - ERRO NO CLOSE DA SWPARAM
+           05 SWCK0003-CLOSE-SWPARAM        PIC  X(07) VALUE 'SW00195'.
+      * SW00196 - É NECESSÁRIO PREENCHER OS CAMPOS OBRIGATÓRIOS
+           05 SWCK0003-DADOS-OBR            PIC  X(07) VALUE 'SW00196'.
+      * SW00197 - ERRO NO ACESSO A CONTA CCB DO CORRESPONDENTE
+           05 SWCK0003-CALL-SXRM0645        PIC  X(07) VALUE 'SW00197'.
+      * SW00198 - ERRO NA OBTENCAO CCB DE CONTRAPARTIDA
+           05 SWCK0003-ERR-RCCB             PIC  X(07) VALUE 'SW00198'.
+      * SW00199 - ERRO NO DEBITO CCB CORRESPONDENTE
+           05 SWCK0003-ERR-DEBCORR          PIC  X(07) VALUE 'SW00199'.
+      * SW00200 - ERRO NO CREDITO CCB CONTRAPARTIDA
+           05 SWCK0003-ERR-CRECCB           PIC  X(07) VALUE 'SW00200'.
+      * SW00201 - ERRO NA CONTABILIZACAO CCB CORRESPONDENTE
+           05 SWCK0003-ERR-SWM5095          PIC  X(07) VALUE 'SW00201'.
+      * SW00202 - CONSULTA APENAS POSSÍVEL EM MENSAGENS MT191
+           05 SWCK0003-OPC-MT103            PIC  X(07) VALUE 'SW00202'.
+      * SW00203 - OPR NÃO RECONCILIADA
+           05 SWCK0003-OPC-NOPR             PIC  X(07) VALUE 'SW00203'.
+      * SW00204 - DESPESA RECONCILIADA COM SUCESSO
+           05 SWCK0003-DESP-REC             PIC  X(07) VALUE 'SW00204'.
+      * SW00205 - Erro no Rollback
+           05 SWCK0003-ERR-ROLLBACK         PIC  X(07) VALUE 'SW00205'.
+      * SW00206 - Erro no Commit
+           05 SWCK0003-ERR-COMMIT           PIC  X(07) VALUE 'SW00206'.
+      * SW00207 - CONFIRMA OS DADOS INTRODUZIDOS?(ENTER PARA CONFIRMAR)
+           05 SWCK0003-CONF-CNT             PIC  X(07) VALUE 'SW00207'.
+      * SW00208 - A Conta Contabilística introduzida não existe.
+           05 SWCK0003-CCB-NOTFND           PIC  X(07) VALUE 'SW00208'.
+      * SW00209 - Só é possível preencher uma das contas.
+           05 SWCK0003-CNT-DUP              PIC  X(07) VALUE 'SW00209'.
+      * SW00210 - Introduza uma das contas.
+           05 SWCK0003-CNT-SPACES           PIC  X(07) VALUE 'SW00210'.
+      * SW00211 - Indicador de contabilização obrigatório.
+           05 SWCK0003-ICONT-INV            PIC  X(07) VALUE 'SW00211'.
+      * SW00212 - Data do próximo envio actualizada com sucesso.
+           05 SWCK0003-DATRENV-OK           PIC  X(07) VALUE 'SW00212'.
+      * SW00213 - Despesa Reconciliada com sucesso. Operação: &7
+           05 SWCK0003-DESP-RECON           PIC  X(07) VALUE 'SW00213'.
+      * SW00214 - Registo não existente na tabela de Histórico
+           05 SWCK0003-NOTFND-SWHOPR        PIC  X(07) VALUE 'SW00214'.
+      * SW00215 - Número máximo de registos atingido. Listados 9999 registos.
+           05 SWCK0003-MAX-REG              PIC  X(07) VALUE 'SW00215'.
+      * SW00216 - Deseja anular o registo? (ENTER para confirmar)
+           05 SWCK0003-CONF-ANL             PIC  X(07) VALUE 'SW00216'.
+      * SW00217 - Deve introduzir um motivo de anulação válido.
+           05 SWCK0003-DESC-INV             PIC  X(07) VALUE 'SW00217'.
+      * SW00218 - O campo Instituição Ordenante é obrigatório.
+           05 SWCK0003-INSORD-OBR           PIC  X(07) VALUE 'SW00218'.
+      * SW00219 - O campo Instituição Ordenante é inválido.
+           05 SWCK0003-INSORD-INV           PIC  X(07) VALUE 'SW00219'.
+      * SW00220 - Erro no acesso a tabela de banco emissor SWVT2501.
+           05 SWCK0003-SELECT-SWVT25        PIC  X(07) VALUE 'SW00220'.
+      * SW00221 - Tipo de emissao invalido.
+           05 SWCK0003-OPTIPEM-INV          PIC  X(07) VALUE 'SW00221'.
+      * SW00222 - Erro na criação da SWT31
+           05 SWCK0003-INSERT-SWT31         PIC  X(07) VALUE 'SW00222'.
+      * SW00223 - Erro no calculo da data
+           05 SWCK0003-CALC-DATA            PIC  X(07) VALUE 'SW00223'.
+      * SW00224 - Cliente Exportador
+           05 SWCK0003-NCLI-EXPORTADOR      PIC  X(07) VALUE 'SW00224'.
+      * SW00225 - OPR COM VALOR SUPERIOR AO MÁXIMO PERMITIDO PARA
+      *           AUTOMATIZAÇÃO
+           05 SWCK0003-OPR-VLRMAX           PIC  X(07) VALUE 'SW00225'.
+      * SW00226 - POSSÍVEL DUPLICADO. JÁ EXISTE UMA ORDEM TRATADA COM
+      *         ESTA REFERÊNCIA DE OPERAÇÃO.
+           05 SWCK0003-REFOPR-DUPL          PIC  X(07) VALUE 'SW00226'.
+      * SW00227 - Erro no UPDATE A TABELA SWT51
+           05 SWCK0003-UPDATE-SWT51         PIC  X(07) VALUE 'SW00227'.
+      * SW00228 - Erro no UPDATE A TABELA SWT52
+           05 SWCK0003-UPDATE-SWT52         PIC  X(07) VALUE 'SW00228'.
+      * SW00229 - Erro no SELECT A TABELA SWT51
+           05 SWCK0003-SELECT-SWT51         PIC  X(07) VALUE 'SW00229'.
+      * SW00230 - Erro no SELECT A TABELA SWT52
+           05 SWCK0003-SELECT-SWT52         PIC  X(07) VALUE 'SW00230'.
+      * SW00231 - Erro no OPEN DO CURSOR  SWT52
+           05 SWCK0003-OPEN-SWT52           PIC  X(07) VALUE 'SW00231'.
+      * SW00232 - Erro no FETCH DA TABELA  SWT52
+           05 SWCK0003-FETCH-SWT52          PIC  X(07) VALUE 'SW00232'.
+      * SW00233 - Erro no SELECT A TABELA PSFICHREL
+           05 SWCK0003-SELECT-PSFICHREL     PIC  X(07) VALUE 'SW00233'.
+      * SW00234 - Erro no SELECT A TABELA PSCONTRAT2
+           05 SWCK0003-SELECT-PSCONTRAT2    PIC  X(07) VALUE 'SW00234'.
+      * SW00235 - Erro DB2
+           05 SWCK0003-ERR-DB2              PIC  X(07) VALUE 'SW00235'.
+      * SW00236 - REGISTO DUPLICADO NA PSFICHREL
+           05 SWCK0003-DUPREC-PSFICHREL     PIC  X(07) VALUE 'SW00236'.
+      * SW00237 - REGISTO DUPLICADO NA PSFICHREL
+           05 SWCK0003-CALL-PSM5240         PIC  X(07) VALUE 'SW00237'.
+      * SW00238 - REGISTO DUPLICADO NA PSFICHEIR
+           05 SWCK0003-DUPREC-PSFICHEIR     PIC  X(07) VALUE 'SW00238'.
+      * SW00239 - ERRO INSERT NA PSFICHEIR
+           05 SWCK0003-INSERT-PSFICHEIR     PIC  X(07) VALUE 'SW00239'.
+      * SW00240 - ERRO GESTOR CLIENTE
+           05 SWCK0003-ERR-OGER             PIC  X(07) VALUE 'SW00240'.
+      * SW00241 - ERRO SELECT NA PSFICHEIR
+           05 SWCK0003-SELECT-PSFICHEIR     PIC  X(07) VALUE 'SW00241'.
+      * SW00242 - ERRO ROTINA SWM5320
+           05 SWCK0003-CALL-SWM5320         PIC  X(07) VALUE 'SW00242'.
+      * SW00243 - ERRO INSERT NA PSFICHREL
+           05 SWCK0003-INSERT-PSFICHREL     PIC  X(07) VALUE 'SW00243'.
+      * SW00244 - Mensagem MT101 duplicada
+           05 SWCK0003-MT101-DUPLIC         PIC  X(07) VALUE 'SW00244'.
+      * SW00245 - Erro no INSERT A TABELA SWT52
+           05 SWCK0003-INSERT-SWT52         PIC  X(07) VALUE 'SW00245'.
+      * SW00246 - Erro no SELECT A TABELA DDT03
+           05 SWCK0003-SELECT-DDT03         PIC  X(07) VALUE 'SW00246'.
+      * SW00247 - Erro no INSERT A TABELA SWT53
+           05 SWCK0003-INS-SWT53            PIC  X(07) VALUE 'SW00247'.
+      * SW00248 - Dados do ordenante mal formatados
+           05 SWCK0003-ERR-TAG50A           PIC  X(07) VALUE 'SW00248'.
+      * SW00169 - Erro grave no sistema central
+           05 SWCK0003-ERR-SWML50A          PIC  X(07) VALUE 'SW00249'.
+      * SW00250 - Erro no acesso a informação da TAG 59F
+           05 SWCK0003-ERR-SWML59F          PIC  X(07) VALUE 'SW00250'.
+      * SW00251 - Erro no formato da TAG 59F
+           05 SWCK0003-ERR-TAG59F           PIC  X(07) VALUE 'SW00251'.
+      * SW00252 - Erro no OSN
+           05 SWCK0003-ERR-COSN             PIC  X(07) VALUE 'SW00252'.
+BCI317* SW00253 - Erro na Conta em Moeda Nacional
+BCI317     05 SWCK0003-ERR-CONTAMN          PIC  X(07) VALUE 'SW00253'.
+BCI317* SW00254 - Erro na Conta em Moeda Estrangeira
+BCI317     05 SWCK0003-ERR-CONTAME          PIC  X(07) VALUE 'SW00254'.
+BCI317* SW00255 - Constas pertencem a Clientes diferentes
+BCI317     05 SWCK0003-ERR-CLIDIF           PIC  X(07) VALUE 'SW00255'.
+      * SW00256 - Erro na chamada ao módulo SWM5520
+           05 SWCK0003-ERR-SWM5520          PIC  X(07) VALUE 'SW00256'.
+      **********************************************************************
+      *  MAPEAMENTO DE ERRO EXTERNOS RECEBIDOS DOS SEVRIÇOS DA JUE
+      **********************************************************************
+      * ERLOC253 - PROVIDED USER INFORMATION IS INVALID
+           05 SWCK0003-ERLOC253             PIC  X(08) VALUE 'ERLOC253'.
+      * ERLOC053 - BANK CODE IS INVALID
+           05 SWCK0003-ERLOC053             PIC  X(08) VALUE 'ERLOC053'.

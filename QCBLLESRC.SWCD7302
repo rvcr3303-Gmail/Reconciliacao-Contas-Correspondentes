@@ -1,0 +1,32 @@
+           EXEC SQL DECLARE SWVT7302 TABLE
+           (
+               CBAN CHAR(4) NOT NULL
+             , CSPAI CHAR(2) NOT NULL
+             , NBALC DEC(4) NOT NULL
+             , CCB CHAR(13) NOT NULL
+             , CMOED CHAR(3) NOT NULL
+             , DATVAL DATE NOT NULL
+             , MSALDMOV DEC(15, 2) NOT NULL
+             , MSALDEXT DEC(15, 2) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEST TIMESTAMP NOT NULL
+             , ISALDMOV CHAR(1) NOT NULL
+             , ISALDEXT CHAR(1) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT7302
+      ******************************************************************
+       01  DCLSWCD7302.
+           05 SWCD7302-CBAN PIC X(4).
+           05 SWCD7302-CSPAI PIC X(2).
+           05 SWCD7302-NBALC PIC S9(4) COMP-3.
+           05 SWCD7302-CCB PIC X(13).
+           05 SWCD7302-CMOED PIC X(3).
+           05 SWCD7302-DATVAL PIC X(10).
+           05 SWCD7302-MSALDMOV PIC S9(13)V9(2) COMP-3.
+           05 SWCD7302-MSALDEXT PIC S9(13)V9(2) COMP-3.
+           05 SWCD7302-CUSERID PIC X(20).
+           05 SWCD7302-HTIMEST PIC X(26).
+           05 SWCD7302-ISALDMOV PIC X(01).
+           05 SWCD7302-ISALDEXT PIC X(01).
+

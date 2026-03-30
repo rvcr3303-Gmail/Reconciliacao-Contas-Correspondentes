@@ -1,0 +1,98 @@
+           EXEC SQL DECLARE SWVT5606 TABLE
+           (
+               NOPR     DECIMAL(9,0) NOT NULL
+             , CROPR    CHAR(16) NOT NULL
+             , CORIGEM  CHAR(5) NOT NULL
+             , CTMOV    CHAR(1) NOT NULL
+             , DTVC     DECIMAL(8,0) NOT NULL
+             , DATL     DECIMAL(8,0) NOT NULL
+             , CUSER    CHAR(10) NOT NULL
+             , CETRB    CHAR(10) NOT NULL
+             , CBALM    DECIMAL(4,0) NOT NULL
+             , CBAL     DECIMAL(4,0) NOT NULL
+             , NCLI     DECIMAL(9,0) NOT NULL
+             , CNTO     DECIMAL(14,0) NOT NULL
+             , CBALC    DECIMAL(4,0) NOT NULL
+             , CCB      CHAR(13) NOT NULL
+             , CMOEC    CHAR(3) NOT NULL
+             , CSITU    CHAR(1) NOT NULL
+             , CEST     CHAR(8) NOT NULL
+             , CRCLI    CHAR(16) NOT NULL
+             , CDGAS    CHAR(3) NOT NULL
+             , CNTA     CHAR(34) NOT NULL
+             , MVLR     DECIMAL(15,2) NOT NULL
+             , CMOED    CHAR(3) NOT NULL
+             , CDMOV    CHAR(40) NOT NULL
+             , CBAN     CHAR(4) NOT NULL
+             , CSPAI    CHAR(2) NOT NULL
+             , NOPRREC  DECIMAL(9,0) NOT NULL
+             , CCODEST  CHAR(2) NOT NULL
+             , CREFREC  CHAR(16) NOT NULL
+             , DATREC   DECIMAL(8,0) NOT NULL
+             , CTIPREC  CHAR(1) NOT NULL
+             , GDESC    CHAR(200) NOT NULL
+             , MOTIVO   CHAR(2) NOT NULL
+             , OBSER    CHAR(200) NOT NULL
+             , CBYPASS  CHAR(1) NOT NULL
+             , CSENDREC CHAR(15) NOT NULL
+             , MVLRREC  DECIMAL(15,2) NOT NULL
+             , CMOEDREC CHAR(3) NOT NULL
+             , DTVCREC  DECIMAL(8,0) NOT NULL
+             , CNIVREC  CHAR(3) NOT NULL
+             , CUSERID  CHAR(20) NOT NULL
+             , HTIMEST  CHAR(26) NOT NULL
+             , COSNREC  CHAR(10) NOT NULL
+             , COSNCREC CHAR(10) NOT NULL
+             , IDRECONC DECIMAL(13, 0) NOT NULL
+             , CNATREC  CHAR(03) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT5606
+      ******************************************************************
+       01  DCLSWCD5606.
+            05 SWCD5606-NOPR PIC S9(09) COMP-3.
+            05 SWCD5606-CROPR PIC X(16).
+            05 SWCD5606-CORIGEM PIC X(05).
+            05 SWCD5606-CTMOV PIC X(01).
+            05 SWCD5606-DTVC PIC S9(08) COMP-3.
+            05 SWCD5606-DATL PIC S9(08) COMP-3.
+            05 SWCD5606-CUSER PIC X(10).
+            05 SWCD5606-CETRB PIC X(10).
+            05 SWCD5606-CBALM PIC S9(04) COMP-3.
+            05 SWCD5606-CBAL PIC S9(04) COMP-3.
+            05 SWCD5606-NCLI PIC S9(09) COMP-3.
+            05 SWCD5606-CNTO PIC S9(14) COMP-3.
+            05 SWCD5606-CBALC PIC S9(04) COMP-3.
+            05 SWCD5606-CCB PIC X(13).
+            05 SWCD5606-CMOEC PIC X(03).
+            05 SWCD5606-CSITU PIC X(01).
+            05 SWCD5606-CEST PIC X(08).
+            05 SWCD5606-CRCLI PIC X(16).
+            05 SWCD5606-CDGAS PIC X(03).
+            05 SWCD5606-CNTA PIC X(34).
+            05 SWCD5606-MVLR PIC S9(13)V9(2) COMP-3.
+            05 SWCD5606-CMOED PIC X(03).
+            05 SWCD5606-CDMOV PIC X(40).
+            05 SWCD5606-CBAN PIC X(04).
+            05 SWCD5606-CSPAI PIC X(02).
+            05 SWCD5606-NOPRREC PIC S9(09) COMP-3.
+            05 SWCD5606-CCODEST PIC X(02).
+            05 SWCD5606-CREFREC PIC X(16).
+            05 SWCD5606-DATREC PIC S9(08) COMP-3.
+            05 SWCD5606-CTIPREC PIC X(01).
+            05 SWCD5606-GDESC PIC X(200).
+            05 SWCD5606-MOTIVO PIC X(02).
+            05 SWCD5606-OBSER PIC X(200).
+            05 SWCD5606-CBYPASS PIC X(01).
+            05 SWCD5606-CSENDREC PIC X(15).
+            05 SWCD5606-MVLRREC PIC S9(13)V9(2) COMP-3.
+            05 SWCD5606-CMOEDREC PIC X(03).
+            05 SWCD5606-DTVCREC PIC S9(08) COMP-3.
+            05 SWCD5606-CNIVREC PIC X(03).
+            05 SWCD5606-CUSERID PIC X(20).
+            05 SWCD5606-HTIMEST PIC X(26).
+            05 SWCD5606-COSNREC PIC X(10).
+            05 SWCD5606-COSNCREC PIC X(10).
+            05 SWCD5606-IDRECONC PIC S9(13) COMP-3.
+            05 SWCD5606-CNATREC PIC X(03).
+

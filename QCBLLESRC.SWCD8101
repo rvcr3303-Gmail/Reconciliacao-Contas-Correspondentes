@@ -1,0 +1,28 @@
+           EXEC SQL DECLARE SWVT8101 TABLE
+           (
+               CCODMSG CHAR(20) NOT NULL
+             , ZMSGORD DECIMAL(9,0) NOT NULL
+             , GMSG CHAR(1000) NOT NULL
+             , ILIDO CHAR(1) NOT NULL
+             , CPERFILC CHAR(12) NOT NULL
+             , CUSERIDC CHAR(20) NOT NULL
+             , HTIMESTC TIMESTAMP NOT NULL
+             , CPERFIL CHAR(12) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEST TIMESTAMP NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT8101
+      ******************************************************************
+       01  DCLSWCD8101.
+            05 SWCD8101-CCODMSG PIC X(20).
+            05 SWCD8101-ZMSGORD PIC S9(09) COMP-3.
+            05 SWCD8101-GMSG PIC X(1000).
+            05 SWCD8101-ILIDO PIC X(01).
+            05 SWCD8101-CPERFILC PIC X(12).
+            05 SWCD8101-CUSERIDC PIC X(20).
+            05 SWCD8101-HTIMESTC PIC X(26).
+            05 SWCD8101-CPERFIL PIC X(12).
+            05 SWCD8101-CUSERID PIC X(20).
+            05 SWCD8101-HTIMEST PIC X(26).
+

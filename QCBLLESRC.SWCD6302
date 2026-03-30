@@ -1,0 +1,26 @@
+           EXEC SQL DECLARE SWVT6302 TABLE
+           (
+               CBAN CHAR(4) NOT NULL
+             , CSPAI CHAR(2) NOT NULL
+             , TOPREC DECIMAL(15,0) NOT NULL
+             , TEXREC DECIMAL(15,0) NOT NULL
+             , TOPPEND DECIMAL(15,0) NOT NULL
+             , TEXPEND DECIMAL(15,0) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEEST CHAR(26) NOT NULL
+             , NANO DECIMAL(4,0) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT6302
+      ******************************************************************
+       01  DCLSWCD6302.
+            05 SWCD6302-CBAN PIC X(04).
+            05 SWCD6302-CSPAI PIC X(02).
+            05 SWCD6302-TOPREC PIC S9(15) COMP-3.
+            05 SWCD6302-TEXREC PIC S9(15) COMP-3.
+            05 SWCD6302-TOPPEND PIC S9(15) COMP-3.
+            05 SWCD6302-TEXPEND PIC S9(15) COMP-3.
+            05 SWCD6302-CUSERID PIC X(20).
+            05 SWCD6302-HTIMEEST PIC X(26).
+            05 SWCD6302-NANO PIC S9(04) COMP-3.
+

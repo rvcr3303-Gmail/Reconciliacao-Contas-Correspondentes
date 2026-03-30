@@ -1,0 +1,33 @@
+      ****************************************************************
+      *                                                              *
+      *                      ECRAN DE MENSAGENS                      *
+      *                                                              *
+      *                      MAPA:  SWCV5021                         *
+      *                                                              *
+      ****************************************************************
+       01  SWCV5021-LENGTH                       PIC  9(05) VALUE 1161.
+       01  SWCV5021-NR-CAMPOS                    PIC  9(05) VALUE 1.
+      *
+       01  SWCV5021-MSG.
+           05 SWCV5021-ASE.
+              10 SWCV5021-CCHAVE-ST.
+                 15 SWCV5021-CCHAVE-S         PIC  X(01).
+                    88 SWCV5021-CCHAVE-0      VALUE '0'.
+                    88 SWCV5021-CCHAVE-1      VALUE '1' ' '.
+                 15 SWCV5021-CCHAVE-CAPLIC    PIC X(02).
+                 15 SWCV5021-CCHAVE-MSG       PIC 9(04).
+
+      *
+          05  SWCV5021-ADE.
+                10 SWCV5021-CCHAVE PIC X(20).
+                10 SWCV5021-ZMSGORD PIC 9(09).
+                10 SWCV5021-CPERFILU PIC X(12).
+                10 SWCV5021-CPERFILC PIC X(12).
+                10 SWCV5021-CUSERIDC PIC X(20).
+                10 SWCV5021-HTIMESTC PIC X(24).
+                10 SWCV5021-GMSG PIC X(1000).
+                10 SWCV5021-ILIDO PIC X(01).
+                10 SWCV5021-CPERFIL PIC X(12).
+                10 SWCV5021-CUSERID PIC X(20).
+                10 SWCV5021-HTIMEST PIC X(24).
+

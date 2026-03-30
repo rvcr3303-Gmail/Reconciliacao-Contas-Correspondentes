@@ -1,0 +1,50 @@
+      ******************************************************************
+      *  FUNÇÃO:           LINKAGE ARQUITECTURA                       **
+      *  CRIACAO:          2011.10.31                                 **
+      *  AUTOR:            VIA CONSULTING                             **
+      *  DESCRIÇÃO:        LINKAGE COM CAMPOS INDIVIDUAIS             **
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S           **
+      *          *        *        *                                  **
+      ******************************************************************
+       01 AQCW0011-DATA.
+           05 AQCW0011-CODERR               PIC  X(07).
+           05 AQCW0011-DB2-LOG.
+              10 AQCW0011-TABLE-NAME        PIC X(16).
+              10 AQCW0011-SQLCODE           PIC S9(03) VALUE ZEROES.
+                    88 DB2-OK                         VALUE +0.
+                    88 DB2-NOTFND                     VALUE +100.
+                    88 DB2-DUPREC                     VALUE -803.
+                    88 DB2-DUPLINE                    VALUE -811.
+                    88 AQCW0011-NOTFND                VALUE +100.
+                    88 AQCW0011-OK                    VALUE +0.
+                    88 AQCW0011-DUPREC                VALUE -803.
+                    88 AQCW0011-MULTROW               VALUE -811.
+                    88 AQCW0011-DB2-NOT-EXIST         VALUE -924.
+                    88 AQCW0011-FKNTFND               VALUE -530.
+                    88 AQCW0011-FNC-NOT-FND           VALUE -305.
+                    88 AQCW0011-RESTRICT              VALUE -532.
+                    88 AQCW0011-DATAS                 VALUE -180 -181.
+              10 AQCW0011-SQLCA.
+                 15 AQCW0011-SQLAID         PIC X(8).
+                 15 AQCW0011-SQLABC         PIC S9(9) COMP.
+                 15 AQCW0011-SQLCODE-CA     PIC S9(9) COMP.
+                 15 AQCW0011-SQLERRM.
+                   20 AQCW0011-SQLERRM-LEN  PIC S9(4) COMP.
+                   20 AQCW0011-SQLERRM-DATA PIC X(70).
+                 15 AQCW0011-SQLERRP        PIC X(8).
+                 15 AQCW0011-SQLERDDG.
+                    20 AQCW0011-SQLERDD  OCCURS 6 TIMES.
+                       25 AQCW0011-SQLERRD-ITEM PIC S9(9) COMP.
+                 15 AQCW0011-SQLWARN.
+                   20 AQCW0011-SQLWARN0     PIC X(1).
+                   20 AQCW0011-SQLWARN1     PIC X(1).
+                   20 AQCW0011-SQLWARN2     PIC X(1).
+                   20 AQCW0011-SQLWARN3     PIC X(1).
+                   20 AQCW0011-SQLWARN4     PIC X(1).
+                   20 AQCW0011-SQLWARN5     PIC X(1).
+                   20 AQCW0011-SQLWARN6     PIC X(1).
+                   20 AQCW0011-SQLWARN7     PIC X(1).
+                 15 AQCW0011-SQLEXT         PIC X(8).

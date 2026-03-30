@@ -1,0 +1,19 @@
+      *****************************************************************
+      * DESCRICAO: COPYBOOK VALORES FILE STATUS                       *
+      * CRICAO:    11-10-2010                                         *
+      * AUTOR:     VIA CONSULTING                                     *
+      *****************************************************************
+       01 VIAW0011-FSTATUS                  PIC  X(02) VALUE SPACES.
+          88 FS-OK                          VALUE '00'.
+          88 FS-EOF                         VALUE '10'.
+          88 VIAW0011-OK                    VALUE '00'.
+          88 VIAW0011-EOF                   VALUE '10'.
+          88 VIAW0011-RECSIZ                VALUE '04'.
+       01 VIAW0011-ERROR-AREA.
+          10 VIATW910-ERRSTATUS             PIC  X(02).
+             88 VIAW0011-SEM-ERROS                VALUE 'OK'.
+             88 VIAW0011-ERROS-FUNCAO             VALUE 'FU'.
+             88 VIAW0011-ERROS-ARQUITEC           VALUE 'AT'.
+             88 VIAW0011-ABEND-FS                 VALUE 'FS'.
+          10 VIAW0011-ERRCODE               PIC  X(10).
+          10 VIAW0011-ERRMSG                PIC  X(50).

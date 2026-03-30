@@ -1,0 +1,7 @@
+      ******************************************************************
+      *                                                                *
+      *       SWCDPARAM  DECLARACAO DA TABELA SWPARAM                  *
+      *                                                                *
+      ******************************************************************
+       01  REG-SWPARAM.
+           COPY DDS-ALL-FORMATS OF SWPARAM PREFIX BY 'SWPARAM-'.

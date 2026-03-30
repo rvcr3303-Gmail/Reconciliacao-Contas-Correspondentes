@@ -1,0 +1,48 @@
+      ****************************************************************
+      *                                                              *
+      *                      ECRAN DE MENSAGENS                      *
+      *                                                              *
+      *                      MAPA:  SWCV5091                         *
+      *                                                              *
+      ****************************************************************
+       01  SWCV5091-LENGTH                       PIC  9(05) VALUE 1347.
+       01  SWCV5091-NR-CAMPOS                    PIC  9(05) VALUE 2.
+       01 SWCV5091-INDICE PIC S9(05) VALUE 0.
+           88 SWCV5091-PAGINA-CHEIA VALUE 9.
+       01 SWCV5091-INDICE-INVERSO PIC S9(05) VALUE 9.
+       01 SWCV5091-DIMINUI-LENGTH PIC S9(05) VALUE 1347.
+       01 SWCV5091-LENGTH-OCCUR PIC S9(05) VALUE 138.
+      *
+       01  SWCV5091-MSG.
+           05 SWCV5091-ASE.
+              10 SWCV5091-CCHAVE-ST.
+                 15 SWCV5091-CCHAVE-S         PIC  X(01).
+                    88 SWCV5091-CCHAVE-0      VALUE '0'.
+                    88 SWCV5091-CCHAVE-1      VALUE '1' ' '.
+                 15 SWCV5091-CCHAVE-CAPLIC    PIC X(02).
+                 15 SWCV5091-CCHAVE-MSG       PIC 9(04).
+
+              10 SWCV5091-ZMSGORD-ST.
+                 15 SWCV5091-ZMSGORD-S         PIC  X(01).
+                    88 SWCV5091-ZMSGORD-0      VALUE '0'.
+                    88 SWCV5091-ZMSGORD-1      VALUE '1' ' '.
+                 15 SWCV5091-ZMSGORD-CAPLIC    PIC X(02).
+                 15 SWCV5091-ZMSGORD-MSG       PIC 9(04).
+
+      *
+          05  SWCV5091-ADE.
+                10 SWCV5091-NOMEFXLS PIC X(30).
+                10 SWCV5091-NMAXLIST PIC 9(03).
+                10 SWCV5091-CCHAVE PIC X(20).
+                10 SWCV5091-ZMSGORD PIC 9(09).
+                10 SWCV5091-CCODMSGP PIC X(20).
+                10 SWCV5091-ZMSGORDP PIC 9(09).
+                10 SWCV5091-DETALHE OCCURS 9 TIMES.
+                    15 SWCV5091-D-CHAVE PIC X(20).
+                    15 SWCV5091-D-ZMSGORD PIC 9(09).
+                    15 SWCV5091-D-GMSG PIC X(50).
+                    15 SWCV5091-D-ILIDO PIC X(01).
+                    15 SWCV5091-D-CPERFIL PIC X(12).
+                    15 SWCV5091-D-CUSERID PIC X(20).
+                    15 SWCV5091-D-HTIMEST PIC X(26).
+

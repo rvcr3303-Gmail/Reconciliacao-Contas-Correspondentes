@@ -1,0 +1,88 @@
+           EXEC SQL DECLARE SWVT5808 TABLE
+           (
+               CCODMSG CHAR(6) NOT NULL
+             , DATVAL DECIMAL(8,0) NOT NULL
+             , COSN CHAR(10) NOT NULL
+             , COSNC CHAR(10) NOT NULL
+             , CREF CHAR(16) NOT NULL
+             , CREFOPR CHAR(16) NOT NULL
+             , CREFEXT CHAR(16) NOT NULL
+             , CSEND CHAR(15) NOT NULL
+             , CBAN CHAR(4) NOT NULL
+             , CSPAI CHAR(2) NOT NULL
+             , CCODEST CHAR(2) NOT NULL
+             , CTIPOP CHAR(10) NOT NULL
+             , MVALOR DECIMAL(15,2) NOT NULL
+             , CMOED CHAR(3) NOT NULL
+             , DATREC DECIMAL(8,0) NOT NULL
+             , CTIPREC CHAR(1) NOT NULL
+             , CTRATRYP CHAR(4) NOT NULL
+             , CCODOPE CHAR(2) NOT NULL
+             , CDBCR CHAR(2) NOT NULL
+             , DREG DECIMAL(8,0) NOT NULL
+             , NOPRREC DECIMAL(9,0) NOT NULL
+             , MOTIVO CHAR(2) NOT NULL
+             , OBSER CHAR(200) NOT NULL
+             , GDESC CHAR(200) NOT NULL
+             , CBYPASS CHAR(1) NOT NULL
+             , CSENDREC CHAR(15) NOT NULL
+             , MVLRREC DECIMAL(15,2) NOT NULL
+             , CMOEDREC CHAR(3) NOT NULL
+             , CROPRREC CHAR(16) NOT NULL
+             , CORIGEMREC CHAR(5) NOT NULL
+             , CNIVREC CHAR(3) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEST CHAR(26) NOT NULL
+             , CEXT CHAR(5) NOT NULL
+             , CPAG CHAR(5) NOT NULL
+             , NORDREC DECIMAL(7, 0) NOT NULL
+             , CINTERV CHAR(12) NOT NULL
+             , CUSERIDINT CHAR(20) NOT NULL
+             , IDRECONC DECIMAL(13, 0) NOT NULL
+             , CNATREC CHAR(03) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT5808
+      ******************************************************************
+       01  DCLSWCD5808.
+            05 SWCD5808-CCODMSG PIC X(06).
+            05 SWCD5808-DATVAL PIC S9(08) COMP-3.
+            05 SWCD5808-COSN PIC X(10).
+            05 SWCD5808-COSNC PIC X(10).
+            05 SWCD5808-CREF PIC X(16).
+            05 SWCD5808-CREFOPR PIC X(16).
+            05 SWCD5808-CREFEXT PIC X(16).
+            05 SWCD5808-CSEND PIC X(15).
+            05 SWCD5808-CBAN PIC X(04).
+            05 SWCD5808-CSPAI PIC X(02).
+            05 SWCD5808-CCODEST PIC X(02).
+            05 SWCD5808-CTIPOP PIC X(10).
+            05 SWCD5808-MVALOR PIC S9(13)V9(2) COMP-3.
+            05 SWCD5808-CMOED PIC X(03).
+            05 SWCD5808-DATREC PIC S9(08) COMP-3.
+            05 SWCD5808-CTIPREC PIC X(01).
+            05 SWCD5808-CTRATRYP PIC X(04).
+            05 SWCD5808-CCODOPE PIC X(02).
+            05 SWCD5808-CDBCR PIC X(02).
+            05 SWCD5808-DREG PIC S9(08) COMP-3.
+            05 SWCD5808-NOPRREC PIC S9(09) COMP-3.
+            05 SWCD5808-MOTIVO PIC X(02).
+            05 SWCD5808-OBSER PIC X(200).
+            05 SWCD5808-GDESC PIC X(200).
+            05 SWCD5808-CBYPASS PIC X(01).
+            05 SWCD5808-CSENDREC PIC X(15).
+            05 SWCD5808-MVLRREC PIC S9(13)V9(2) COMP-3.
+            05 SWCD5808-CMOEDREC PIC X(03).
+            05 SWCD5808-CROPRREC PIC X(16).
+            05 SWCD5808-CORIGEMREC PIC X(05).
+            05 SWCD5808-CNIVREC PIC X(03).
+            05 SWCD5808-CUSERID PIC X(20).
+            05 SWCD5808-HTIMEST PIC X(26).
+            05 SWCD5808-CEXT PIC X(05).
+            05 SWCD5808-CPAG PIC X(05).
+            05 SWCD5808-NORDREC PIC S9(07) COMP-3.
+            05 SWCD5808-CINTERV PIC X(12).
+            05 SWCD5808-CUSERIDINT PIC X(20).
+            05 SWCD5808-IDRECONC PIC S9(13) COMP-3.
+            05 SWCD5808-CNATREC PIC X(03).
+

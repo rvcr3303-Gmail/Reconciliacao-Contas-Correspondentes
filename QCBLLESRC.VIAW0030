@@ -1,0 +1,97 @@
+      ***************************************************************
+      * DESCRICAO: GERA SPOOL DE ERROS
+      * CRICAO:    17-03-2011
+      * AUTOR:     VIA CONSULTING
+      ***************************************************************
+       01 VIAW0030-VARIAVEIS.
+          05 VIAW0030-PGMNAME-GRP.
+             10 VIAW0030-PGMNAME             PIC  X(29).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-PARAGRAPH-NAME-GRP.
+             10 VIAW0030-PARAGRAPH-NAME      PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-TIPERR-GRP.
+             10 VIAW0030-TIPERR              PIC  X(33).
+                88 VIAW0030-DB2-ERROR        VALUE 'DB2'.
+                88 VIAW0030-DB2-WARN         VALUE 'WRN'.
+                88 VIAW0030-FILE-ERROR       VALUE 'FICHEIRO'.
+                88 VIAW0030-EXEC-ERROR       VALUE 'EXECUCAO'.
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-TABLE-NAME-GRP.
+             10 VIAW0030-TABLE-NAME          PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-SQLCODE-GRP.
+             10 VIAW0030-SQLCODE             PIC  ZZZZZZZZZ-.
+             10 FILLER                       PIC  X(23) VALUE SPACES.
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-SQLCA-GRP.
+             10 VIAW0030-SQLAID          PIC X(8).
+             10 VIAW0030-SQLABC          PIC S9(9) BINARY.
+             10 VIAW0030-SQLCA-CODE      PIC S9(9) BINARY.
+             10 VIAW0030-SQLERRM.
+                49 VIAW0030-SQLERRM-LEN  PIC S9(4) BINARY.
+                49 VIAW0030-SQLERRM-DATA PIC X(70).
+             10 VIAW0030-SQLERRP         PIC X(8).
+             10 VIAW0030-SQLERDD         OCCURS 6 TIMES.
+                20 VIAW0030-SQLERRD-ITEM PIC S9(9) BINARY.
+             10 VIAW0030-SQLWARN.
+                20 VIAW0030-SQLWARN0     PIC X(1).
+                20 VIAW0030-SQLWARN1     PIC X(1).
+                20 VIAW0030-SQLWARN2     PIC X(1).
+                20 VIAW0030-SQLWARN3     PIC X(1).
+                20 VIAW0030-SQLWARN4     PIC X(1).
+                20 VIAW0030-SQLWARN5     PIC X(1).
+                20 VIAW0030-SQLWARN6     PIC X(1).
+                20 VIAW0030-SQLWARN7     PIC X(1).
+                20 VIAW0030-SQLWARN8     PIC X(1).
+                20 VIAW0030-SQLWARN9     PIC X(1).
+                20 VIAW0030-SQLWARNA     PIC X(1).
+             10 VIAW0030-SQLSTATE        PIC X(5).
+          05 VIAW0030-ACCESS-KEY-GRP.
+             10 VIAW0030-ACCESS-KEY          PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-FILE-NAME-GRP.
+             10 VIAW0030-FILE-NAME           PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-FILE-STATUS-GRP.
+             10 VIAW0030-FILE-STATUS         PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-FILE-KEY.
+             10 VIAW0030-FILE-KEY1           PIC  X(33).
+             10 VIAW0030-FILE-KEY2           PIC  X(33).
+             10 VIAW0030-FILE-KEY3           PIC  X(33).
+             10 VIAW0030-FILE-KEY4           PIC  X(33).
+             10 VIAW0030-FILE-KEY5           PIC  X(33).
+          05 VIAW0030-DESC1-GRP.
+             10 VIAW0030-DESC1               PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-DESC2-GRP.
+             10 VIAW0030-DESC2               PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-DESC3-GRP.
+             10 VIAW0030-DESC3               PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-DESC4-GRP.
+             10 VIAW0030-DESC4               PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-DESC5-GRP.
+             10 VIAW0030-DESC5               PIC  X(33).
+             10 FILLER                       PIC  X(03) VALUE '***'.
+          05 VIAW0030-AUXVAR1.
+             10 VIAW0030-VAR1                PIC  X(20).
+          05 VIAW0030-AUXVAR2.
+             10 VIAW0030-VAR2                PIC  X(20).
+          05 VIAW0030-AUXVAR3.
+             10 VIAW0030-VAR3                PIC  X(20).
+      ********
+          05 VIAW0030-G-HEADER.
+             10 VIAW0030-HEADER          PIC X(80) OCCURS 20.
+          05 VIAW0030-G-DETALHE.
+             10 VIAW0030-DETALHE         PIC X(80) OCCURS 20.
+          05 VIAW0030-G-FOOTER.
+             10 VIAW0030-FOOTER          PIC X(80) OCCURS 20.
+      ********
+       01 VIAW0030-AUXILIARES.
+          05 VIAW0030-INDICE             PIC 9(02).
+             88 VIAW0030-INDICE-INI                VALUE 01.
+             88 VIAW0030-INDICE-MAX                VALUE 20.

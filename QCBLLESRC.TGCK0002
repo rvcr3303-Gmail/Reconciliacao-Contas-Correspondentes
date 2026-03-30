@@ -1,0 +1,70 @@
+      ******************************************************************
+      *                                                                *
+      *       TGCK0002   CONSTANTES GERAIS TABELAS GERAIS              *
+      *                                                                *
+      ******************************************************************
+       01  TGCK0002-CONSTANTES.
+           05 TGCK0002-SITUACAO-VALIDA      PIC X(01) VALUE 'V'.
+           05 TGCK0002-FGCCBDV-NVTCCB-2008  PIC X(05) VALUE '2008%'.
+           05 TGCK0002-FGCCBDV-NVCAPL-BM    PIC X(02) VALUE 'BM'.
+           05 TGCK0002-OEPOCMB-BRPROC       PIC X(01) VALUE '9'.
+           05 TGCK0002-GBTSTAL-GBZAVCLCP  PIC X(25) VALUE 'CRDI CRDE'.
+           05 TGCK0002-PGRPA-GAPL           PIC X(02) VALUE 'BM'.
+           05 TGCK0002-TABELAS.
+             10 TGCK0002-PPAIS             PIC X(10) VALUE '$PPAIS'  .
+             10 TGCK0002-PMOEDA            PIC X(10) VALUE '$PMOEDA' .
+             10 TGCK0002-SECINSTR          PIC X(10) VALUE 'GBCSTR' .
+             10 TGCK0002-SECINSTE          PIC X(10) VALUE 'GBCSTE' .
+             10 TGCK0002-OECECMB           PIC X(10) VALUE 'OECECMB' .
+             10 TGCK0002-SDCODESOPE        PIC X(10) VALUE 'SDCODESOPE'.
+             10 TGCK0002-FGNOST            PIC X(10) VALUE 'FGNOST'  .
+             10 TGCK0002-FGCCBDV           PIC X(10) VALUE 'FGCCBDV' .
+             10 TGCK0002-GBLCRE            PIC X(10) VALUE 'GBLCRE ' .
+             10 TGCK0002-GBPABAL           PIC X(10) VALUE 'GBPABAL' .
+             10 TGCK0002-V203.
+                15 TGCK0002-OECPCRD        PIC X(10) VALUE 'OECPCRD' .
+             10 TGCK0002-V300.
+                15 TGCK0002-OECPOPRD       PIC X(10) VALUE 'OECPOPRD'.
+             10 TGCK0002-GBTGAR            PIC X(10) VALUE 'GBTGAR ' .
+             10 TGCK0002-OEPOCMB           PIC X(10) VALUE 'OEPOCMB' .
+             10 TGCK0002-GBTSTAL           PIC X(10) VALUE 'GBTSTAL' .
+             10 TGCK0002-GBPUSER           PIC X(10) VALUE 'GBPUSER' .
+             10 TGCK0002-PGRPA             PIC X(10) VALUE '$PGRPA ' .
+             10 TGCK0002-SWVT2301          PIC X(10) VALUE 'SWVT2301'.
+             10 TGCK0002-IFTCOPC           PIC X(10) VALUE 'IFTCOPC' .
+             10 TGCK0002-PBANC             PIC X(10) VALUE '$PBANC' .
+             10 TGCK0002-CTABELA-TG222     PIC X(10) VALUE 'TG222'.
+           05 TGCK0002-CACCAO.
+              10 TGCK0002-VALIDA           PIC X(01) VALUE 'V'.
+              10 TGCK0002-DESCODIFICA      PIC X(01) VALUE 'D'.
+           05 TGCK0002-STATUS-ACTIVO       PIC X(01) VALUE '1'.
+           05 TGCK0002-APL-TG              PIC X(02) VALUE 'TG'.
+           05 TGCK0002-FIC-TGFICH222       PIC X(10) VALUE 'TGFICH222'.
+           05 TGCK0002-CMD-QCMDEXC         PIC X(10) VALUE 'QCMDEXC'.
+           05 TGCK0002-CMD-LENGTH          PIC S9(10)V9(5) COMP-3
+                                                           VALUE 256.
+           05 TGCK0002-INPUT               PIC X(05) VALUE 'I'.
+           05 TGCK0002-PT-PT               PIC X(05) VALUE 'PT-PT'.
+           05 TGCK0002-DAT-MINIMA          PIC X(10) VALUE
+                                                     '0001-01-01'.
+           05 TGCK0002-TTR-VAZIO           PIC X(05) VALUE SPACES.
+           05 TGCK0002-TTR-CONSULTAR       PIC X(05) VALUE 'CONSU'.
+           05 TGCK0002-BALMOV              PIC X(06) VALUE 'BALMOV'.
+           05 TGCK0002-INSERIDO            PIC X(01) VALUE 'I'.
+           05 TGCK0002-CARREGADO           PIC X(01) VALUE 'C'.
+           05 TGCK0002-TIMESTAMP           PIC X(26) VALUE SPACES.
+           05 TGCK0002-DEBITO              PIC X(01) VALUE 'D'.
+           05 TGCK0002-VNCR-NVAL           PIC X(01) VALUE 'N'.
+           05 TGCK0002-COPE-CLI-DB         PIC S9(03) COMP-3 VALUE 40.
+           05 TGCK0002-COPE-CLI-CR         PIC S9(03) COMP-3 VALUE 41.
+           05 TGCK0002-TTR-DEBSB           PIC X(05) VALUE 'DEBSB'.
+           05 TGCK0002-TTR-CREDT           PIC X(05) VALUE 'CREDT'.
+           05 TGCK0002-TTR-MV008           PIC X(05) VALUE 'MV008'.
+           05 TGCK0002-SIM                 PIC X(01) VALUE 'S'.
+           05 TGCK0002-TREMUN-SALARIO      PIC X(01) VALUE 'A'.
+           05 TGCK0002-TSER-TRANSF         PIC 9(02) VALUE 62.
+           05 TGCK0002-DRCX                PIC X(01) VALUE 'C'.
+           05 TGCK0002-EXCT-UTIL           PIC X(01) VALUE 'U'.
+           05 TGCK0002-ESTR-NEXE           PIC X(01) VALUE '0'.
+           05 TGCK0002-APTR-APL            PIC X(01) VALUE 'A'.
+           05 TGCK0002-NDOC                PIC 9(09) VALUE 999999999.

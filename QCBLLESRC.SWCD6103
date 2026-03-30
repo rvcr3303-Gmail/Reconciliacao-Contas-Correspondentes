@@ -1,0 +1,60 @@
+           EXEC SQL DECLARE SWVT6103 TABLE
+           (
+               FYCODMSG CHAR(6) NOT NULL
+             , FYDATVAL DECIMAL(8,0) NOT NULL
+             , FYIDTAB DECIMAL(6,0) NOT NULL
+             , FYREF CHAR(16) NOT NULL
+             , FYREF950 CHAR(16) NOT NULL
+             , FYCSEND CHAR(15) NOT NULL
+             , FYCODEST CHAR(2) NOT NULL
+             , FYTIPOP CHAR(10) NOT NULL
+             , FYVALOR DECIMAL(15,2) NOT NULL
+             , FYCMOED CHAR(3) NOT NULL
+             , FYDATREC DECIMAL(8,0) NOT NULL
+             , CUSERID CHAR(20) NOT NULL
+             , HTIMEEST CHAR(26) NOT NULL
+             , FYTRATYP CHAR(4) NOT NULL
+             , FYOSN CHAR(10) NOT NULL
+             , FYOSNC CHAR(10) NOT NULL
+             , FYCODOPE CHAR(2) NOT NULL
+             , FYDBCR CHAR(2) NOT NULL
+             , FYDREG DECIMAL(8,0) NOT NULL
+             , FYREFREL CHAR(16) NOT NULL
+             , CUSRINT CHAR(10) NOT NULL
+             , HTIMINT CHAR(26) NOT NULL
+             , COSN CHAR(10) NOT NULL
+             , COSNC CHAR(10) NOT NULL
+             , CEXT CHAR(05) NOT NULL
+             , CPAG  CHAR(05) NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE SWVT6103
+      ******************************************************************
+       01  DCLSWCD6103.
+            05 SWCD6103-FYCODMSG PIC X(06).
+            05 SWCD6103-FYDATVAL PIC S9(08) COMP-3.
+            05 SWCD6103-FYIDTAB PIC S9(06) COMP-3.
+            05 SWCD6103-FYREF PIC X(16).
+            05 SWCD6103-FYREF950 PIC X(16).
+            05 SWCD6103-FYCSEND PIC X(15).
+            05 SWCD6103-FYCODEST PIC X(02).
+            05 SWCD6103-FYTIPOP PIC X(10).
+            05 SWCD6103-FYVALOR PIC S9(13)V9(2) COMP-3.
+            05 SWCD6103-FYCMOED PIC X(03).
+            05 SWCD6103-FYDATREC PIC S9(08) COMP-3.
+            05 SWCD6103-CUSERID PIC X(20).
+            05 SWCD6103-HTIMEEST PIC X(26).
+            05 SWCD6103-FYTRATYP PIC X(04).
+            05 SWCD6103-FYOSN PIC X(10).
+            05 SWCD6103-FYOSNC PIC X(10).
+            05 SWCD6103-FYCODOPE PIC X(02).
+            05 SWCD6103-FYDBCR PIC X(02).
+            05 SWCD6103-FYDREG PIC S9(08) COMP-3.
+            05 SWCD6103-FYREFREL PIC X(16).
+            05 SWCD6103-CUSRINT  PIC X(10).
+            05 SWCD6103-HTIMINT  PIC X(26).
+            05 SWCD6103-COSN PIC X(10).
+            05 SWCD6103-COSNC PIC X(10).
+            05 SWCD6103-CEXT PIC X(05).
+            05 SWCD6103-CPAG  PIC X(05).
+

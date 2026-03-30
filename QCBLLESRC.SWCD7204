@@ -1,0 +1,144 @@
+           EXEC SQL DECLARE SWVT7204 TABLE
+           (
+               MRBALC     DECIMAL(4,0)    NOT NULL
+             , MRCCB      CHAR(13)        NOT NULL
+             , NCCCCBAN   CHAR(4)         NOT NULL
+             , NCCCCSPAI  CHAR(2)         NOT NULL
+             , NCCCCCONTA CHAR(5)         NOT NULL
+             , MRTDOC     DECIMAL(3,0)    NOT NULL
+             , MRCOPE     DECIMAL(3,0)    NOT NULL
+             , MRNDOC     DECIMAL(9,0)    NOT NULL
+             , MRVLR      DECIMAL(15,2)   NOT NULL
+             , MRSALD     DECIMAL(17,2)   NOT NULL
+             , MRUSER     CHAR(10)        NOT NULL
+             , MRDTSIS    DECIMAL(8,0)    NOT NULL
+             , MRHORA     DECIMAL(6,0)    NOT NULL
+             , MRDATL     DECIMAL(8,0)    NOT NULL
+             , MRDRCX     CHAR(1)         NOT NULL
+             , MRETRB     CHAR(10)        NOT NULL
+             , MRBALM     DECIMAL(4,0)    NOT NULL
+             , MROBS      CHAR(30)        NOT NULL
+             , MRNOPR     DECIMAL(9,0)    NOT NULL
+             , MRNOPS     DECIMAL(9,0)    NOT NULL
+             , MRNORD     DECIMAL(7,0)    NOT NULL
+             , MREANL     CHAR(1)         NOT NULL
+             , MRDTCB     DECIMAL(8,0)    NOT NULL
+             , MREXCT     CHAR(1)         NOT NULL
+             , MRMOED     CHAR(3)         NOT NULL
+             , MRDMOV     CHAR(40)        NOT NULL
+             , GBMRINFC   CHAR(50)        NOT NULL
+             , CCHAVE     CHAR(30)        NOT NULL
+             , IRECONC    CHAR(1)         NOT NULL
+             , CCODMSG    CHAR(6)         NOT NULL
+             , DATVAL     DECIMAL(8,0)    NOT NULL
+             , COSN       CHAR(10)        NOT NULL
+             , COSNC      CHAR(10)        NOT NULL
+             , CREF       CHAR(16)        NOT NULL
+             , CREFOPR    CHAR(16)        NOT NULL
+             , CTIPREC    CHAR(1)         NOT NULL
+             , GOBS       CHAR(200)       NOT NULL
+             , CUSERID    CHAR(20)        NOT NULL
+             , HTIMEST    TIMESTAMP       NOT NULL
+             , CINTERV    CHAR(12)        NOT NULL
+             , CUSERIDINT CHAR(20)        NOT NULL
+             , CCODEST    CHAR(2)         NOT NULL
+             , IDRECONC   DECIMAL(13,0)   NOT NULL
+             , CNATREC    CHAR(3)         NOT NULL
+             , CNIVREC    CHAR(3)         NOT NULL
+           ) END-EXEC.
+      ******************************************************************
+      *  COBOL DECLARATION FOR TABLE SWVT7204
+      *  ::: SWT72
+      *  ::: Movimentos Contabilísticos de Correspondentes
+      ******************************************************************
+       01  DCLSWCD7204.
+           05 SWCD7204-MRBALC               PIC S9(04)        COMP-3.
+           05 SWCD7204-MRCCB                PIC  X(13).
+           05 SWCD7204-NCCCCBAN             PIC  X(04).
+           05 SWCD7204-NCCCCSPAI            PIC  X(02).
+           05 SWCD7204-NCCCCCONTA           PIC  X(05).
+           05 SWCD7204-MRTDOC               PIC S9(03)        COMP-3.
+           05 SWCD7204-MRCOPE               PIC S9(03)        COMP-3.
+           05 SWCD7204-MRNDOC               PIC S9(09)        COMP-3.
+           05 SWCD7204-MRVLR                PIC S9(13)V9(2)   COMP-3.
+           05 SWCD7204-MRSALD               PIC S9(15)V9(2)   COMP-3.
+           05 SWCD7204-MRUSER               PIC  X(10).
+           05 SWCD7204-MRDTSIS              PIC S9(08)        COMP-3.
+           05 SWCD7204-MRHORA               PIC S9(06)        COMP-3.
+           05 SWCD7204-MRDATL               PIC S9(08)        COMP-3.
+           05 SWCD7204-MRDRCX               PIC  X(01).
+           05 SWCD7204-MRETRB               PIC  X(10).
+           05 SWCD7204-MRBALM               PIC S9(04)        COMP-3.
+           05 SWCD7204-MROBS                PIC  X(30).
+           05 SWCD7204-MRNOPR               PIC S9(09)        COMP-3.
+           05 SWCD7204-MRNOPS               PIC S9(09)        COMP-3.
+           05 SWCD7204-MRNORD               PIC S9(07)        COMP-3.
+           05 SWCD7204-MREANL               PIC  X(01).
+           05 SWCD7204-MRDTCB               PIC S9(08)        COMP-3.
+           05 SWCD7204-MREXCT               PIC  X(01).
+           05 SWCD7204-MRMOED               PIC  X(03).
+           05 SWCD7204-MRDMOV               PIC  X(40).
+           05 SWCD7204-GBMRINFC             PIC  X(50).
+           05 SWCD7204-CCHAVE               PIC  X(30).
+           05 SWCD7204-IRECONC              PIC  X(01).
+           05 SWCD7204-CCODMSG              PIC  X(06).
+           05 SWCD7204-DATVAL               PIC S9(08)        COMP-3.
+           05 SWCD7204-COSN                 PIC  X(10).
+           05 SWCD7204-COSNC                PIC  X(10).
+           05 SWCD7204-CREF                 PIC  X(16).
+           05 SWCD7204-CREFOPR              PIC  X(16).
+           05 SWCD7204-CTIPREC              PIC  X(01).
+           05 SWCD7204-GOBS                 PIC  X(200).
+           05 SWCD7204-CUSERID              PIC  X(20).
+           05 SWCD7204-HTIMEST              PIC  X(26).
+           05 SWCD7204-CINTERV              PIC  X(12).
+           05 SWCD7204-CUSERIDINT           PIC  X(20).
+           05 SWCD7204-CCODEST              PIC  X(02).
+           05 SWCD7204-IDRECONC             PIC S9(13)        COMP-3.
+           05 SWCD7204-CNATREC              PIC  X(03).
+           05 SWCD7204-CNIVREC              PIC  X(03).
+      * ...MRBALC       Balcão da conta contabilísta
+      * ...MRCCB        Conta contabilística
+      * ...NCCCCBAN     Código do Banco
+      * ...NCCCCSPAI    Sigla do País
+      * ...NCCCCCONTA   Código de conta
+      * ...MRTDOC       Tipo de documento
+      * ...MRCOPE       Código operação
+      * ...MRNDOC       Número documento
+      * ...MRVLR        Valor do movimento
+      * ...MRSALD       Saldo após movimento
+      * ...MRUSER       Lançado por
+      * ...MRDTSIS      Data de sistema
+      * ...MRHORA       Hora de sistema
+      * ...MRDATL       Periodo contabilístico de lançamento
+      * ...MRDRCX       Diário ou caixa
+      * ...MRETRB       Estação lançamento
+      * ...MRBALM       Balcão movimento
+      * ...MROBS        Observações
+      * ...MRNOPR       Número da operação
+      * ...MRNOPS       Segmento da operação
+      * ...MRNORD       Número de ordem da transacção
+      * ...MREANL       Parametro de Estorno /Anulação
+      * ...MRDTCB       Data de integração contabilística
+      * ...MREXCT       Executor / Origem
+      * ...MRMOED       Moeda
+      * ...MRDMOV       Descritivo movimento
+      * ...GBMRINFC     Informação Complementar do movimento
+      * ...CCHAVE       Chave auxiliar de pesquisa
+      * ...IRECONC      Indicador de reconciliação
+      * ...CCODMSG      Código Mensagem
+      * ...DATVAL       Data Valor
+      * ...COSN         OSN
+      * ...COSNC        OSN  Complementar
+      * ...CREF         Referência SWIFT
+      * ...CREFOPR      Referência BCI
+      * ...CTIPREC      Código de tipo de reconciliação
+      * ...GOBS         Observações
+      * ...CUSERID      Utilizador
+      * ...HTIMEST      Timestamp
+      * ...CINTERV      Direcção interveniente
+      * ...CUSERIDINT   Utilizador interveniente
+      * ...CCODEST
+      * ...IDRECONC
+      * ...CNATREC
+      * ...CNIVREC      Nível de Reconciliação

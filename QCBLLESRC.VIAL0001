@@ -1,0 +1,96 @@
+      ******************************************************************
+      *                                                                *
+      *       VIAL0001   AREA COMUNICACAO STANDARD LOCAL->CENTRAL      *
+      *                                                                *
+      ******************************************************************
+       01  VIAL0001-COMMAREA.
+           05 VIAL0001-CTRANSACCAO                 PIC X(04).
+           05 VIAL0001-INPUT.
+              10 VIAL0001-HEADER-INPUT.
+                 15 VIAL0001-ORIGEM                PIC X(10).
+                 15 VIAL0001-CALLERID              PIC X(10).
+                 15 VIAL0001-TRANSACCAO.
+                    20 VIAL0001-CAPLIC             PIC X(02).
+                    20 VIAL0001-COPCAO             PIC X(03).
+                    20 VIAL0001-CACCAO             PIC X(01).
+                       88 VIAL0001-VISUALIZACAO    VALUE 'V'.
+                       88 VIAL0001-CRIACAO         VALUE 'I' 'C'.
+                       88 VIAL0001-MODIFICACAO     VALUE 'M'.
+                       88 VIAL0001-ANULACAO        VALUE 'E' 'A'.
+                       88 VIAL0001-CONSULTALISTA   VALUE 'L'.
+                 15 VIAL0001-NR-ELECTRONICO-INPUT.
+                    20 VIAL0001-CUTILIZA-I         PIC X(20).
+                    20 VIAL0001-DATA-PROCESSO-I    PIC X(10).
+                    20 VIAL0001-NR-SEQUENCIA-I     PIC 9(10).
+                 15 VIAL0001-PEDIDO-DADOS          PIC X(01).
+                    88 VIAL0001-PEDIDO-SIM         VALUE 'S'.
+                    88 VIAL0001-PEDIDO-NAO         VALUE 'N'.
+                 15 VIAL0001-SIMULACAO             PIC X(01).
+                    88 VIAL0001-SIMULACAO-SIM      VALUE 'S'.
+                    88 VIAL0001-SIMULACAO-NAO      VALUE 'N'.
+                    88 VIAL0001-SIMULACAO-INT      VALUE 'I'.
+                 15 VIAL0001-MSG-SIZE              PIC 9(10).
+                 15 VIAL0001-XLIVRE1.
+                    20 VIAL0001-CUSER-EXTRN        PIC X(20).
+                    20 VIAL0001-I-DEBUG            PIC X(01).
+                       88 VIAL0001-DEBUG-SIM       VALUE 'S'.
+                    20 VIAL0001-MSGQ               PIC X(10).
+                    20 VIAL0001-DATA-EXTRN         PIC 9(08).
+                    20 VIAL0001-CBANCO             PIC 9(04).
+                    20 VIAL0001-CMOEDA             PIC X(03).
+                    20 VIAL0001-CBALM              PIC 9(04).
+                    20 VIAL0001-PGMID              PIC X(10).
+                    20 VIAL0001-VERSAO-SYS         PIC X(03).
+                       88 VIAL0001-VERSAO-V203     VALUE '203'.
+                       88 VIAL0001-VERSAO-V300     VALUE '300'.
+                       88 VIAL0001-VERSAO-ALNOVA   VALUE 'ALN'.
+                       88 VIAL0001-VERSAO-ALTAMIRA VALUE 'ALT'.
+                       88 VIAL0001-VERSAO-HOGAN    VALUE 'HOG'.
+                       88 VIAL0001-VERSAO-VIA      VALUE 'VIA'.
+                       88 VIAL0001-VERSAO-NOCORE   VALUE 'NOC'.
+                       88 VIAL0001-VERSAO-VALIDA   VALUE '203', '300',
+                                                         'ALN', 'ALT',
+                                                         'HOG', 'VIA',
+                                                         'NOC'.
+                    20 VIAL0001-NCAIXA             PIC 9(02).
+                    20 VIAL0001-PAIS               PIC X(02).
+                    20 VIAL0001-IDIOMA             PIC X(10).
+                    20 VIAL0001-CBAL-ETRAB         PIC 9(04).
+                    20 VIAL0001-AMBIENTE           PIC X(01).
+                       88 VIAL0001-AMB-DEV         VALUE 'D'.
+                       88 VIAL0001-AMB-TEST        VALUE 'T'.
+                       88 VIAL0001-AMB-QUAL        VALUE 'Q'.
+                       88 VIAL0001-AMB-PROD        VALUE 'P'.
+                    20 VIAL0001-WORKFLOW.
+                      25 VIAL0001-WRKF-CAPLIC      PIC X(02).
+                      25 VIAL0001-WRKF-COPCAO      PIC X(03).
+                      25 VIAL0001-WRKF-CACCAO      PIC X(01).
+                    20 VIAL0001-FLIPF.
+                      25 VIAL0001-I-FLIPF          PIC X(01).
+                       88 VIAL0001-FLIPF-0         VALUE '0'.
+                       88 VIAL0001-FLIPF-1         VALUE '1'.
+                    20 VIAL0001-TRACE              PIC X(02).
+                    20 VIAL0001-NAGENTE            PIC 9(09).
+                    20 VIAL0001-FILLER-INPUT       PIC X(80).
+              10 VIAL0001-MENSAGEM-INPUT           PIC X(11500).
+           05 VIAL0001-OUTPUT.
+              10 VIAL0001-HEADER-OUTPUT.
+                 15 VIAL0001-NR-ELECTRONICO-OUTPUT.
+                    20 VIAL0001-CUTILIZA-O         PIC X(20).
+                    20 VIAL0001-DATA-PROCESSO-O    PIC X(10).
+                    20 VIAL0001-NR-SEQUENCIA-O     PIC 9(10).
+                 15 VIAL0001-AREA-ERROS.
+                    20 VIAL0001-IND-ERROS          PIC X(02).
+                    20 VIAL0001-NR-ERRO            PIC 9(04).
+                    20 VIAL0001-CONTEXT-1          PIC X(50).
+                    20 VIAL0001-CONTEXT-2          PIC X(50).
+                 15 VIAL0001-INFORMACAO-AUXILIAR.
+                    20 VIAL0001-OCORRENCIAS        PIC 9(05).
+                    20 VIAL0001-LENGTH-MSG         PIC 9(05).
+                    20 VIAL0001-NR-CAMPOS          PIC 9(05).
+                 15 VIAL0001-XLIVRE2.
+                    20 VIAL0001-ERROS-EXTERNOS OCCURS 10 TIMES.
+                       25 VIAL0001-CAPLIC-EXT      PIC X(02).
+                       25 VIAL0001-NR-ERRO-EXT     PIC 9(04).
+                    20 VIAL0001-FILLER-OUTPUT      PIC X(115).
+              10 VIAL0001-MENSAGEM-OUTPUT          PIC X(11500).

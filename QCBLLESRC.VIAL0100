@@ -1,0 +1,7 @@
+      ***************************************************************
+      * DESCRICAO: PROTOCOLO COMUNICACAO PROGRAMAS BATCH
+      * CRICAO:    18-02-2011
+      * AUTOR:     VIA CONSULTING
+      ***************************************************************
+       01 VIAL0100-AREA.
+          05 VIAL0100-RCODE                 PIC S9(2) COMP-3.

@@ -1,0 +1,45 @@
+      ******************************************************************
+      *                                                                *
+      *       VIAL0002   AREA COMUNICACAO INTERNA COM PGM FUNCAO       *
+      *                                                                *
+      ******************************************************************
+       01  VIAL0002-COMMAREA.
+           05 VIAL0002-WORKING-AREA.
+              10 VIAL0002-IND-ERROS                PIC  X(02).
+                 88 VIAL0002-ABEND                 VALUE 'A1'.
+                 88 VIAL0002-ABEND-DB2             VALUE 'A2'.
+                 88 VIAL0002-ERROS-ARQ             VALUE 'AT'.
+                 88 VIAL0002-ERROS-VALIDOS         VALUE 'FU' 'FC' 'OK'.
+                 88 VIAL0002-ERROS-FUNCAO          VALUE 'FU'.
+                 88 VIAL0002-FIM-CONSULTA          VALUE 'FC'.
+                 88 VIAL0002-SEM-ERROS             VALUE 'OK' '  '.
+                 88 VIAL0002-ERROS-ABEND           VALUE 'A1' 'A2'.
+                 88 VIAL0002-OK                    VALUE 'OK'.
+                 88 VIAL0002-ERROS-INF             VALUE 'IF'.
+              10 VIAL0002-COD-ERRO-GRAVE           PIC 9(04).
+              10 VIAL0002-CAPLIC-ERRO              PIC X(02).
+            05 VIAL0002-DB2-LOG.
+              10 VIAL0002-TABLE-NAME         PIC X(16).
+              10 VIAL0002-SQLCA.
+                 15 VIAL0002-SQLAID          PIC X(8).
+                 15 VIAL0002-SQLABC          PIC S9(9) BINARY.
+                 15 VIAL0002-SQLCODE         PIC S9(9) BINARY.
+                 15 VIAL0002-SQLERRM.
+                    49 VIAL0002-SQLERRM-LEN  PIC S9(4) BINARY.
+                    49 VIAL0002-SQLERRM-DATA PIC X(70).
+                 15 VIAL0002-SQLERRP         PIC X(8).
+                 15 VIAL0002-SQLERDD         OCCURS 6 TIMES.
+                    20 VIAL0002-SQLERRD-ITEM PIC S9(9) BINARY.
+                 15 VIAL0002-SQLWARN.
+                    20 VIAL0002-SQLWARN0     PIC X(1).
+                    20 VIAL0002-SQLWARN1     PIC X(1).
+                    20 VIAL0002-SQLWARN2     PIC X(1).
+                    20 VIAL0002-SQLWARN3     PIC X(1).
+                    20 VIAL0002-SQLWARN4     PIC X(1).
+                    20 VIAL0002-SQLWARN5     PIC X(1).
+                    20 VIAL0002-SQLWARN6     PIC X(1).
+                    20 VIAL0002-SQLWARN7     PIC X(1).
+                    20 VIAL0002-SQLWARN8     PIC X(1).
+                    20 VIAL0002-SQLWARN9     PIC X(1).
+                    20 VIAL0002-SQLWARNA     PIC X(1).
+                 15 VIAL0002-SQLSTATE        PIC X(5).

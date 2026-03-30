@@ -1,0 +1,20 @@
+      ******************************************************************
+      *                                                                *
+      *       VIAW0005   SQLCODES DB2                                  *
+      *                                                                *
+      ******************************************************************
+      *
+       01  VIAW0005-SQLCODE                  PIC S9(03) VALUE ZEROS.
+           88 DB2-OK                         VALUE +0.
+           88 DB2-NOTFND                     VALUE +100.
+           88 DB2-DUPREC                     VALUE -803.
+           88 DB2-DUPLINE                    VALUE -811.
+           88 VIAW0005-NOTFND                VALUE +100.
+           88 VIAW0005-OK                    VALUE +0.
+           88 VIAW0005-DUPREC                VALUE -803.
+           88 VIAW0005-MULTROW               VALUE -811.
+           88 VIAW0005-DB2-NOT-EXIST         VALUE -924.
+           88 VIAW0005-FKNTFND               VALUE -530.
+           88 VIAW0005-FNC-NOT-FND           VALUE -305.
+           88 VIAW0005-RESTRICT              VALUE -532.
+           88 VIAW0005-DATAS                 VALUE -180 -181.

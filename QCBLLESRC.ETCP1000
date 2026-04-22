@@ -1,0 +1,12 @@
+      ******************************************************************
+      *   ROTINA DE DATAS                                              *
+      ******************************************************************
+       ETCP1000-ROTINA-DATAS.
+      *
+           CALL ETCL1000-ROTINA-ETR01000 USING ETCL1000-AREA-COMUNICACAO
+             ON EXCEPTION
+                SET ERRO-ARQUITECTURA      TO TRUE
+           END-CALL.
+      *
+       ETCP1000-EXIT.
+           EXIT.

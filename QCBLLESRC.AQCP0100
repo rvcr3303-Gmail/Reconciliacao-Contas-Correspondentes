@@ -1,0 +1,880 @@
+      *****************************************************************
+      * NOME:      AQCP0100                                           *
+      * DESCRICAO: OBTENCAO DADOS STANDARD ARQUITETURA BATCH          *
+      *****************************************************************
+      * ALTERAÇÃO: UTILIZAÇÃO DO MÓDULO ARM4400 PARA OBTENÇÃO DA      *
+      *            OPÇÃO DE DEBUG ESPECÍFICA PARA O PROGRAMA          *
+      * ------------------------------------------------------------- *
+      *            O PROGRAMA NECESSITA DOS COPYS:                    *
+      *            - ARCL4400 E                                       *
+      *            - ARCP4400                                         *
+      *****************************************************************
+       AQCP0100-OBT-DADOS-ARQ.
+      *
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           MOVE ZEROES TO VIAW0020-RCODE.
+
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-AMB
+                THRU AQCP0100-OBT-AMB-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-CORE
+                THRU AQCP0100-OBT-CORE-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-CAPLIC
+                THRU AQCP0100-OBT-CAPLIC-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-DEBUG
+                THRU AQCP0100-OBT-DEBUG-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-DATA
+                THRU AQCP0100-OBT-DATA-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-OBT-BANCO
+                 THRU AQCP0100-OBT-BANCO-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-BALCAO
+                THRU AQCP0100-OBT-BALCAO-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-MOEDA
+                THRU AQCP0100-OBT-MOEDA-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-PAIS
+                THRU AQCP0100-OBT-PAIS-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-COMMIT
+                THRU AQCP0100-OBT-COMMIT-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM AQCP0100-OBT-ETRB
+                THRU AQCP0100-OBT-ETRB-EXIT
+           END-IF.
+      *
+           IF AQCW0009-SEM-ERROS
+             PERFORM ETCP0003-STD-INIT
+                THRU ETCP0003-STD-INIT-EXIT
+           END-IF.
+      *
+       AQCP0100-OBT-DADOS-ARQ-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO AMBIENTE                                  *
+      *****************************************************************
+       AQCP0100-OBT-AMB.
+
+           MOVE 'AQCP0100-OBT-AMB      ' TO VIAL0015-CALLER-ID.
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+
+           INITIALIZE ARCL2205-DATA.
+
+           MOVE VIAK0002-PARAM-AMB          TO ARCL2205-CPARAM.
+           MOVE VIAK0002-APLIC-AT           TO ARCL2205-CAPLIC.
+
+           PERFORM CALL-ARM2206
+              THRU CALL-ARM2206-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE ARCL2205-GVALOR1      TO AQCW0100-AMBIENTE
+           ELSE
+             SET AQCW0100-AMB-PROD TO TRUE
+             MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ARCL2205-GVALOR1    ' TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ARCL2205-GVALOR1       TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-AMB-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DA VERSÃO DO CORE DE INTEGRAÇÃO           *
+      *****************************************************************
+       AQCP0100-OBT-CORE.
+
+           MOVE 'AQCP0100-OBT-CORE     ' TO VIAL0015-CALLER-ID.
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+
+           INITIALIZE ARCL2205-DATA.
+
+           MOVE VIAK0002-PARAM-CORE         TO ARCL2205-CPARAM.
+           MOVE VIAK0002-APLIC-AT           TO ARCL2205-CAPLIC.
+
+           PERFORM CALL-ARM2206
+              THRU CALL-ARM2206-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE ARCL2205-GVALOR1      TO AQCW0100-AT-VERSAO-SYS
+           ELSE
+             MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ARCL2205-GVALOR1    ' TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ARCL2205-GVALOR1       TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-CORE-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DA CODIGO DE APLICACAO                    *
+      *****************************************************************
+       AQCP0100-OBT-CAPLIC.
+
+           MOVE 'AQCP0100-OBT-CAPLIC   ' TO VIAL0015-CALLER-ID.
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+
+           MOVE WS-PROGNAME(1:2)          TO AQCW0100-CAPLIC.
+
+       AQCP0100-OBT-CAPLIC-EXIT.
+           EXIT.
+
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DO INDICADOR DE DEBUG                     *
+      * ESTE PARÁGRAFO FOI SUBSTITUIDO PELO PARÁGRAFO IMEDIATAMENTE A *
+      * SEGUIR                                                        *
+      *****************************************************************
+      *AQCP0100-OBT-DEBUG.
+      *
+      *    MOVE 'AQCP0100-OBT-DEBUG    ' TO VIAL0015-CALLER-ID.
+      *    PERFORM VIAP0015-TRATA-DEBUG
+      *       THRU VIAP0015-TRATA-DEBUG-EXIT.
+      *
+      *    INITIALIZE ARCL2205-DATA.
+      *
+      *    MOVE AQCW0100-CAPLIC             TO ARCL2205-CAPLIC.
+      *    MOVE VIAK0002-PARAM-DEBUG        TO ARCL2205-CPARAM.
+      *
+      *    PERFORM CALL-ARM2206
+      *       THRU CALL-ARM2206-EXIT.
+      *
+      *    IF VIAL0002-SEM-ERROS
+      *       MOVE ARCL2205-GVALOR1(1:1) TO AQCW0100-AT-DEBUG
+      *       MOVE ARCL2205-GVALOR1(1:1) TO VIAL0015-I-DEBUG
+      *    ELSE
+      *      MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+      *      MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+      *      MOVE 'ARCL2205-GVALOR1    ' TO VIAL0015-CAMPO-NM ( 2 )
+      *      MOVE ARCL2205-GVALOR1       TO VIAL0015-CAMPO-VLR ( 2 )
+      *      MOVE 'AQCW0100-CAPLIC     ' TO VIAL0015-CAMPO-NM ( 3 )
+      *      MOVE AQCW0100-CAPLIC        TO VIAL0015-CAMPO-VLR ( 3 )
+      *      MOVE 'VIAK0002-PARAM-DEBUG' TO VIAL0015-CAMPO-NM ( 4 )
+      *      MOVE VIAK0002-PARAM-DEBUG   TO VIAL0015-CAMPO-VLR ( 4 )
+      *      PERFORM VIAP0015-TRATA-DEBUG
+      *         THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+      *
+      *AQCP0100-OBT-DEBUG-EXIT.
+      *    EXIT.
+      *
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DO INDICADOR DE DEBUG PARA O PROGRAMA     *
+      *****************************************************************
+       AQCP0100-OBT-DEBUG.
+      *
+           MOVE 'AQCP0100-OBT-DEBUG'       TO VIAL0015-CALLER-ID.
+      *
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+      *
+           INITIALIZE ARCL4400-DATA  REPLACING NUMERIC BY ZEROES
+                                          ALPHANUMERIC BY SPACES.
+      *
+           MOVE AQCW0100-CAPLIC            TO ARCL4400-CAPLIC.
+           MOVE WS-PROGNAME                TO ARCL4400-CPROGRAM.
+      *
+           PERFORM CALL-ARM4400
+              THRU CALL-ARM4400-EXIT.
+      *
+           IF ETCL0002-SEM-ERROS
+              MOVE ARCL4400-IDEBUG         TO AQCW0100-AT-DEBUG
+                                              VIAL0015-I-DEBUG
+           ELSE
+              MOVE 'ETCL0002-IND-ERROS  '  TO VIAL0015-CAMPO-NM( 1 )
+              MOVE ETCL0002-IND-ERROS      TO VIAL0015-CAMPO-VLR( 1 )
+              MOVE 'ARCL4400-CPROGRAM   '  TO VIAL0015-CAMPO-NM( 2 )
+              MOVE ARCL4400-CPROGRAM       TO VIAL0015-CAMPO-VLR( 2 )
+              MOVE 'AQCW0100-CAPLIC     '  TO VIAL0015-CAMPO-NM( 3 )
+              MOVE AQCW0100-CAPLIC         TO VIAL0015-CAMPO-VLR( 3 )
+      *
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+      *
+           END-IF.
+      *
+       AQCP0100-OBT-DEBUG-EXIT.
+           EXIT.
+      *
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DA DATA DO SISTEMA                        *
+      *****************************************************************
+       AQCP0100-OBT-DATA.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-DATA     ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           INITIALIZE ETCL9050-DATA      REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           MOVE ZEROES TO VIAW0020-RCODE.
+
+           PERFORM ETCP0003-STD-INIT
+              THRU ETCP0003-STD-INIT-EXIT
+
+           PERFORM CALL-ETR90050
+              THRU CALL-ETR90050-EXIT.
+
+           PERFORM ETCP0003-STD-END
+              THRU ETCP0003-STD-END-EXIT
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL9050-DTAPL          TO AQCW0100-AT-DTOP
+           ELSE
+             MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ETCL9050-DTAPL      ' TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ETCL9050-DTAPL         TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-DATA-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO BANCO DA INSTALACAO                       *
+      *****************************************************************
+       AQCP0100-OBT-BANCO.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-BANCO    ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           INITIALIZE ETCL9057-DATA      REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+
+           MOVE ZEROES TO VIAW0020-RCODE.
+
+           PERFORM ETCP0003-STD-INIT
+              THRU ETCP0003-STD-INIT-EXIT
+
+           PERFORM CALL-ETR90057
+              THRU CALL-ETR90057-EXIT.
+
+           PERFORM ETCP0003-STD-END
+              THRU ETCP0003-STD-END-EXIT
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL9057-2CEMP          TO AQCW0100-AT-CBAN
+           ELSE
+             SET AQCW0009-RCODE-APL TO TRUE
+             MOVE VIAK0002-ERROS-ARQ      TO VIAL0002-IND-ERROS
+             MOVE VIAK0001-EMP-NOTFND     TO VIAL0002-COD-ERRO-GRAVE
+             MOVE VIAK0002-APLIC-AT       TO VIAL0002-CAPLIC-ERRO
+           END-IF.
+
+       AQCP0100-OBT-BANCO-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO BALCAO DE MOVIMENTO                       *
+      *****************************************************************
+       AQCP0100-OBT-BALCAO.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-BALCAO   ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ARCL2205-DATA.
+
+           MOVE VIAK0002-PARAM-BAL          TO ARCL2205-CPARAM.
+           MOVE VIAK0002-APLIC-AT           TO ARCL2205-CAPLIC.
+
+           PERFORM CALL-ARM2206
+              THRU CALL-ARM2206-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE ARCL2205-GVALOR1(1:4) TO AQCW0100-AT-BALM
+           ELSE
+             MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ARCL2205-GVALOR1    ' TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ARCL2205-GVALOR1       TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-BALCAO-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DA MOEDA DA INSTALACAO                    *
+      *****************************************************************
+       AQCP0100-OBT-MOEDA.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-MOEDA    ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           INITIALIZE ETCL9056-DATA      REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           MOVE ZEROES                     TO VIAW0020-RCODE.
+
+           PERFORM ETCP0003-STD-INIT
+              THRU ETCP0003-STD-INIT-EXIT
+
+           PERFORM CALL-ETR90056
+              THRU CALL-ETR90056-EXIT.
+
+           PERFORM ETCP0003-STD-END
+              THRU ETCP0003-STD-END-EXIT
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL0002-RCODE             TO VIAW0020-RCODE
+
+             PERFORM VIAP0020-TRATA-RCODE
+                THRU VIAP0020-TRATA-RCODE-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL9056-D2MOEO         TO AQCW0100-AT-CMOE
+           ELSE
+             MOVE VIAK0002-ERROS-ARQ      TO VIAL0002-IND-ERROS
+             MOVE VIAK0001-MOE-NOTFND     TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-MOEDA    ' TO VIAL0015-CALLER-ID
+             MOVE 'ETCL0002-RCODE '        TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE ETCL0002-RCODE           TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ETCL9056-D2MOEO'        TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ETCL9056-D2MOEO          TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-MOEDA-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DO PAIS DEFAULT DA INSTALACAO             *
+      *****************************************************************
+       AQCP0100-OBT-PAIS.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-PAIS     ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           INITIALIZE ETCL9113-DATA      REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           MOVE ZEROES                     TO VIAW0020-RCODE.
+
+           PERFORM ETCP0003-STD-INIT
+              THRU ETCP0003-STD-INIT-EXIT
+
+           PERFORM CALL-ETR90113
+              THRU CALL-ETR90113-EXIT.
+
+           PERFORM ETCP0003-STD-END
+              THRU ETCP0003-STD-END-EXIT
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL0002-RCODE             TO VIAW0020-RCODE
+
+             PERFORM VIAP0020-TRATA-RCODE
+                THRU VIAP0020-TRATA-RCODE-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE ETCL9113-CPAIS-2P       TO AQCW0100-CPAIS
+           ELSE
+              MOVE VIAK0002-ERROS-ARQ      TO VIAL0002-IND-ERROS
+              MOVE VIAK0001-CPAIS-NOTFND   TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+       AQCP0100-OBT-PAIS-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: OBTENCAO DO INDICADOR DE COMMITMENT CONTROL        *
+      *****************************************************************
+       AQCP0100-OBT-COMMIT.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-COMMIT   ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ETCL0002-COMMAREA.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           INITIALIZE ETCL9068-DATA      REPLACING NUMERIC BY ZEROES
+                                              ALPHANUMERIC BY SPACES.
+
+           MOVE ZEROES                     TO VIAW0020-RCODE.
+
+           PERFORM ETCP0003-STD-INIT
+              THRU ETCP0003-STD-INIT-EXIT
+
+           PERFORM CALL-ETR90068
+              THRU CALL-ETR90068-EXIT.
+
+           PERFORM ETCP0003-STD-END
+              THRU ETCP0003-STD-END-EXIT
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL0002-RCODE             TO VIAW0020-RCODE
+
+             PERFORM VIAP0020-TRATA-RCODE
+                THRU VIAP0020-TRATA-RCODE-EXIT
+           END-IF.
+
+           IF VIAL0002-SEM-ERROS
+             MOVE ETCL9068-ICOMMIT        TO AQCW0100-AT-COMMIT
+           ELSE
+             MOVE VIAK0002-ERROS-ARQ      TO VIAL0002-IND-ERROS
+             MOVE VIAK0001-COMMIT-NOTFND  TO VIAL0002-COD-ERRO-GRAVE
+           END-IF.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-COMMIT   ' TO VIAL0015-CALLER-ID
+             MOVE 'ETCL0002-RCODE '        TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE ETCL0002-RCODE           TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ETCL9068-ICOMMIT'       TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ETCL9068-ICOMMIT         TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-COMMIT-EXIT.
+           EXIT.
+
+      *****************************************************************
+      * DESCRICAO: OBTENCAO ESTACAO DE TRABALHO BATCH                 *
+      *****************************************************************
+       AQCP0100-OBT-ETRB.
+
+           IF ETCL0002-DEBUG-SIM
+             MOVE 'AQCP0100-OBT-ETRB    ' TO VIAL0015-CALLER-ID
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ARCL2205-DATA.
+
+           MOVE VIAK0002-APLIC-AT           TO ARCL2205-CAPLIC.
+           MOVE VIAK0002-PARAM-ETRB         TO ARCL2205-CPARAM.
+
+           PERFORM CALL-ARM2206
+              THRU CALL-ARM2206-EXIT.
+
+           IF VIAL0002-SEM-ERROS
+              MOVE ARCL2205-GVALOR1(1:4) TO AQCW0100-AT-ETRB
+           ELSE
+             MOVE 'VIAL0002-IND-ERROS  ' TO VIAL0015-CAMPO-NM ( 1 )
+             MOVE VIAL0002-IND-ERROS     TO VIAL0015-CAMPO-VLR ( 1 )
+             MOVE 'ARCL2205-GVALOR1    ' TO VIAL0015-CAMPO-NM ( 2 )
+             MOVE ARCL2205-GVALOR1       TO VIAL0015-CAMPO-VLR ( 2 )
+             PERFORM VIAP0015-TRATA-DEBUG
+                THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       AQCP0100-OBT-ETRB-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: FORMATACAO DOS DADOS DO ERRO NO FICHEIRO DE DEBUG  *
+      *****************************************************************
+      *AQCP0100-ESCREVE-MSG.
+      *
+      *    MOVE AQCW0100-PARAGRAPH          TO VIAL0015-CALLER-ID
+      *    MOVE 'ERRO PROGRAMA '            TO VIAL0015-CAMPO-NM(1)
+      *    MOVE WS-PROGNAME                 TO VIAL0015-CAMPO-VLR(1)
+      *    MOVE 'DATA          '            TO VIAL0015-CAMPO-NM(2)
+      *    MOVE AQCW0100-AT-DTOP            TO VIAL0015-CAMPO-VLR(2)
+      *    MOVE 'RCODE         '            TO VIAL0015-CAMPO-NM(3)
+      *    MOVE AQCW0009-RCODE              TO VIAL0015-CAMPO-VLR(3)
+      *    MOVE 'MSGID         '            TO VIAL0015-CAMPO-NM(4)
+      *    MOVE AQCW0100-MSGID              TO VIAL0015-CAMPO-VLR(4)
+      *    MOVE 'ERROR DATA    '            TO VIAL0015-CAMPO-NM(5)
+      *    MOVE AQCW0100-ERROR-DATA         TO VIAL0015-CAMPO-VLR(5)
+      *    MOVE 'CHAVE ACESSO  '            TO VIAL0015-CAMPO-NM(6)
+      *    MOVE AQCW0100-ACCESS-KEY         TO VIAL0015-CAMPO-VLR(6)
+      *    MOVE 'DESC1         '            TO VIAL0015-CAMPO-NM(7)
+      *    MOVE AQCW0100-DESC1              TO VIAL0015-CAMPO-VLR(7)
+      *    MOVE 'DESC2         '            TO VIAL0015-CAMPO-NM(8)
+      *    MOVE AQCW0100-DESC2              TO VIAL0015-CAMPO-VLR(8)
+      *    MOVE 'DESC3         '            TO VIAL0015-CAMPO-NM(9)
+      *    MOVE AQCW0100-DESC3              TO VIAL0015-CAMPO-VLR(9)
+      *    MOVE 'DESC4         '            TO VIAL0015-CAMPO-NM(10)
+      *    MOVE AQCW0100-DESC4              TO VIAL0015-CAMPO-VLR(10)
+      *    PERFORM VIAP0015-TRATA-DEBUG
+      *       THRU VIAP0015-TRATA-DEBUG-EXIT.
+      *
+      *AQCP0100-ESCREVE-MSG-EXIT.
+      *    EXIT.
+      *****************************************************************
+      * DESCRICAO: FORMATACAO DOS DADOS DO ERRO NO FICHEIRO DE DEBUG  *
+      *****************************************************************
+       AQCP0100-ESCREVE-MSG.
+      *
+           IF AQCW0100-SQLCODE NOT EQUAL SPACES
+              SET AQCW0100-DB2-ERROR   TO TRUE
+           ELSE
+              IF AQCW0100-FILE-STATUS NOT EQUAL SPACES
+                 SET AQCW0100-FILE-ERROR   TO TRUE
+              ELSE
+                 SET AQCW0100-EXEC-ERROR   TO TRUE
+              END-IF
+           END-IF
+      *
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '***                ERRO NO PROGRAMA                 ***'.
+           DISPLAY
+           '***                    ' AQCW0100-PGMNAME-GRP
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY '*** TIPO DE ERRO : ' AQCW0100-TIPERR-GRP
+           DISPLAY '*** LOCAL DO ERRO: ' AQCW0100-PARAGRAPH-NAME-GRP
+           IF AQCW0100-DB2-ERROR
+             DISPLAY '*** NOME TABELA  : ' AQCW0100-ENTIDADE-GRP
+             DISPLAY '*** SQLCODE      : ' AQCW0100-SQLCODE-GRP
+             DISPLAY '*** CHAVE ACESSO : ' AQCW0100-ACCESS-KEY-GRP
+             DISPLAY '*** DESCRITIVO   : ' AQCW0100-DESC1-GRP
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-DESC2-GRP
+             END-IF
+           END-IF
+           IF AQCW0100-FILE-ERROR
+             DISPLAY '*** NOME FICHEIRO: ' AQCW0100-ENTIDADE-GRP
+             DISPLAY '*** FILE STATUS  : ' AQCW0100-FILE-STATUS-GRP
+             IF AQCW0100-FILE-KEY1 NOT EQUAL SPACES
+               DISPLAY '*** REGISTO      : ' AQCW0100-FILE-KEY1
+             END-IF
+             IF AQCW0100-FILE-KEY1 NOT EQUAL SPACES
+               DISPLAY '*** REGISTO      : ' AQCW0100-FILE-KEY1 '***'
+             END-IF
+             IF AQCW0100-FILE-KEY2 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-FILE-KEY2 '***'
+             END-IF
+             IF AQCW0100-FILE-KEY3 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-FILE-KEY3 '***'
+             END-IF
+             IF AQCW0100-FILE-KEY4 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-FILE-KEY4 '***'
+             END-IF
+             IF AQCW0100-FILE-KEY5 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-FILE-KEY5 '***'
+             END-IF
+             DISPLAY '*** DESCRITIVO   : ' AQCW0100-DESC1-GRP
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               DISPLAY '***                ' AQCW0100-DESC2-GRP
+             END-IF
+           END-IF.
+
+           IF AQCW0100-EXEC-ERROR
+             IF AQCW0100-DESC1 NOT EQUAL SPACES
+               DISPLAY '*** DESCRITIVO   : ' AQCW0100-DESC1-GRP
+             END-IF
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               DISPLAY '***              : ' AQCW0100-DESC2-GRP
+             END-IF
+             IF AQCW0100-DESC3 NOT EQUAL SPACES
+               DISPLAY '***              : ' AQCW0100-DESC3-GRP
+             END-IF
+           END-IF.
+
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+
+           PERFORM AQCP0100-PREPARA-VIAF0015
+              THRU AQCP0100-PREPARA-VIAF0015-EXIT
+
+           PERFORM AQCP0100-ESCREVE-VIAF0015
+              THRU AQCP0100-ESCREVE-VIAF0015-EXIT.
+      *
+       AQCP0100-ESCREVE-MSG-EXIT.
+           EXIT.
+      **********************************************************
+      * AQCP0100-PREPARA-VIAF0015                              *
+      **********************************************************
+       AQCP0100-PREPARA-VIAF0015.
+
+           MOVE SPACES                     TO AQCW0100-G-HEADER
+                                              AQCW0100-G-DETALHE
+                                              AQCW0100-G-FOOTER.
+
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-HEADER(1)
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-HEADER(2)
+           MOVE
+           '***                ERRO NO PROGRAMA                 ***'
+           TO AQCW0100-HEADER(3)
+           STRING '***                    '
+                  AQCW0100-PGMNAME-GRP
+                  DELIMITED BY SIZE INTO AQCW0100-HEADER(4)
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-HEADER(5)
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-HEADER(6)
+           STRING  '*** TIPO DE ERRO : '
+                   AQCW0100-TIPERR-GRP
+                   DELIMITED BY SIZE INTO AQCW0100-HEADER(7)
+           STRING  '*** LOCAL DO ERRO: '
+                   AQCW0100-PARAGRAPH-NAME-GRP
+                   DELIMITED BY SIZE INTO AQCW0100-HEADER(8)
+           IF AQCW0100-DB2-ERROR
+             STRING  '*** NOME TABELA  : '
+                     AQCW0100-ENTIDADE-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(1)
+             STRING  '*** SQLCODE      : '
+                     AQCW0100-SQLCODE-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(2)
+             STRING  '*** CHAVE ACESSO : '
+                     AQCW0100-ACCESS-KEY-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(3)
+             STRING  '*** DESCRITIVO   : '
+                     AQCW0100-DESC1-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(4)
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               STRING  '***                '
+                       AQCW0100-DESC2-GRP
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(5)
+             END-IF
+           END-IF
+           IF AQCW0100-FILE-ERROR
+             STRING  '*** NOME FICHEIRO: '
+                     AQCW0100-ENTIDADE-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(1)
+             STRING  '*** FILE STATUS  : '
+                     AQCW0100-FILE-STATUS-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(2)
+             IF AQCW0100-FILE-KEY1 NOT EQUAL SPACES
+               STRING  '*** REGISTO      : '
+                       AQCW0100-FILE-KEY1
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(3)
+             END-IF
+             IF AQCW0100-FILE-KEY2 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-FILE-KEY2
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(4)
+             END-IF
+             IF AQCW0100-FILE-KEY3 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-FILE-KEY3
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(5)
+             END-IF
+             IF AQCW0100-FILE-KEY4 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-FILE-KEY4
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(6)
+             END-IF
+             IF AQCW0100-FILE-KEY5 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-FILE-KEY5
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(7)
+             END-IF
+             STRING  '*** DESCRITIVO   : '
+                     AQCW0100-DESC1-GRP
+                     DELIMITED BY SIZE INTO AQCW0100-DETALHE(8)
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               STRING  '***                '
+                       AQCW0100-DESC2-GRP
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(9)
+             END-IF
+           END-IF.
+           IF AQCW0100-EXEC-ERROR
+             IF AQCW0100-DESC1 NOT EQUAL SPACES
+               STRING  '*** DESCRITIVO   : '
+                       AQCW0100-DESC1-GRP
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(1)
+             END-IF
+             IF AQCW0100-DESC2 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-DESC2-GRP
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(2)
+             END-IF
+             IF AQCW0100-DESC3 NOT EQUAL SPACES
+               STRING  '***              : '
+                       AQCW0100-DESC3-GRP
+                       DELIMITED BY SIZE INTO AQCW0100-DETALHE(3)
+             END-IF
+           END-IF.
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-FOOTER(1)
+           MOVE
+           '*******************************************************'
+           TO AQCW0100-FOOTER(2).
+
+       AQCP0100-PREPARA-VIAF0015-EXIT.
+           EXIT.
+      **********************************************************
+      * AQCP0100-ESCREVE-VIAF0015                              *
+      **********************************************************
+       AQCP0100-ESCREVE-VIAF0015.
+
+           SET AQCW0100-INDICE-INI          TO TRUE
+           PERFORM VARYING AQCW0100-INDICE FROM 1 BY 1
+                     UNTIL AQCW0100-INDICE-MAX
+              IF AQCW0100-HEADER(AQCW0100-INDICE) NOT EQUAL SPACES
+                 MOVE AQCW0100-HEADER(AQCW0100-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+           SET AQCW0100-INDICE-INI          TO TRUE
+           PERFORM VARYING AQCW0100-INDICE FROM 1 BY 1
+                     UNTIL AQCW0100-INDICE-MAX
+              IF AQCW0100-DETALHE(AQCW0100-INDICE) NOT EQUAL SPACES
+                 MOVE AQCW0100-DETALHE(AQCW0100-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+           SET AQCW0100-INDICE-INI          TO TRUE
+           PERFORM VARYING AQCW0100-INDICE FROM 1 BY 1
+                     UNTIL AQCW0100-INDICE-MAX
+              IF AQCW0100-FOOTER(AQCW0100-INDICE) NOT EQUAL SPACES
+                 MOVE AQCW0100-FOOTER(AQCW0100-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+       AQCP0100-ESCREVE-VIAF0015-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: REGISTA INFORMACOES DO INICIO E FIM DA EXECUCAO    *
+      *****************************************************************
+       AQCP0100-REG-INICIO.
+      *
+           CALL 'BAR50050'
+              USING ETCL0002-COMMAREA
+                    WS-PROGNAME
+                    AQCW0100-AT-DTOP
+                    AQCW0100-ZSEQPROC
+      *
+              ON EXCEPTION
+                 MOVE ZEROES               TO AQCW0100-ZSEQPROC
+           END-CALL.
+      *
+           MOVE '**** INICIO EXECUCAO ****' TO VIAL0015-CALLER-ID
+           MOVE 'PROGRAMA      '            TO VIAL0015-CAMPO-NM(1)
+           MOVE WS-PROGNAME                 TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'DATA          '            TO VIAL0015-CAMPO-NM(2)
+           MOVE AQCW0100-AT-DTOP            TO VIAL0015-CAMPO-VLR(2)
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+      *
+       AQCP0100-REG-INICIO-EXIT.
+           EXIT.
+      *****************************************************************
+      * DESCRICAO: REGISTA INFORMACOES DO INICIO E FIM DA EXECUCAO    *
+      *****************************************************************
+       AQCP0100-REG-FIM.
+      *
+           CALL 'BAR50059'
+              USING ETCL0002-COMMAREA
+                    WS-PROGNAME
+                    AQCW0100-AT-DTOP
+                    AQCW0100-ZSEQPROC
+                    AQCW0009-RCODE
+      *
+              ON EXCEPTION
+                 EXIT
+           END-CALL.
+      *
+           MOVE '****** FIM EXECUCAO *****' TO VIAL0015-CALLER-ID
+           MOVE 'PROGRAMA      '           TO VIAL0015-CAMPO-NM(1)
+           MOVE WS-PROGNAME                TO VIAL0015-CAMPO-VLR(1)
+           MOVE 'DATA          '           TO VIAL0015-CAMPO-NM(2)
+           MOVE AQCW0100-AT-DTOP           TO VIAL0015-CAMPO-VLR(2)
+           MOVE 'RCODE         '           TO VIAL0015-CAMPO-NM(3)
+           MOVE AQCW0009-RCODE             TO VIAL0015-CAMPO-VLR(3)
+           PERFORM VIAP0015-TRATA-DEBUG
+              THRU VIAP0015-TRATA-DEBUG-EXIT.
+      *
+       AQCP0100-REG-FIM-EXIT.
+           EXIT.

@@ -1,0 +1,52 @@
+      ******************************************************************
+      *  APLICAÇÃO:        ARQUITECTURA VIA                           **
+      *  MÓDULO:           DEBUG - BATCH                              **
+      *  FUNÇÃO:           ESCREVE FICHEIRO VIAF0015                  **
+      *  PROGRAMA:         VIAP0015.                                  **
+      *  CRIACAO:          2012.01.02                                 **
+      *  AUTOR:            ANTONIO RODRIGUES                          **
+      *  DESCRIÇÃO:        PROCEDURE DE CALL AO MODULO DE DEBUG       **
+      *                    (WRITE NO VIAF0015)                        **
+      *                                                               **
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S           **
+      *          *        *        *                                  **
+      ******************************************************************
+      *    TRATAMENTO DE DEBUG                                         *
+      ******************************************************************
+       VIAP0015-TRATA-DEBUG.
+      *
+           IF ETCL0002-CUTILIZA = SPACES
+             MOVE WS-PROGNAME              TO ETCL0002-CUTILIZA
+           END-IF.
+
+           MOVE ETCL0002-APLICACAO         TO VIAL0015-CAPLIC.
+           MOVE ETCL0002-COPCAO            TO VIAL0015-COPCAO.
+           MOVE ETCL0002-CACCAO            TO VIAL0015-CACCAO.
+           MOVE ETCL0002-TRACE             TO VIAL0015-TRACE.
+           MOVE SPACES                     TO VIAL0015-CAPLIC-PRG.
+           MOVE SPACES                     TO VIAL0015-COPCAO-PRG.
+           MOVE WS-PROGNAME                TO VIAL0015-PROGRAMA.
+           MOVE ETCL0002-CUTILIZA          TO VIAL0015-CUTILIZA.
+           MOVE ETCL0002-DATA-PROCESSO     TO VIAL0015-DATA-PROC.
+
+           IF ETCL0002-NR-SEQUENCIA IS NUMERIC
+              MOVE ETCL0002-NR-SEQUENCIA   TO VIAL0015-NUM-SEQ
+           ELSE
+              MOVE ZEROES                  TO VIAL0015-NUM-SEQ
+           END-IF.
+      *
+           CALL VIAL0015-ROTINA-DEBUG USING VIAL0015-DATA
+
+           ON EXCEPTION
+             SET ETCL0002-ERROS-ARQ    TO TRUE
+             MOVE VIAK0001-PROG-NOTFND  TO ETCL0002-NR-ERRO
+             MOVE ETCL0002-IND-ERROS    TO ETCL0002-CAPLIC-ERRO
+             MOVE VIAL0015-ROTINA-DEBUG TO ETCL0002-CPROGRAM.
+      *
+           INITIALIZE VIAL0015-CAMPOS-CHAVE.
+      *
+       VIAP0015-TRATA-DEBUG-EXIT.
+           EXIT.

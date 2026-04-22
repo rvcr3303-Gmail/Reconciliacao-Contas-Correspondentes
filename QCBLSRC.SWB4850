@@ -1,0 +1,677 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWB4850.
+      ******************************************************************
+      *                                                                *
+      *                      - MENSAGENS SWIFT -                       *
+      *                                                                *
+      ******************************************************************
+      * RECONSTRUÇÃO DOS TOTAIS DA TABELA SWT63                        *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SOURCE-COMPUTER. IBM-AS400.
+       OBJECT-COMPUTER. IBM-AS400.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME               PIC  X(10) VALUE 'SWB4850'.
+           05 WS-SWVT7201               PIC  X(10) VALUE 'SWVT7201'.
+           05 WS-SWVT5805               PIC  X(10) VALUE 'SWVT5805'.
+           05 WS-SWVT6302               PIC  X(10) VALUE 'SWVT6302'.
+
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 WS-RECONC                 PIC  X(02) VALUE 'RC'.
+           05 WS-VALIDADA               PIC  X(02) VALUE 'VA'.
+           05 CON-SIM                   PIC  X(01) VALUE 'S'.
+
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01  WS-VARIAVEIS.
+           05 WS-CBAN                   PIC  X(04).
+           05 WS-CSPAI                  PIC  X(02).
+           05 WS-GVALOR.
+              10 WS-ANO                 PIC  9(04).
+              10 FILLER                 PIC  X(50).
+           05 WS-ANO-INI                PIC S9(04)  COMP-3.
+           05 WS-ANO-FIM                PIC S9(04)  COMP-3.
+           05 WS-DATA-INI               PIC S9(08)  COMP-3.
+           05 WS-DATA-FIM               PIC S9(08)  COMP-3.
+           05 WS-NANO                   PIC S9(04)  COMP-3.
+           05 WS-COUNT                  PIC S9(15)  COMP-3.
+           05 WS-MOVREC                 PIC S9(15)  COMP-3.
+           05 WS-TEXREC                 PIC S9(15)  COMP-3.
+           05 WS-MOVPEND                PIC S9(15)  COMP-3.
+           05 WS-TEXPEND                PIC S9(15)  COMP-3.
+
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  WS-SWITCHES.
+           05 WS-EXECUTA                PIC  X(01)  VALUE SPACES.
+              88 WS-EXECUTA-SIM                     VALUE 'S'.
+           05 WS-STATUS-SWT56           PIC S9(03)  VALUE 0.
+              88 WS-SWT56-OK                        VALUE 0.
+              88 WS-SWT56-NOTFND                    VALUE 100.
+           05 WS-STATUS-SWT58           PIC S9(03)  VALUE 0.
+              88 WS-SWT58-OK                        VALUE 0.
+              88 WS-SWT58-NOTFND                    VALUE 100.
+           05 WS-STATUS-SWT63           PIC S9(03)  VALUE 0.
+              88 WS-SWT63-OK                        VALUE 0.
+              88 WS-SWT63-NOTFND                    VALUE 100.
+
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+           COPY AQCK0001.
+           COPY AQCW0109.
+           COPY SWCK0001.
+           COPY SWCK0002.
+           COPY SWCK0003.
+           COPY ARCK0001.
+           COPY VIAL0015.
+           COPY VIAW0030.
+           COPY AQCW0011.
+PRA        COPY AQCW0009.
+
+      ******************************************************************
+      * DB2
+      ******************************************************************
+           EXEC SQL INCLUDE SWCD7201  END-EXEC.
+           EXEC SQL INCLUDE SWCD5805  END-EXEC.
+           EXEC SQL INCLUDE SWCD6302  END-EXEC.
+           EXEC SQL INCLUDE SQLCA     END-EXEC.
+
+           EXEC SQL
+                DECLARE CRS_SWT63 CURSOR FOR
+                 SELECT CBAN
+                      , CSPAI
+                      , TOPREC
+                      , TEXREC
+                      , TOPPEND
+                      , TEXPEND
+                      , CUSERID
+                      , HTIMEEST
+                      , NANO
+                   FROM SWVT6302
+                   WHERE NANO >= :WS-ANO-INI
+                     AND NANO <= :WS-ANO-INI
+                  ORDER BY CBAN, CSPAI, NANO
+           END-EXEC.
+
+      ******************************************************************
+       LINKAGE SECTION.
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+PRA   *    COPY AQCW0009.
+PRA        COPY VIAL0005.
+      ******************************************************************
+PRA   *PROCEDURE DIVISION USING AQCW0009-DATA.
+PRA        EXEC SQL INCLUDE VIAP0014 END-EXEC.
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1000-INICIO-PROGRAMA-EXIT.
+
+           IF AQCW0009-SEM-ERROS
+              IF WS-EXECUTA-SIM
+                 PERFORM 2000-PROC-PROGRAMA
+                    THRU 2000-PROC-PROGRAMA-EXIT
+              END-IF
+           END-IF.
+
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3000-FIM-PROGRAMA-EXIT.
+
+       0000-MAINLINE-EXIT.
+           GOBACK.
+
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+           MOVE '1000-INICIO-PROGRAMA'      TO VIAL0015-CALLER-ID.
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE WS-VARIAVEIS.
+           SET AQCW0009-RCODE-OK            TO TRUE.
+           SET ETCL0002-SEM-ERROS           TO TRUE.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-INICIO
+                 THRU AQCP0100-REG-INICIO-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-OBT-DADOS-ARQ
+                 THRU AQCP0100-OBT-DADOS-ARQ-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 1100-OBTER-PERIODO
+                 THRU 1100-OBTER-PERIODO-EXIT
+           END-IF.
+
+       1000-INICIO-PROGRAMA-EXIT.
+           EXIT.
+
+      ******************************************************************
+       1100-OBTER-PERIODO.
+      ******************************************************************
+           MOVE '1100-OBTER-PERIODO'        TO VIAL0015-CALLER-ID.
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE ARCL2205-DATA         REPLACING NUMERIC BY ZEROES
+                                                 ALPHANUMERIC BY SPACES.
+
+           MOVE SWCK0002-CAPLIC             TO ARCL2205-CAPLIC.
+           MOVE SWCK0002-PARAM-TOTAISANO    TO ARCL2205-CPARAM.
+
+           PERFORM CALL-ARM2206
+              THRU CALL-ARM2206-EXIT.
+
+           IF ETCL0002-SEM-ERROS
+              MOVE ARCL2205-GVALOR1         TO WS-GVALOR
+              MOVE WS-ANO                   TO WS-ANO-INI
+              MOVE ARCL2205-GVALOR2         TO WS-GVALOR
+              MOVE WS-ANO                   TO WS-ANO-FIM
+              MOVE ARCL2205-GVALOR3         TO WS-EXECUTA
+           ELSE
+              IF  ETCL0002-ERROS-FUNCAO
+              AND ETCL0002-NR-ERRO      EQUAL ARCK0001-REG-INEXISTENTE
+              AND ETCL0002-CAPLIC-ERRO  EQUAL VIAK0002-APLIC-AR
+                  SET  ETCL0002-SEM-ERROS   TO TRUE
+                  MOVE ZEROES               TO ETCL0002-NR-ERRO
+                  MOVE SPACES               TO ETCL0002-CAPLIC-ERRO
+                  MOVE 0001                 TO WS-ANO-INI
+                  MOVE 9999                 TO WS-ANO-FIM
+              END-IF
+           END-IF.
+
+           IF NOT ETCL0002-SEM-ERROS
+              SET  AQCW0009-RCODE-VAL       TO TRUE
+              SET  VIAW0030-EXEC-ERROR      TO TRUE
+              MOVE VIAL0015-CALLER-ID       TO VIAW0030-PARAGRAPH-NAME
+              MOVE 'ERRO NA ARM2206'        TO VIAW0030-DESC1
+              MOVE ETCL0002-AREA-ERRO       TO VIAW0030-DESC2
+              MOVE ETCL0002-GINFO-ERRO      TO VIAW0030-DESC3
+              PERFORM VIAP0030-ESCREVE-SPOOL
+                 THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-IF.
+
+       1100-OBTER-PERIODO-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+           MOVE '2000-PROC-PROGRAMA'        TO VIAL0015-CALLER-ID.
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           PERFORM 2100-OPEN-CURSOR
+              THRU 2100-OPEN-CURSOR-EXIT
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2200-FETCH-CURSOR
+                 THRU 2200-FETCH-CURSOR-EXIT
+
+              PERFORM 2300-PROCESSA-CURSOR
+                 THRU 2300-PROCESSA-CURSOR-EXIT
+                      UNTIL NOT AQCW0009-SEM-ERROS
+                      OR    NOT AQCW0011-OK
+
+              EXEC SQL CLOSE CRS_SWT63 END-EXEC
+           END-IF.
+
+       2000-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2100-OPEN-CURSOR.
+      ******************************************************************
+           MOVE '2100-OPEN-CURSOR'          TO VIAL0015-CALLER-ID.
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           EXEC SQL
+                OPEN CRS_SWT63
+           END-EXEC.
+
+           MOVE WS-SWVT6302                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2100-OPEN-CURSOR-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2200-FETCH-CURSOR.
+      ******************************************************************
+           MOVE '2200-FETCH-CURSOR'         TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           EXEC SQL
+                FETCH CRS_SWT63
+                 INTO :SWCD6302-CBAN
+                    , :SWCD6302-CSPAI
+                    , :SWCD6302-TOPREC
+                    , :SWCD6302-TEXREC
+                    , :SWCD6302-TOPPEND
+                    , :SWCD6302-TEXPEND
+                    , :SWCD6302-CUSERID
+                    , :SWCD6302-HTIMEEST
+                    , :SWCD6302-NANO
+           END-EXEC.
+
+           MOVE WS-SWVT6302                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                MOVE SWCD6302-NANO          TO AQCW0005-DT98-A
+                MOVE  1                     TO AQCW0005-DT98-M
+                MOVE  1                     TO AQCW0005-DT98-D
+                MOVE AQCW0005-DT98          TO WS-DATA-INI
+                MOVE 12                     TO AQCW0005-DT98-M
+                MOVE 31                     TO AQCW0005-DT98-D
+                MOVE AQCW0005-DT98          TO WS-DATA-FIM
+           WHEN AQCW0011-NOTFND
+                CONTINUE
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2200-FETCH-CURSOR-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2300-PROCESSA-CURSOR.
+      ******************************************************************
+           MOVE '1000-INICIO-PROGRAMA'      TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2310-SELECT-MOVREC
+                 THRU 2310-SELECT-MOVREC-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2320-SELECT-TEXREC
+                 THRU 2320-SELECT-TEXREC-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2330-SELECT-MOVPEND
+                 THRU 2330-SELECT-MOVPEND-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2340-SELECT-TEXPEND
+                 THRU 2340-SELECT-TEXPEND-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2350-UPDATE-CURSOR
+                 THRU 2350-UPDATE-CURSOR-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2200-FETCH-CURSOR
+                 THRU 2200-FETCH-CURSOR-EXIT
+           END-IF.
+
+       2300-PROCESSA-CURSOR-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2310-SELECT-MOVREC.
+      ******************************************************************
+           MOVE '2310-SELECT-MOVREC'        TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           MOVE SWCD6302-CBAN               TO WS-CBAN.
+           MOVE SWCD6302-CSPAI              TO WS-CSPAI.
+
+           EXEC SQL
+                 SELECT COUNT(*)
+                   INTO :WS-MOVREC
+                   FROM SWVT7201
+                  WHERE IRECONC   = :CON-SIM
+                    AND NCCCCBAN  = :WS-CBAN
+                    AND NCCCCSPAI = :WS-CSPAI
+                    AND MRDATL >= :WS-DATA-INI
+                    AND MRDATL <= :WS-DATA-FIM
+           END-EXEC.
+
+           MOVE WS-SWVT7201                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN AQCW0011-NOTFND
+                MOVE SWCD6302-TOPREC        TO WS-MOVREC
+                MOVE ZEROES                 TO WS-MOVREC
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2310-SELECT-MOVREC-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2320-SELECT-TEXREC.
+      ******************************************************************
+           MOVE '2320-SELECT-TEXREC'        TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           MOVE SWCD6302-CBAN               TO WS-CBAN.
+           MOVE SWCD6302-CSPAI              TO WS-CSPAI.
+
+           EXEC SQL
+                 SELECT COUNT(*)
+                   INTO :WS-TEXREC
+                   FROM SWVT5805
+                  WHERE CCODEST     IN (:WS-RECONC, :WS-VALIDADA )
+                    AND CBAN    = :WS-CBAN
+                    AND CSPAI   = :WS-CSPAI
+                    AND DATVAL >= :WS-DATA-INI
+                    AND DATVAL <= :WS-DATA-FIM
+           END-EXEC.
+
+           MOVE WS-SWVT5805                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN AQCW0011-NOTFND
+                MOVE SWCD6302-TEXREC        TO WS-TEXREC
+                MOVE ZEROES                 TO WS-TEXREC
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2320-SELECT-TEXREC-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2330-SELECT-MOVPEND.
+      ******************************************************************
+           MOVE '2330-SELECT-MOVPEND'       TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           MOVE SWCD6302-CBAN               TO WS-CBAN.
+           MOVE SWCD6302-CSPAI              TO WS-CSPAI.
+
+           EXEC SQL
+                 SELECT COUNT(*)
+                   INTO :WS-MOVPEND
+                   FROM SWVT7201
+                  WHERE IRECONC  <> :CON-SIM
+                    AND NCCCCBAN  = :WS-CBAN
+                    AND NCCCCSPAI = :WS-CSPAI
+                    AND MRDATL >= :WS-DATA-INI
+                    AND MRDATL <= :WS-DATA-FIM
+           END-EXEC.
+
+           MOVE WS-SWVT7201                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN AQCW0011-NOTFND
+                MOVE SWCD6302-TOPPEND       TO WS-MOVPEND
+                MOVE ZEROES                 TO WS-MOVPEND
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2330-SELECT-MOVPEND-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2340-SELECT-TEXPEND.
+      ******************************************************************
+           MOVE '2340-SELECT-TEXPEND'       TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           MOVE SWCD6302-CBAN               TO WS-CBAN.
+           MOVE SWCD6302-CSPAI              TO WS-CSPAI.
+
+           EXEC SQL
+                 SELECT COUNT(*)
+                   INTO :WS-TEXPEND
+                   FROM SWT58
+                  WHERE CCODEST NOT IN (:WS-RECONC, :WS-VALIDADA )
+                    AND CBAN    = :WS-CBAN
+                    AND CSPAI   = :WS-CSPAI
+                    AND DATVAL >= :WS-DATA-INI
+                    AND DATVAL <= :WS-DATA-FIM
+           END-EXEC.
+
+           MOVE WS-SWVT5805                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN AQCW0011-NOTFND
+                MOVE SWCD6302-TEXPEND       TO WS-TEXPEND
+                MOVE ZEROES                 TO WS-TEXPEND
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2340-SELECT-TEXPEND-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2350-UPDATE-CURSOR.
+      ******************************************************************
+           MOVE '2350-UPDATE-CURSOR'        TO VIAL0015-CALLER-ID.
+      *    IF AQCW0100-AT-DEBUG-SIM
+      *       PERFORM VIAP0015-TRATA-DEBUG
+      *          THRU VIAP0015-TRATA-DEBUG-EXIT
+      *    END-IF.
+
+           IF  WS-MOVREC  EQUAL SWCD6302-TOPREC
+           AND WS-TEXREC  EQUAL SWCD6302-TEXREC
+           AND WS-MOVPEND EQUAL SWCD6302-TOPPEND
+           AND WS-TEXPEND EQUAL SWCD6302-TEXPEND
+               CONTINUE
+           ELSE
+              IF WS-MOVREC  NOT EQUAL SWCD6302-TOPREC
+                 MOVE WS-MOVREC             TO SWCD6302-TOPREC
+              END-IF
+              IF WS-TEXREC  NOT EQUAL SWCD6302-TEXREC
+                 MOVE WS-TEXREC             TO SWCD6302-TEXREC
+              END-IF
+              IF WS-MOVPEND NOT EQUAL SWCD6302-TOPPEND
+                 MOVE WS-MOVPEND            TO SWCD6302-TOPPEND
+              END-IF
+              IF WS-TEXPEND NOT EQUAL SWCD6302-TEXPEND
+                 MOVE WS-TEXPEND            TO SWCD6302-TEXPEND
+              END-IF
+              MOVE WS-PROGNAME              TO SWCD6302-CUSERID
+
+              EXEC SQL
+                   UPDATE SWVT6302
+                      SET TOPREC   = :SWCD6302-TOPREC
+                        , TEXREC   = :SWCD6302-TEXREC
+                        , TOPPEND  = :SWCD6302-TOPPEND
+                        , TEXPEND  = :SWCD6302-TEXPEND
+                        , CUSERID  = :SWCD6302-CUSERID
+                        , HTIMEEST = CURRENT TIMESTAMP
+                    WHERE CURRENT OF CRS_SWT63
+              END-EXEC
+
+           MOVE WS-SWVT6302                 TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+           WHEN AQCW0011-OK
+                CONTINUE
+           WHEN OTHER
+                SET  AQCW0009-RCODE-APL     TO TRUE
+                SET  VIAW0030-DB2-ERROR     TO TRUE
+                MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+                MOVE AQCW0011-TABLE-NAME    TO VIAW0030-TABLE-NAME
+                MOVE AQCW0011-SQLCODE       TO VIAW0030-SQLCODE
+                PERFORM VIAP0030-ESCREVE-SPOOL
+                   THRU VIAP0030-ESCREVE-SPOOL-EXIT
+           END-EVALUATE.
+
+       2350-UPDATE-CURSOR-EXIT.
+           EXIT.
+
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+           MOVE '3000-FIM-PROGRAMA'         TO VIAL0015-CALLER-ID.
+           IF AQCW0100-AT-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM AQCP0100-REG-FIM
+                 THRU AQCP0100-REG-FIM-EXIT
+           END-IF.
+
+           PERFORM AQCP0002-TRATA-SYNCPOINT
+              THRU AQCP0002-TRATA-SYNCPOINT-EXIT.
+
+PRA        MOVE AQCW0009-RCODE             TO VIAL0100-RCODE.
+
+       3000-FIM-PROGRAMA-EXIT.
+           EXIT.
+
+      ******************************************************************
+           EXEC SQL INCLUDE AQCP0002 END-EXEC.
+      ******************************************************************
+           COPY VIAP0015.
+           COPY AQCP0109.
+           COPY VIAP0030.
+           COPY AQCP0011.
+      ******************************************************************

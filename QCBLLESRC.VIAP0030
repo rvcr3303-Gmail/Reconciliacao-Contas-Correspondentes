@@ -1,0 +1,294 @@
+       VIAP0030-ESCREVE-SPOOL.
+
+           PERFORM VIAP0030-FORM-STD-SPOOL
+              THRU VIAP0030-FORM-STD-SPOOL-EXIT.
+
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '***                ERRO NO PROGRAMA                 ***'.
+           DISPLAY
+           '***                    ' VIAW0030-PGMNAME-GRP
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY '*** TIPO DE ERRO : ' VIAW0030-TIPERR-GRP
+           DISPLAY '*** LOCAL DO ERRO: ' VIAW0030-PARAGRAPH-NAME-GRP
+           IF VIAW0030-DB2-ERROR
+             DISPLAY '*** NOME TABELA  : ' VIAW0030-TABLE-NAME-GRP
+             DISPLAY '*** SQLCODE      : ' VIAW0030-SQLCODE-GRP
+             DISPLAY '*** CHAVE ACESSO : ' VIAW0030-ACCESS-KEY-GRP
+             DISPLAY '*** DESCRITIVO   : ' VIAW0030-DESC1-GRP
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-DESC2-GRP
+             END-IF
+           END-IF
+           IF VIAW0030-DB2-WARN
+             DISPLAY '*** NOME TABELA  : ' VIAW0030-TABLE-NAME-GRP
+             DISPLAY '*** SQLWARN      : ' VIAW0030-SQLWARN
+             DISPLAY '*** CHAVE ACESSO : ' VIAW0030-ACCESS-KEY-GRP
+             DISPLAY '*** DESCRITIVO   : ' VIAW0030-DESC1-GRP
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-DESC2-GRP
+             END-IF
+           END-IF
+           IF VIAW0030-FILE-ERROR
+             DISPLAY '*** NOME FICHEIRO: ' VIAW0030-FILE-NAME-GRP
+             DISPLAY '*** FILE STATUS  : ' VIAW0030-FILE-STATUS-GRP
+             IF VIAW0030-FILE-KEY1 NOT EQUAL SPACES
+               DISPLAY '*** REGISTO      : ' VIAW0030-FILE-KEY1
+             END-IF
+             IF VIAW0030-FILE-KEY1 NOT EQUAL SPACES
+               DISPLAY '*** REGISTO      : ' VIAW0030-FILE-KEY1 '***'
+             END-IF
+             IF VIAW0030-FILE-KEY2 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-FILE-KEY2 '***'
+             END-IF
+             IF VIAW0030-FILE-KEY3 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-FILE-KEY3 '***'
+             END-IF
+             IF VIAW0030-FILE-KEY4 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-FILE-KEY4 '***'
+             END-IF
+             IF VIAW0030-FILE-KEY5 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-FILE-KEY5 '***'
+             END-IF
+             DISPLAY '*** DESCRITIVO   : ' VIAW0030-DESC1-GRP
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               DISPLAY '***                ' VIAW0030-DESC2-GRP
+             END-IF
+           END-IF.
+
+           IF VIAW0030-EXEC-ERROR
+             IF VIAW0030-DESC1 NOT EQUAL SPACES
+               DISPLAY '*** DESCRITIVO   : ' VIAW0030-DESC1-GRP
+             END-IF
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               DISPLAY '***              : ' VIAW0030-DESC2-GRP
+             END-IF
+             IF VIAW0030-DESC3 NOT EQUAL SPACES
+               DISPLAY '***              : ' VIAW0030-DESC3-GRP
+             END-IF
+           END-IF.
+
+           DISPLAY
+           '*******************************************************'.
+           DISPLAY
+           '*******************************************************'.
+
+           PERFORM VIAP0030-PREPARA-VIAF0015
+              THRU VIAP0030-PREPARA-VIAF0015-EXIT
+
+           PERFORM VIAP0030-ESCREVE-VIAF0015
+              THRU VIAP0030-ESCREVE-VIAF0015-EXIT.
+
+       VIAP0030-ESCREVE-SPOOL-EXIT.
+           EXIT.
+
+      **********************************************************
+      * VIAP0030-FORM-STD-SPOOL                             *
+      **********************************************************
+       VIAP0030-FORM-STD-SPOOL.
+
+           MOVE VIAL0015-CALLER-ID     TO VIAW0030-PARAGRAPH-NAME
+           MOVE WS-PROGNAME            TO VIAW0030-PGMNAME.
+
+       VIAP0030-FORM-STD-SPOOL-EXIT.
+           EXIT.
+
+      **********************************************************
+      * VIAP0030-PREPARA-VIAF0015                              *
+      **********************************************************
+       VIAP0030-PREPARA-VIAF0015.
+
+           MOVE SPACES                     TO VIAW0030-G-HEADER
+                                              VIAW0030-G-DETALHE
+                                              VIAW0030-G-FOOTER.
+
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-HEADER(1)
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-HEADER(2)
+           MOVE
+           '***                ERRO NO PROGRAMA                 ***'
+           TO VIAW0030-HEADER(3)
+           STRING '***                    '
+                  VIAW0030-PGMNAME-GRP
+                  DELIMITED BY SIZE INTO VIAW0030-HEADER(4)
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-HEADER(5)
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-HEADER(6)
+           STRING  '*** TIPO DE ERRO : '
+                   VIAW0030-TIPERR-GRP
+                   DELIMITED BY SIZE INTO VIAW0030-HEADER(7)
+           STRING  '*** LOCAL DO ERRO: '
+                   VIAW0030-PARAGRAPH-NAME-GRP
+                   DELIMITED BY SIZE INTO VIAW0030-HEADER(8)
+           IF VIAW0030-DB2-ERROR
+             STRING  '*** NOME TABELA  : '
+                     VIAW0030-TABLE-NAME-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(1)
+             STRING  '*** SQLCODE      : '
+                     VIAW0030-SQLCODE-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(2)
+             STRING  '*** CHAVE ACESSO : '
+                     VIAW0030-ACCESS-KEY-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(3)
+             STRING  '*** DESCRITIVO   : '
+                     VIAW0030-DESC1-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(4)
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               STRING  '***                '
+                       VIAW0030-DESC2-GRP
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(5)
+             END-IF
+           END-IF
+           IF VIAW0030-FILE-ERROR
+             STRING  '*** NOME FICHEIRO: '
+                     VIAW0030-FILE-NAME-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(1)
+             STRING  '*** FILE STATUS  : '
+                     VIAW0030-FILE-STATUS-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(2)
+             IF VIAW0030-FILE-KEY1 NOT EQUAL SPACES
+               STRING  '*** REGISTO      : '
+                       VIAW0030-FILE-KEY1
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(3)
+             END-IF
+             IF VIAW0030-FILE-KEY2 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-FILE-KEY2
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(4)
+             END-IF
+             IF VIAW0030-FILE-KEY3 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-FILE-KEY3
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(5)
+             END-IF
+             IF VIAW0030-FILE-KEY4 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-FILE-KEY4
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(6)
+             END-IF
+             IF VIAW0030-FILE-KEY5 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-FILE-KEY5
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(7)
+             END-IF
+             STRING  '*** DESCRITIVO   : '
+                     VIAW0030-DESC1-GRP
+                     DELIMITED BY SIZE INTO VIAW0030-DETALHE(8)
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               STRING  '***                '
+                       VIAW0030-DESC2-GRP
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(9)
+             END-IF
+           END-IF.
+           IF VIAW0030-EXEC-ERROR
+             IF VIAW0030-DESC1 NOT EQUAL SPACES
+               STRING  '*** DESCRITIVO   : '
+                       VIAW0030-DESC1-GRP
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(1)
+             END-IF
+             IF VIAW0030-DESC2 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-DESC2-GRP
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(2)
+             END-IF
+             IF VIAW0030-DESC3 NOT EQUAL SPACES
+               STRING  '***              : '
+                       VIAW0030-DESC3-GRP
+                       DELIMITED BY SIZE INTO VIAW0030-DETALHE(3)
+             END-IF
+           END-IF.
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-FOOTER(1)
+           MOVE
+           '*******************************************************'
+           TO VIAW0030-FOOTER(2).
+
+       VIAP0030-PREPARA-VIAF0015-EXIT.
+           EXIT.
+      **********************************************************
+      * VIAP0030-ESCREVE-VIAF0015                              *
+      **********************************************************
+       VIAP0030-ESCREVE-VIAF0015.
+
+           SET VIAW0030-INDICE-INI          TO TRUE
+           PERFORM VARYING VIAW0030-INDICE FROM 1 BY 1
+                     UNTIL VIAW0030-INDICE-MAX
+              IF VIAW0030-HEADER(VIAW0030-INDICE) NOT EQUAL SPACES
+                 MOVE VIAW0030-HEADER(VIAW0030-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+           SET VIAW0030-INDICE-INI          TO TRUE
+           PERFORM VARYING VIAW0030-INDICE FROM 1 BY 1
+                     UNTIL VIAW0030-INDICE-MAX
+              IF VIAW0030-DETALHE(VIAW0030-INDICE) NOT EQUAL SPACES
+                 MOVE VIAW0030-DETALHE(VIAW0030-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+           SET VIAW0030-INDICE-INI          TO TRUE
+           PERFORM VARYING VIAW0030-INDICE FROM 1 BY 1
+                     UNTIL VIAW0030-INDICE-MAX
+              IF VIAW0030-FOOTER(VIAW0030-INDICE) NOT EQUAL SPACES
+                 MOVE VIAW0030-FOOTER(VIAW0030-INDICE)
+                   TO VIAL0015-CAMPO-R(1)
+                 PERFORM VIAP0015-TRATA-DEBUG
+                    THRU VIAP0015-TRATA-DEBUG-EXIT
+              END-IF
+           END-PERFORM.
+
+       VIAP0030-ESCREVE-VIAF0015-EXIT.
+           EXIT.
+      **********************************************************
+      * VIAP0030-FORM-EXEC-ERROR                               *
+      **********************************************************
+       VIAP0030-FORM-EXEC-ERROR.
+
+           SET VIAW0030-EXEC-ERROR        TO TRUE
+           MOVE WS-PROGNAME               TO VIAW0030-PGMNAME
+           MOVE VIAL0015-CALLER-ID        TO VIAW0030-PARAGRAPH-NAME
+           MOVE ETCL0002-TABLE-NAME       TO VIAW0030-TABLE-NAME
+           MOVE ETCL0002-SQLCODE          TO VIAW0030-SQLCODE
+           PERFORM VIAP0030-ESCREVE-SPOOL
+              THRU VIAP0030-ESCREVE-SPOOL-EXIT.
+
+       VIAP0030-FORM-EXEC-ERROR-EXIT.
+           EXIT.
+      **********************************************************
+      * VIAP0030-FORM-DB2-ERROR                                *
+      **********************************************************
+       VIAP0030-FORM-DB2-ERROR.
+
+           SET  VIAW0030-DB2-ERROR  TO TRUE
+           MOVE WS-PROGNAME               TO VIAW0030-PGMNAME
+           MOVE VIAL0015-CALLER-ID        TO VIAW0030-PARAGRAPH-NAME
+           MOVE ETCL0002-TABLE-NAME       TO VIAW0030-TABLE-NAME
+           MOVE ETCL0002-SQLCODE          TO VIAW0030-SQLCODE
+           STRING 'ERRO ACESSO A TABELA'     VIAW0030-TABLE-NAME
+                                             DELIMITED BY SIZE
+                                             INTO VIAW0030-DESC1
+
+           PERFORM VIAP0030-ESCREVE-SPOOL
+              THRU VIAP0030-ESCREVE-SPOOL-EXIT.
+
+       VIAP0030-FORM-DB2-ERROR-EXIT.
+           EXIT.

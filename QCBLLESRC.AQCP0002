@@ -1,0 +1,29 @@
+      ******************************************************************
+      *                                                               **
+      *  APLICAÇÃO:        DESENVOLVIMENTOS ADICIONAIS                **
+      *  MÓDULO:           TRANSVERSAL                                **
+      *  FUNÇÃO:           INTEGRIDADE                                **
+      *  PROGRAMA:         AQCP0002                                   *
+      *  CRIACAO:          2011.01.04                                 **
+      *  AUTOR:            VIA CONSULTING                             **
+      *  DESCRIÇÃO:        EFECTUA OS SEGUINTES PROCESSAMENTOS:       **
+      *                            -  TRATA INTEGRIDADE DOS PROGRAMAS **
+      *                                                               **
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S           **
+      *          *        *        *                                  **
+      *          *        *        *                                  **
+      ******************************************************************
+       AQCP0002-TRATA-SYNCPOINT.
+      *
+           IF AQCW0009-SEM-ERROS
+              EXEC SQL COMMIT END-EXEC
+           ELSE
+              EXEC SQL ROLLBACK END-EXEC
+              MOVE 16     TO RETURN-CODE
+           END-IF.
+      *
+       AQCP0002-TRATA-SYNCPOINT-EXIT.
+           EXIT.

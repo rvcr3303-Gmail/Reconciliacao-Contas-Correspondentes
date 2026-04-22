@@ -1,0 +1,398 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWM5415.
+      ******************************************************************
+      *                                                                *
+      *             - ORDENS DE PAGAMENTO RECEBIDAS -                  *
+      *                        BORDEREAUX                              *
+      ******************************************************************
+      * Emissão de Bordereaux de OPRs                                  *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SOURCE-COMPUTER. IBM-AS400.
+       OBJECT-COMPUTER. IBM-AS400.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+      ******************************************************************
+      *                      INPUT-OUTPUT SECTION                      *
+      ******************************************************************
+       FILE-CONTROL.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       FILE SECTION.
+      ******************************************************************
+      *                          FILE SECTION                          *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+       01  FILLER              PIC X(40) VALUE 'INICIO WORKING-STORAGE'.
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME              PIC  X(10) VALUE 'SWM5415'.
+
+      ******************************************************************
+      * ARQUITECTURA
+      ******************************************************************
+           COPY AQCK0001.
+           COPY AQCW0005.
+           COPY AQCW0009.
+           COPY AQCW0011.
+      *    COPY VIAL0015.
+      *    COPY VIAW0005.
+           COPY VIAK0001.
+           COPY VIAK0002.
+           COPY SXCL0002.
+JF    *    COPY ETCL9076.
+           COPY SXCL0790.
+           COPY ETCL0080.
+           COPY ARCL2805.
+           COPY AQCW0101.
+           COPY ATCK0001.
+JF         COPY ETCK0001.
+JF         COPY ETCK0002.
+      ******************************************************************
+      * APIS
+      ******************************************************************
+
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 CON-SWT63                 PIC X(10) VALUE 'SWVT6301'.
+
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01  WS-VARIAVEIS.
+           05 WS-TOPREC                PIC S9(03) COMP-3.
+           05 WS-TEXREC                PIC S9(03) COMP-3.
+           05 WS-TOPPEND               PIC S9(03) COMP-3.
+           05 WS-TEXPEND               PIC S9(03) COMP-3.
+
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  WS-SWITCHES.
+           05 FILLER                   PIC  X(01).
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+       COPY SWCK0001.
+       COPY SWCK0002.
+
+      ******************************************************************
+      * TABELAS
+      ******************************************************************
+
+      ******************************************************************
+      * DB2
+      ******************************************************************
+           EXEC SQL INCLUDE SWCD6300 END-EXEC.
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+
+      ******************************************************************
+       01  FILLER              PIC X(40) VALUE 'FIM DA WORKING-STORAGE'.
+
+      ******************************************************************
+       LINKAGE SECTION.
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+       COPY SWCL5415.
+       COPY ETCL0002.
+      ******************************************************************
+       PROCEDURE DIVISION USING ETCL0002-COMMAREA,
+                                SWCL5415-DATA.
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1000-INICIO-PROGRAMA-EXIT.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2000-PROC-PROGRAMA
+                 THRU 2000-PROC-PROGRAMA-EXIT
+           END-IF.
+
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3000-FIM-PROGRAMA-EXIT.
+
+       0000-MAINLINE-EXIT.
+           GOBACK.
+
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+           INITIALIZE WS-VARIAVEIS
+                    , WS-SWITCHES.
+
+           MOVE ZEROES TO ETCL0002-RCODE.
+           INITIALIZE ETCL0002-AREA-ERRO   REPLACING NUMERIC BY ZEROES
+                                                ALPHANUMERIC BY SPACES.
+
+      * validação dos campos standard da api:
+           PERFORM 1100-VALIDA-DADOS-API
+              THRU 1100-VALIDA-DADOS-API-EXIT.
+      *
+           PERFORM AQCP0101-OBT-DADOS-ARQ
+              THRU AQCP0101-OBT-DADOS-ARQ-EXIT.
+      *
+           IF AQCW0009-SEM-ERROS
+              PERFORM 1200-VALIDA-LINKAGE
+                 THRU 1200-VALIDA-LINKAGE-EXIT
+           END-IF.
+
+       1000-INICIO-PROGRAMA-EXIT.
+           EXIT.
+
+      ******************************************************************
+       1100-VALIDA-DADOS-API.
+      ******************************************************************
+           IF VIAL0015-DEBUG-SIM
+              MOVE '1100-VALIDA-DADOS-API' TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       1100-VALIDA-DADOS-API-EXIT.
+           EXIT.
+
+      * Valida formatos inválidos:
+      ******************************************************************
+       1200-VALIDA-LINKAGE.
+      ******************************************************************
+           IF VIAL0015-DEBUG-SIM
+              MOVE '1200-VALIDA-LINKAGE'   TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF SWCL5415-CBAN EQUAL SPACES OR
+              SWCL5415-CSPAI EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO ETCL0002-IND-ERROS
+              MOVE SWCK0001-COD-PAIS-INV   TO ETCL0002-ST-ERRO
+              MOVE SWCK0002-CAPLIC         TO ETCL0002-CAPLIC-ERRO
+           END-IF.
+
+           IF NOT SWCL5415-OPERACAO AND
+              NOT SWCL5415-EXTRATO
+              MOVE VIAK0002-ERROS-FUNCAO   TO ETCL0002-IND-ERROS
+              MOVE SWCK0001-CAMPO-INPUT-INV TO ETCL0002-ST-ERRO
+              MOVE SWCK0002-CAPLIC         TO ETCL0002-CAPLIC-ERRO
+           END-IF.
+
+           IF NOT SWCL5415-RECONCILIA AND
+              NOT SWCL5415-PENDENTE
+              MOVE VIAK0002-ERROS-FUNCAO   TO ETCL0002-IND-ERROS
+              MOVE SWCK0001-TIPOP-INV      TO ETCL0002-ST-ERRO
+              MOVE SWCK0002-CAPLIC         TO ETCL0002-CAPLIC-ERRO
+           END-IF.
+
+           IF SWCL5415-PGMC EQUAL SPACES
+              MOVE VIAK0002-ERROS-FUNCAO   TO ETCL0002-IND-ERROS
+              MOVE SWCK0001-CAMPO-INPUT-INV TO ETCL0002-ST-ERRO
+              MOVE SWCK0002-CAPLIC         TO ETCL0002-CAPLIC-ERRO
+           END-IF.
+
+       1200-VALIDA-LINKAGE-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+           IF VIAL0015-DEBUG-SIM
+              MOVE '2000-PROC-PROGRAMA'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EVALUATE TRUE
+              WHEN SWCL5415-RECONCILIA AND
+                   SWCL5415-OPERACAO
+                   MOVE +1                 TO WS-TOPREC
+                   MOVE  0                 TO WS-TEXREC
+                   MOVE -1                 TO WS-TOPPEND
+                   MOVE  0                 TO WS-TEXPEND
+              WHEN SWCL5415-PENDENTE   AND
+                   SWCL5415-OPERACAO
+                   MOVE +1                 TO WS-TOPREC
+                   MOVE  0                 TO WS-TEXREC
+                   MOVE  0                 TO WS-TOPPEND
+                   MOVE  0                 TO WS-TEXPEND
+              WHEN SWCL5415-RECONCILIA AND
+                   SWCL5415-EXTRATO
+                   MOVE  0                 TO WS-TOPREC
+                   MOVE +1                 TO WS-TEXREC
+                   MOVE  0                 TO WS-TOPPEND
+                   MOVE -1                 TO WS-TEXPEND
+              WHEN SWCL5415-PENDENTE   AND
+                   SWCL5415-EXTRATO
+                   MOVE  0                 TO WS-TOPREC
+                   MOVE  0                 TO WS-TEXREC
+                   MOVE  0                 TO WS-TOPPEND
+                   MOVE +1                 TO WS-TEXPEND
+           END-EVALUATE.
+
+           IF AQCW0009-SEM-ERROS
+              PERFORM 2100-UPDATE-SWT63
+                 THRU 2100-UPDATE-SWT63-EXIT
+           END-IF.
+      *
+       2000-PROC-PROGRAMA-EXIT.
+           EXIT.
+
+      ******************************************************************
+       2100-UPDATE-SWT63.
+      ******************************************************************
+           IF VIAL0015-DEBUG-SIM
+              MOVE '2100-UPDATE-SWT63'    TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           INITIALIZE DCLSWCD6300 REPLACING NUMERIC BY ZEROES
+                                       ALPHANUMERIC BY SPACES.
+
+           MOVE SWCL5415-CBAN              TO SWCD6300-CBAN
+           MOVE SWCL5415-CSPAI             TO SWCD6300-CSPAI
+           MOVE SWCL5415-PGMC              TO SWCD6300-CUSERID
+
+           EXEC SQL
+               UPDATE SWVT6301
+                  SET TOPREC   = TOPREC  + :WS-TOPREC
+                    , TEXREC   = TEXREC  + :WS-TEXREC
+                    , TOPPEND  = TOPPEND + :WS-TOPPEND
+                    , TEXPEND  = TEXPEND + :WS-TEXPEND
+                    , CUSERID  = :SWCD6300-CUSERID
+                    , HTIMEEST = CURRENT TIMESTAMP
+                WHERE CBAN     = :SWCD6300-CBAN
+                  AND CSPAI    = :SWCD6300-CSPAI
+           END-EXEC.
+
+           MOVE CON-SWT63                  TO AQCW0011-TABLE-NAME.
+
+           PERFORM 9020-DB2CHECK
+              THRU 9029-DB2CHECK-EXIT.
+
+           EVALUATE TRUE
+              WHEN DB2-NOTFND
+                  PERFORM 2200-INSERT-SWT63
+                     THRU 2200-INSERT-SWT63-EXIT
+              WHEN DB2-OK
+                 CONTINUE
+              WHEN OTHER
+                 MOVE VIAK0002-ERROS-FUNCAO TO ETCL0002-IND-ERROS
+                 MOVE SWCK0001-REG-INEXIST  TO ETCL0002-ST-ERRO
+                 MOVE SWCK0002-CAPLIC       TO ETCL0002-CAPLIC-ERRO
+              END-EVALUATE.
+
+       2100-UPDATE-SWT63-EXIT.
+           EXIT.
+
+      *******************************************************************
+       2200-INSERT-SWT63.
+      *******************************************************************
+           IF AQCW0100-AT-DEBUG-SIM
+              MOVE '2200-INSERT-SWT63'     TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+           IF WS-TOPREC < ZEROS
+              MOVE ZEROS                   TO SWCD6300-TOPREC
+           ELSE
+              MOVE WS-TOPREC               TO SWCD6300-TOPREC
+           END-IF.
+           IF WS-TEXREC < ZEROS
+              MOVE ZEROS                   TO SWCD6300-TEXREC
+           ELSE
+              MOVE WS-TEXREC               TO SWCD6300-TEXREC
+           END-IF.
+
+           IF WS-TOPPEND < ZEROS
+              MOVE ZEROS                   TO SWCD6300-TOPPEND
+           ELSE
+              MOVE WS-TOPPEND              TO SWCD6300-TOPPEND
+           END-IF.
+           IF WS-TEXPEND < ZEROS
+              MOVE ZEROS                   TO SWCD6300-TEXPEND
+           ELSE
+              MOVE WS-TEXPEND              TO SWCD6300-TEXPEND
+           END-IF.
+
+           EXEC SQL
+              INSERT INTO SWVT6301
+                    ( CBAN, CSPAI, TOPREC, TEXREC
+                    , TOPPEND, TEXPEND, CUSERID, HTIMEEST)
+                VALUES
+                    ( :SWCD6300-CBAN
+                    , :SWCD6300-CSPAI
+                    , :SWCD6300-TOPREC
+                    , :SWCD6300-TEXREC
+                    , :SWCD6300-TOPPEND
+                    , :SWCD6300-TEXPEND
+                    , :SWCD6300-CUSERID
+                    , CURRENT TIMESTAMP)
+            END-EXEC
+
+            MOVE CON-SWT63                  TO AQCW0011-TABLE-NAME.
+
+            PERFORM 9020-DB2CHECK
+               THRU 9029-DB2CHECK-EXIT
+
+            IF NOT DB2-OK
+               MOVE VIAK0002-ERROS-FUNCAO   TO ETCL0002-IND-ERROS
+               MOVE SWCK0001-REG-INEXIST    TO ETCL0002-ST-ERRO
+               MOVE SWCK0002-CAPLIC         TO ETCL0002-CAPLIC-ERRO
+            END-IF.
+       2200-INSERT-SWT63-EXIT.
+           EXIT.
+
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+           IF VIAL0015-DEBUG-SIM
+              MOVE '3000-FIM-PROGRAMA'        TO VIAL0015-CALLER-ID
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       3000-FIM-PROGRAMA-EXIT.
+            EXIT.
+
+      ******************************************************************
+           COPY AQCP0005.
+           COPY AQCP0011.
+      *    COPY VIAP0015.
+JF    *    COPY ETCR9076.
+           COPY SXCR0790.
+           COPY AQCP0101.
+      ******************************************************************

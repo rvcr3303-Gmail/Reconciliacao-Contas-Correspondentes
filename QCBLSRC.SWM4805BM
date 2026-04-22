@@ -1,0 +1,766 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWM4805BM.
+      ******************************************************************
+      *                                                                *
+      *                      - MENSAGENS SWIFT -                       *
+      *                                                                *
+      ******************************************************************
+      * RECONCILIAÇÃO AUTOMÁTICA DE OPERAÇÕES  (Nivel 5)               *
+      *                                                                *
+      * Reconciliação Automática de Operações com relações de 1/n:     *
+      * OPI/OPM e Acquiring                                            *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SOURCE-COMPUTER. IBM-AS400.
+       OBJECT-COMPUTER. IBM-AS400.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+      ******************************************************************
+      *                      INPUT-OUTPUT SECTION                      *
+      ******************************************************************
+       FILE-CONTROL.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       FILE SECTION.
+      ******************************************************************
+      *                          FILE SECTION                          *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+       01  FILLER                          PIC X(40) VALUE
+                                               'INICIO WORKING-STORAGE'.
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(10) VALUE 'SWM4805BM'.
+      *
+      ******************************************************************
+      * TABELAS
+      ******************************************************************
+           EXEC SQL INCLUDE SWCD9701 END-EXEC.
+      *
+      ******************************************************************
+      * APIS
+      ******************************************************************
+           COPY SXCL0002.
+           COPY SXCL0445.
+           COPY ETCL1000.
+           COPY ETCK0002.
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 CON-SWVT9701             PIC  X(08) VALUE 'SWVT9701'.
+           05 CON-SWPARAM              PIC  X(08) VALUE 'SWPARAM'.
+           05 CON-PEND                 PIC  X(02) VALUE 'PD'.
+           05 CON-RECONC               PIC  X(02) VALUE 'RC'.
+           05 CON-RECONC-PROP          PIC  X(02) VALUE 'RP'.
+           05 CON-AUTOMATICA           PIC  X(01) VALUE 'A'.
+           05 CON-MANUAL               PIC  X(01) VALUE 'M'.
+           05 CON-MT940                PIC  X(05) VALUE 'MT940'.
+           05 CON-MT950                PIC  X(05) VALUE 'MT950'.
+           05 CON-O00                  PIC  X(03) VALUE 'O00'.
+           05 CON-SPACES               PIC  X(01) VALUE ' '.
+           05 CON-NAO                  PIC  X(01) VALUE 'N'.
+           05 CON-CREDITO              PIC  X(01) VALUE 'C'.
+           05 CON-IRECONC-SIM          PIC  X(01) VALUE 'S'.
+           05 CON-IRECONC-NAO          PIC  X(01) VALUE 'N'.
+      *
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01 WS-VARIAVEIS.
+          05 WS-DATA                      PIC 9(08) VALUE ZEROES.
+          05 WS-DATA-R REDEFINES WS-DATA.
+             10 WS-NANO                   PIC 9(04).
+             10 WS-NMES                   PIC 9(02).
+             10 WS-NDIA                   PIC 9(02).
+          05 WS-PRVALBOL                  PIC  X(01) VALUE SPACE.
+          05 WS-I                         PIC S9(04) COMP VALUE ZEROES.
+      *
+          05 WS-CREF                      PIC  X(16) VALUE SPACES.
+          05 FILLER REDEFINES WS-CREF.
+             10 FILLER                    PIC  X(07).
+                88 SW-ACQUIRER                 VALUE 'CAP OF '.
+             10 WS-DATA-ACQ               PIC  X(08).
+             10 FILLER REDEFINES WS-DATA-ACQ.
+                15 WS-DT-AQ-ANO           PIC  9(02).
+                15 FILLER                 PIC  X(01).
+                15 WS-DT-AQ-MES           PIC  9(02).
+                15 FILLER                 PIC  X(01).
+                15 WS-DT-AQ-DIA           PIC  9(02).
+             10 FILLER                    PIC  X(01).
+          05 FILLER REDEFINES WS-CREF.
+             10 FILLER                    PIC  X(03).
+                88 SW-OPIOPM                   VALUE 'OPI' 'OPM'.
+                88 SW-CQA                      VALUE 'CQA'.
+                88 SW-RDXCDX                   VALUE 'RDE' 'RDI'
+                                                     'CDE' 'CDI'.
+             10 FILLER                    PIC  X(13).
+      *
+          05 WS-CCHAVE                    PIC  X(30) VALUE SPACES.
+          05 FILLER REDEFINES WS-CCHAVE.
+             10 WS-KEY-ANO                PIC  9(02).
+             10 WS-KEY-MES                PIC  9(02).
+             10 WS-KEY-DIA                PIC  9(02).
+             10 FILLER                    PIC  X(24).
+      *
+          05 WS-MRVLR-EXTR            PIC S9(13)V9(02) COMP-3
+                                                       VALUE ZEROS.
+          05 WS-MRVLR-MOVIM           PIC S9(13)V9(02) COMP-3
+                                                       VALUE ZEROS.
+      *
+          05 WS-COUNT                 PIC S9(10) COMP-3 VALUE 0.
+          05 WS-CCODEST               PIC X(02) VALUE SPACES.
+      *
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  SW-SWITCHES.
+           05 SW-CURSOR-STATE              PIC S9(03) COMP-3
+                                                      VALUE ZEROES.
+              88 SW-CURSOR-OK                         VALUE ZEROES.
+              88 SW-CURSOR-END                        VALUE -1.
+           05 SW-RECONC-STATE              PIC S9(03) COMP-3
+                                                      VALUE ZEROES.
+              88 SW-RECONC-OPER-NAO                  VALUE ZEROES.
+              88 SW-RECONC-OPER                      VALUE -1.
+      *
+           05 SW-PRVALBOL-STATUS           PIC  X(01)      VALUE SPACES.
+              88 SW-PRVALBOL-OK                            VALUE 'S'.
+              88 SW-PRVALBOL-NOTOK                         VALUE 'N'.
+      *
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+      *
+           COPY VIAK0001.
+           COPY VIAL0015.
+           COPY SWCK0001.
+           COPY SWCK0002.
+      *
+      ******************************************************************
+      * DB2
+      ******************************************************************
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+      ******************************************************************
+       01  FILLER                          PIC X(40) VALUE
+                                               'FIM DA WORKING-STORAGE'.
+      *                                                                *
+      ******************************************************************
+       LINKAGE SECTION.
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+       COPY ETCL0002.
+       COPY SWCL4805.
+
+      ******************************************************************
+       PROCEDURE DIVISION USING ETCL0002-COMMAREA
+                                SWCL4805-COMMAREA.
+
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+      *
+           MOVE '0000-MAINLINE    '        TO VIAL0015-CALLER-ID.
+
+           MOVE SPACES                     TO ETCL0002-DEBUG.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1000-INICIO-PROGRAMA-EXIT.
+      *
+           IF ETCL0002-SEM-ERROS
+              PERFORM 2000-PROC-PROGRAMA
+                 THRU 2000-PROC-PROGRAMA-EXIT
+           END-IF.
+      *
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3000-FIM-PROGRAMA-EXIT.
+      *
+       0000-MAINLINE-EXIT.
+           GOBACK.
+      *
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '1000-INICIO-PROGRAMA'     TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE SW-SWITCHES.
+      *
+           SET ETCL0002-RCODE-OK       TO TRUE.
+           MOVE SPACES                 TO WS-CCODEST
+           MOVE ZEROES                 TO WS-COUNT
+                                          SW-RECONC-STATE.
+      *
+           IF ETCL0002-SEM-ERROS
+              PERFORM 1100-VALIDAR-LINKAGE
+                 THRU 1100-VALIDAR-LINKAGE-EXIT
+           END-IF.
+      *
+       1000-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       1100-VALIDAR-LINKAGE.
+      ******************************************************************
+           MOVE '1100-VALIDAR-LINKAGE'      TO VIAL0015-CALLER-ID.
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       1100-VALIDAR-LINKAGE-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '2000-PROC-PROGRAMA'       TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           SET SW-RECONC-OPER-NAO          TO TRUE.
+
+           IF SW-RECONC-OPER
+              MOVE SWCL4805-IN-CREF        TO WS-CREF
+              PERFORM VARYING WS-I FROM +1 BY +1
+                UNTIL WS-I GREATER THAN +4
+                   OR SW-ACQUIRER
+                   OR SW-OPIOPM
+                   OR SW-CQA
+                   OR SW-RDXCDX
+                   OR NOT ETCL0002-SEM-ERROS
+                   OR NOT SW-RECONC-OPER
+      *
+                 EVALUATE TRUE
+                    WHEN WS-I EQUAL +1
+                       MOVE SWCL4805-IN-CREFOPR  TO WS-CREF
+                    WHEN WS-I EQUAL +2
+                       MOVE SWCL4805-IN-CREFEXT  TO WS-CREF
+                    WHEN WS-I EQUAL +3
+                       SET SW-RECONC-OPER-NAO TO TRUE
+                 END-EVALUATE
+              END-PERFORM
+           END-IF
+      *
+           EVALUATE TRUE
+              WHEN NOT ETCL0002-SEM-ERROS
+              WHEN NOT SW-RECONC-OPER
+                   CONTINUE
+              WHEN SW-ACQUIRER
+                   PERFORM 2300-RECONC-ACQUIRER
+                      THRU 2300-RECONC-ACQUIRER-EXIT
+              WHEN SW-OPIOPM
+                   PERFORM 2400-RECONC-OPIOPM
+                      THRU 2400-RECONC-OPIOPM-EXIT
+              WHEN SW-CQA
+              WHEN SW-RDXCDX
+                   PERFORM 2500-RECONC-CQA
+                      THRU 2500-RECONC-CQA-EXIT
+           END-EVALUATE.
+      *
+       2000-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2300-RECONC-ACQUIRER                                          **
+      ******************************************************************
+       2300-RECONC-ACQUIRER.
+      *
+           MOVE '2300-RECONC-ACQUIRER'     TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCL4805-IN-BALC           TO SWCD9701-MRBALC.
+           MOVE SWCL4805-IN-CCB            TO SWCD9701-MRCCB.
+           MOVE SWCL4805-IN-CMOED          TO SWCD9701-MRMOED
+
+      * operacoes de Acquirer VISA ou Mastercard
+           MOVE 'VSM5550'                  TO SWCD9701-MRETRB.
+      *
+           MOVE SPACES                     TO WS-CCHAVE.
+           MOVE WS-DT-AQ-ANO               TO WS-KEY-ANO.
+           MOVE WS-DT-AQ-MES               TO WS-KEY-MES.
+           MOVE WS-DT-AQ-DIA               TO WS-KEY-DIA.
+           MOVE WS-CCHAVE                  TO SWCD9701-CCHAVE
+      *
+           MOVE SWCL4805-IN-MVALOR         TO WS-MRVLR-EXTR.
+           IF SWCL4805-IN-CDBCR EQUAL CON-CREDITO
+              COMPUTE WS-MRVLR-EXTR = WS-MRVLR-EXTR * -1
+           END-IF.
+      *
+           EXEC SQL
+              SELECT IFNULL( SUM( MRVLR ), 0 )
+                INTO :WS-MRVLR-MOVIM
+                FROM SWVT9701
+               WHERE MRBALC   =  :SWCD9701-MRBALC
+                 AND MRCCB    =  :SWCD9701-MRCCB
+                 AND MRMOED   =  :SWCD9701-MRMOED
+                 AND CCHAVE   =  :SWCD9701-CCHAVE
+                 AND MRETRB   =  :SWCD9701-MRETRB
+                 AND IDRECONC =  0
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-NOTFND
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   PERFORM 2900-UPD-MOVIM
+                      THRU 2900-UPD-MOVIM-EXIT
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2300-RECONC-ACQUIRER'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2300-RECONC-ACQUIRER-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2400-RECONC-OPIOPM                                            **
+      ******************************************************************
+       2400-RECONC-OPIOPM.
+      *
+           MOVE '2400-RECONC-OPIOPM'       TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCL4805-IN-BALC           TO SWCD9701-MRBALC.
+           MOVE SWCL4805-IN-CCB            TO SWCD9701-MRCCB.
+           MOVE SWCL4805-IN-CMOED          TO SWCD9701-MRMOED
+           MOVE WS-CREF                    TO SWCD9701-CCHAVE
+      *
+           MOVE SWCL4805-IN-MVALOR         TO WS-MRVLR-EXTR
+           IF SWCL4805-IN-CDBCR EQUAL CON-CREDITO
+              COMPUTE WS-MRVLR-EXTR = WS-MRVLR-EXTR * -1
+           END-IF.
+      *
+           EXEC SQL
+              SELECT MRNOPR
+                   , MRNORD
+                INTO :SWCD9701-MRNOPR
+                   , :SWCD9701-MRNORD
+                FROM SWVT9701
+               WHERE MRBALC   =  :SWCD9701-MRBALC
+                 AND MRCCB    =  :SWCD9701-MRCCB
+                 AND MRMOED   =  :SWCD9701-MRMOED
+                 AND CCHAVE   =  :SWCD9701-CCHAVE
+                 AND IDRECONC =  0
+               FETCH FIRST ROW ONLY
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-NOTFND
+                   MOVE ZEROES              TO SWCD9701-MRNORD
+                                               SWCD9701-MRNOPR
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   PERFORM 2410-APURAR-VALOR
+                      THRU 2410-APURAR-VALOR-EXIT
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2400-RECONC-OPIOPM'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2400-RECONC-OPIOPM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2410-APURAR-VALOR                                             **
+      ******************************************************************
+       2410-APURAR-VALOR.
+      *
+           MOVE '2410-APURAR-VALOR'        TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              SELECT IFNULL( SUM( MRVLR ), 0 )
+                INTO :WS-MRVLR-MOVIM
+                FROM SWVT9701
+               WHERE MRBALC   =  :SWCD9701-MRBALC
+                 AND MRCCB    =  :SWCD9701-MRCCB
+                 AND MRMOED   =  :SWCD9701-MRMOED
+                 AND MRNOPR   =  :SWCD9701-MRNOPR
+                 AND IDRECONC =  0
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-NOTFND
+      *       WHEN WS-MRVLR-MOVIM NOT EQUAL WS-MRVLR-EXTR
+      *            SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   PERFORM 2900-UPD-MOVIM
+                      THRU 2900-UPD-MOVIM-EXIT
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2410-APURAR-VALOR'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2410-APURAR-VALOR-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2500-RECONC-CQA                                               **
+      ******************************************************************
+       2500-RECONC-CQA.
+      *
+           MOVE '2500-RECONC-CQA'          TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCL4805-IN-BALC           TO SWCD9701-MRBALC.
+           MOVE SWCL4805-IN-CCB            TO SWCD9701-MRCCB.
+           MOVE SWCL4805-IN-CMOED          TO SWCD9701-MRMOED
+
+           MOVE WS-CREF                    TO SWCD9701-CCHAVE
+      *
+           MOVE SWCL4805-IN-MVALOR         TO WS-MRVLR-EXTR.
+           IF SWCL4805-IN-CDBCR EQUAL CON-CREDITO
+              COMPUTE WS-MRVLR-EXTR = WS-MRVLR-EXTR * -1
+           END-IF.
+      *
+           EXEC SQL
+              SELECT IFNULL( SUM( MRVLR ), 0 )
+                INTO :WS-MRVLR-MOVIM
+                FROM SWVT9701
+               WHERE MRBALC   =  :SWCD9701-MRBALC
+                 AND MRCCB    =  :SWCD9701-MRCCB
+                 AND MRMOED   =  :SWCD9701-MRMOED
+                 AND CCHAVE   =  :SWCD9701-CCHAVE
+                 AND IDRECONC =  0
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-NOTFND
+      *       WHEN WS-MRVLR-MOVIM  NOT EQUAL WS-MRVLR-EXTR
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   PERFORM 2900-UPD-MOVIM
+                      THRU 2900-UPD-MOVIM-EXIT
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2500-RECONC-CQA'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2500-RECONC-CQA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2510-APURAR-VALOR                                             **
+      ******************************************************************
+       2510-APURAR-VALOR.
+      *
+           MOVE '2510-APURAR-VALOR'        TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EXEC SQL
+              SELECT IFNULL( SUM( MRVLR ), 0 )
+                INTO :WS-MRVLR-MOVIM
+                FROM SWVT9701
+               WHERE MRBALC   =  :SWCD9701-MRBALC
+                 AND MRCCB    =  :SWCD9701-MRCCB
+                 AND MRMOED   =  :SWCD9701-MRMOED
+                 AND CCHAVE   =  :SWCD9701-CCHAVE
+                 AND IDRECONC =  0
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-NOTFND
+      *       WHEN WS-MRVLR-MOVIM  NOT EQUAL WS-MRVLR-EXTR
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   PERFORM 2900-UPD-MOVIM
+                      THRU 2900-UPD-MOVIM-EXIT
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2510-APURAR-VALOR'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2510-APURAR-VALOR-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2900-UPD-MOVIM                                                 *
+      ******************************************************************
+       2900-UPD-MOVIM.
+      *
+           MOVE '2900-UPD-MOVIM          ' TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           EVALUATE TRUE
+              WHEN SW-ACQUIRER
+              WHEN SW-CQA
+              WHEN SW-RDXCDX
+      *
+                   EXEC SQL
+                      SELECT IFNULL(COUNT(*), 0)
+                        INTO :WS-COUNT
+                        FROM SWVT9701
+                       WHERE MRBALC  = :SWCD9701-MRBALC
+                         AND MRCCB   = :SWCD9701-MRCCB
+                         AND MRMOED  = :SWCD9701-MRMOED
+                         AND CCHAVE  = :SWCD9701-CCHAVE
+                         AND IDRECONC = 0
+                        WITH UR
+                   END-EXEC
+      *
+              WHEN SW-OPIOPM
+      *
+                   EXEC SQL
+                      SELECT IFNULL(COUNT(*), 0)
+                        INTO :WS-COUNT
+                        FROM SWVT9701
+                       WHERE MRBALC  = :SWCD9701-MRBALC
+                         AND MRCCB   = :SWCD9701-MRCCB
+                         AND MRMOED  = :SWCD9701-MRMOED
+                         AND MRNOPR  = :SWCD9701-MRNOPR
+                         AND IDRECONC = 0
+                        WITH UR
+                   END-EXEC
+      *
+           END-EVALUATE.
+      *
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+                   IF WS-COUNT        GREATER ZEROS
+                      PERFORM 2910-REGISTA-SWT97
+                         THRU 2910-REGISTA-SWT97-EXIT
+                   ELSE
+                      SET SW-RECONC-OPER-NAO TO TRUE
+                   END-IF
+              WHEN ETCL0002-SQL-NOTFND
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2900-UPD-MOVIM'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2900-UPD-MOVIM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2910-REGISTA-SWT97                                             *
+      ******************************************************************
+       2910-REGISTA-SWT97.
+      *
+           MOVE '2910-REGISTA-SWT97     '   TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-PROGNAME                 TO SWCD9701-CUSERID.
+      *
+           MOVE SWCL4805-IN-IDRECONC       TO SWCD9701-IDRECONC
+
+           EVALUATE WS-COUNT
+               WHEN 1
+                    MOVE SWCK0002-RECONC-1-PARA-1
+                      TO SWCD9701-CNATREC
+               WHEN OTHER
+                    MOVE SWCK0002-RECONC-N-PARA-1
+                      TO SWCD9701-CNATREC
+           END-EVALUATE
+
+           IF WS-MRVLR-MOVIM  EQUAL WS-MRVLR-EXTR
+              MOVE SWCK0002-RECONCILIADO   TO SWCD9701-CCODEST
+                                              WS-CCODEST
+              MOVE SWCK0002-SIM            TO SWCD9701-IRECONC
+              MOVE SWCK0002-RECONC-AUTOMATICA
+                                           TO SWCD9701-CTIPREC
+           ELSE
+              MOVE SWCK0002-RECONC-SUGERIDA
+                                           TO SWCD9701-CCODEST
+                                              WS-CCODEST
+              MOVE SWCK0002-NAO            TO SWCD9701-IRECONC
+              MOVE SWCK0002-RECONC-MANUAL  TO SWCD9701-CTIPREC
+           END-IF
+      *
+           EVALUATE TRUE
+              WHEN SW-ACQUIRER
+              WHEN SW-CQA
+              WHEN SW-RDXCDX
+      *
+                   EXEC SQL
+                      UPDATE SWVT9701
+                         SET IDRECONC = :SWCD9701-IDRECONC
+                           , CCODEST  = :SWCD9701-CCODEST
+                           , CNATREC  = :SWCD9701-CNATREC
+                           , IRECONC = :SWCD9701-IRECONC
+                           , CTIPREC = :SWCD9701-CTIPREC
+                           , CUSERID = :SWCD9701-CUSERID
+                           , HTIMEST = CURRENT_TIMESTAMP
+                       WHERE MRBALC  = :SWCD9701-MRBALC
+                         AND MRCCB   = :SWCD9701-MRCCB
+                         AND MRMOED  = :SWCD9701-MRMOED
+                         AND CCHAVE  = :SWCD9701-CCHAVE
+                         AND IDRECONC = 0
+                   END-EXEC
+      *
+              WHEN SW-OPIOPM
+      *
+                   EXEC SQL
+                      UPDATE SWVT9701
+                         SET IDRECONC = :SWCD9701-IDRECONC
+                           , CCODEST  = :SWCD9701-CCODEST
+                           , CNATREC  = :SWCD9701-CNATREC
+                           , IRECONC = :SWCD9701-IRECONC
+                           , CTIPREC = :SWCD9701-CTIPREC
+                           , CUSERID = :SWCD9701-CUSERID
+                           , HTIMEST = CURRENT_TIMESTAMP
+                       WHERE MRBALC  = :SWCD9701-MRBALC
+                         AND MRCCB   = :SWCD9701-MRCCB
+                         AND MRMOED  = :SWCD9701-MRMOED
+                         AND MRNOPR  = :SWCD9701-MRNOPR
+                         AND IDRECONC = 0
+                   END-EXEC
+      *
+           END-EVALUATE.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+              WHEN ETCL0002-SQL-NOTFND
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2910-REGISTA-SWT97'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2910-REGISTA-SWT97-EXIT.
+           EXIT.
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '3000-FIM-PROGRAMA'        TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           IF ETCL0002-SEM-ERROS
+              MOVE SW-RECONC-STATE         TO SWCL4805-OUT-RECONC-STATE
+              MOVE WS-COUNT                TO SWCL4805-OUT-COUNT-MOVIM
+              MOVE WS-CCODEST              TO SWCL4805-OUT-CCODEST
+           END-IF.
+      *
+       3000-FIM-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+           COPY ETCP0010.
+           COPY VIAP0015.

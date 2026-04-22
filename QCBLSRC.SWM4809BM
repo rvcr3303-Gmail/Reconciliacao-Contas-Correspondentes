@@ -1,0 +1,398 @@
+       IDENTIFICATION DIVISION.
+      ******************************************************************
+      *           I D E N T I F I C A T I O N   D I V I S I O N        *
+      ******************************************************************
+      * PROGRAM NAME
+      ******************************************************************
+       PROGRAM-ID. SWM4809BM.
+      ******************************************************************
+      *                                                                *
+      *                      - MENSAGENS SWIFT -                       *
+      *                                                                *
+      ******************************************************************
+      * RECONCILIAÇÃO AUTOMÁTICA DE OPERAÇÕES  (Nivel 9)               *
+      *                                                                *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM  S *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+      *           E N V I R O N M E N T         D I V I S I O N        *
+      ******************************************************************
+       CONFIGURATION SECTION.
+      ******************************************************************
+      *                     CONFIGURATION SECTION                      *
+      ******************************************************************
+       SOURCE-COMPUTER. IBM-AS400.
+       OBJECT-COMPUTER. IBM-AS400.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+      ******************************************************************
+      *                      INPUT-OUTPUT SECTION                      *
+      ******************************************************************
+       FILE-CONTROL.
+      ******************************************************************
+       DATA DIVISION.
+      ******************************************************************
+      *                   D A T A   D I V I S I O N                    *
+      ******************************************************************
+       FILE SECTION.
+      ******************************************************************
+      *                          FILE SECTION                          *
+      ******************************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************************
+      *                    WORKING STORAGE SECTION                     *
+      ******************************************************************
+       01  FILLER                          PIC X(40) VALUE
+                                               'INICIO WORKING-STORAGE'.
+      ******************************************************************
+      * PROGRAM CONTROL
+      ******************************************************************
+       01  WS-PROGRAM-CONTROL.
+           05 WS-PROGNAME                  PIC  X(10) VALUE 'SWM4809BM'.
+      *
+      ******************************************************************
+      * TABELAS
+      ******************************************************************
+           EXEC SQL INCLUDE SWCD9701 END-EXEC.
+      *
+      ******************************************************************
+      * APIS
+      ******************************************************************
+           COPY SXCL0002.
+           COPY SXCL0445.
+           COPY ETCL1000.
+           COPY ETCK0002.
+      ******************************************************************
+      * CONSTANTES
+      ******************************************************************
+       01  WS-CONSTANTES.
+           05 CON-SWVT9701             PIC  X(08) VALUE 'SWVT9701'.
+           05 CON-SWPARAM              PIC  X(08) VALUE 'SWPARAM'.
+           05 CON-PEND                 PIC  X(02) VALUE 'PD'.
+           05 CON-RECONC               PIC  X(02) VALUE 'RC'.
+           05 CON-RECONC-PROP          PIC  X(02) VALUE 'RP'.
+           05 CON-AUTOMATICA           PIC  X(01) VALUE 'A'.
+           05 CON-MANUAL               PIC  X(01) VALUE 'M'.
+           05 CON-MT940                PIC  X(05) VALUE 'MT940'.
+           05 CON-MT950                PIC  X(05) VALUE 'MT950'.
+           05 CON-O00                  PIC  X(03) VALUE 'O00'.
+           05 CON-SPACES               PIC  X(01) VALUE ' '.
+           05 CON-NAO                  PIC  X(01) VALUE 'N'.
+           05 CON-CREDITO              PIC  X(01) VALUE 'C'.
+           05 CON-IRECONC-SIM          PIC  X(01) VALUE 'S'.
+           05 CON-IRECONC-NAO          PIC  X(01) VALUE 'N'.
+           05 CON-CEDEBE               PIC  X(07) VALUE '/CEDEBE'.
+           05 CON-CEDEBE2              PIC  X(07) VALUE 'CEDEBE/'.
+           05 CON-ABSA                 PIC  X(04) VALUE 'ABSA'.
+           05 CON-CGDIMA               PIC  X(06) VALUE 'CGDIMA'.
+           05 CON-SPOT                 PIC  X(04) VALUE 'SPOT'.
+           05 CON-PGT                  PIC  X(03) VALUE 'PGT'.
+           05 CON-CEDENCIA             PIC  X(04) VALUE 'FAS-'.
+           05 CON-CEDENCIA1            PIC  X(02) VALUE '-1'.
+      *
+      ******************************************************************
+      * VARIAVEIS
+      ******************************************************************
+       01 WS-VARIAVEIS.
+      *
+          05 WS-MRVLR                     PIC S9(13)V9(02) COMP-3
+                                                           VALUE ZEROS.
+      *
+          05 WS-COUNT                 PIC S9(10) COMP-3 VALUE 0.
+          05 WS-MRDMOV-1              PIC X(40).
+          05 WS-MRDMOV-2              PIC X(40).
+          05 WS-CCODEST               PIC X(02).
+      *
+      ******************************************************************
+      * SWITCHES
+      ******************************************************************
+       01  SW-SWITCHES.
+           05 SW-CURSOR-STATE              PIC S9(03) COMP-3
+                                                      VALUE ZEROES.
+              88 SW-CURSOR-OK                         VALUE ZEROES.
+              88 SW-CURSOR-END                        VALUE -1.
+           05 SW-RECONC-STATE              PIC S9(03) COMP-3
+                                                      VALUE ZEROES.
+              88 SW-RECONC-OPER-NAO                  VALUE ZEROES.
+              88 SW-RECONC-OPER                      VALUE -1.
+      *
+           05 SW-PRVALBOL-STATUS           PIC  X(01)      VALUE SPACES.
+              88 SW-PRVALBOL-OK                            VALUE 'S'.
+              88 SW-PRVALBOL-NOTOK                         VALUE 'N'.
+      *
+      ******************************************************************
+      * COPYS
+      ******************************************************************
+      *
+           COPY VIAK0001.
+           COPY VIAL0015.
+           COPY SWCK0001.
+           COPY SWCK0002.
+      *
+      ******************************************************************
+      * DB2
+      ******************************************************************
+           EXEC SQL INCLUDE SQLCA    END-EXEC.
+      *
+      ******************************************************************
+       01  FILLER                          PIC X(40) VALUE
+                                               'FIM DA WORKING-STORAGE'.
+      *                                                                *
+      ******************************************************************
+       LINKAGE SECTION.
+      ******************************************************************
+      *                        LINKAGE SECTION                         *
+      ******************************************************************
+       COPY ETCL0002.
+       COPY SWCL4809.
+
+      ******************************************************************
+       PROCEDURE DIVISION USING ETCL0002-COMMAREA
+                                SWCL4809-COMMAREA.
+
+      ******************************************************************
+      *              P R O C E D U R E   D I V I S I O N               *
+      ******************************************************************
+       0000-MAINLINE.
+      *
+           MOVE '0000-MAINLINE    '        TO VIAL0015-CALLER-ID.
+
+           MOVE SPACES                     TO ETCL0002-DEBUG.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           PERFORM 1000-INICIO-PROGRAMA
+              THRU 1000-INICIO-PROGRAMA-EXIT.
+      *
+           IF ETCL0002-SEM-ERROS
+              PERFORM 2000-PROC-PROGRAMA
+                 THRU 2000-PROC-PROGRAMA-EXIT
+           END-IF.
+      *
+           PERFORM 3000-FIM-PROGRAMA
+              THRU 3000-FIM-PROGRAMA-EXIT.
+      *
+       0000-MAINLINE-EXIT.
+           GOBACK.
+      *
+      ******************************************************************
+       1000-INICIO-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '1000-INICIO-PROGRAMA'     TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           INITIALIZE SW-SWITCHES.
+      *
+           SET ETCL0002-RCODE-OK       TO TRUE.
+           MOVE SPACES                 TO WS-CCODEST
+                                          WS-MRDMOV-1
+                                          WS-MRDMOV-2.
+           MOVE ZEROES                 TO SW-RECONC-STATE.
+      *
+           IF ETCL0002-SEM-ERROS
+              PERFORM 1100-VALIDAR-LINKAGE
+                 THRU 1100-VALIDAR-LINKAGE-EXIT
+           END-IF.
+      *
+       1000-INICIO-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       1100-VALIDAR-LINKAGE.
+      ******************************************************************
+           MOVE '1100-VALIDAR-LINKAGE'      TO VIAL0015-CALLER-ID.
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+
+       1100-VALIDAR-LINKAGE-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       2000-PROC-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '2000-PROC-PROGRAMA'       TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           SET SW-RECONC-OPER-NAO          TO TRUE.
+
+           PERFORM 2100-RECONCILIACAO-FASE-1
+              THRU 2100-RECONCILIACAO-FASE-1-EXIT.
+      *
+       2000-PROC-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2100-RECONCILIACAO-FASE-1                                     **
+      ******************************************************************
+       2100-RECONCILIACAO-FASE-1.
+      *
+           MOVE '2100-RECONCILIACAO-FASE-1' TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE SWCL4809-IN-CBAN           TO SWCD9701-NCCCCBAN.
+           MOVE SWCL4809-IN-CSPAI          TO SWCD9701-NCCCCSPAI.
+           MOVE SWCL4809-IN-CMOED          TO SWCD9701-MRMOED
+           MOVE SWCL4809-IN-MVALOR         TO SWCD9701-MRVLR
+
+           STRING FUNCTION TRIM(SWCL4809-IN-CREF) DELIMITED BY SIZE
+                  ' //' DELIMITED BY SIZE
+                  FUNCTION TRIM(SWCL4809-IN-CREFOPR) DELIMITED BY SIZE
+             INTO WS-MRDMOV-1
+
+           STRING FUNCTION TRIM(SWCL4809-IN-CREF) DELIMITED BY SIZE
+                  '//' DELIMITED BY SIZE
+                  FUNCTION TRIM(SWCL4809-IN-CREFOPR) DELIMITED BY SIZE
+             INTO WS-MRDMOV-2
+      *
+           EXEC SQL
+              SELECT MRNOPR
+                INTO :SWCD9701-MRNOPR
+                FROM SWVT9701
+               WHERE MRDMOV   IN (:WS-MRDMOV-1,
+                                  :WS-MRDMOV-2)
+                 AND NCCCCBAN  = :SWCD9701-NCCCCBAN
+                 AND NCCCCSPAI = :SWCD9701-NCCCCSPAI
+                 AND MRVLR     = :SWCD9701-MRVLR
+                 AND MRMOED    = :SWCD9701-MRMOED
+                 AND IDRECONC   = 0
+                WITH UR
+           END-EXEC.
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER      TO TRUE
+                   PERFORM 2900-UPD-MOVIM
+                      THRU 2900-UPD-MOVIM-EXIT
+              WHEN ETCL0002-SQL-NOTFND
+                   MOVE ZEROES             TO SWCD9701-MRNOPR
+                   SET SW-RECONC-OPER-NAO  TO TRUE
+              WHEN ETCL0002-SQL-MULTROW
+                 MOVE '*** MULTROW ***'    TO VIAL0015-CALLER-ID
+                 IF ETCL0002-DEBUG-SIM
+                   PERFORM VIAP0015-TRATA-DEBUG
+                      THRU VIAP0015-TRATA-DEBUG-EXIT
+                 END-IF
+      *
+                 SET ETCL0002-SEM-ERROS    TO TRUE
+                 SET SW-RECONC-OPER-NAO    TO TRUE
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO  TO TRUE
+                   SET ETCL0002-RCODE-APL  TO TRUE
+                   MOVE '2100-RECONCILIACAO-FASE-1'
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2100-RECONCILIACAO-FASE-1-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+      * 2900-UPD-MOVIM                                                 *
+      ******************************************************************
+       2900-UPD-MOVIM.
+      *
+           MOVE '2900-UPD-MOVIM'            TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           MOVE WS-PROGNAME                TO SWCD9701-CUSERID.
+      *
+           MOVE SWCL4809-IN-IDRECONC       TO SWCD9701-IDRECONC
+
+           MOVE SWCK0002-RECONC-1-PARA-1   TO SWCD9701-CNATREC
+           MOVE SWCK0002-RECONC-AUTOMATICA TO SWCD9701-CTIPREC.
+           MOVE SWCK0002-SIM               TO SWCD9701-IRECONC
+           MOVE SWCK0002-RECONCILIADO      TO SWCD9701-CCODEST
+                                              WS-CCODEST
+      *
+           EXEC SQL
+              UPDATE SWVT9701
+                 SET IDRECONC  = :SWCD9701-IDRECONC
+                   , CCODEST   = :SWCD9701-CCODEST
+                   , CNATREC   = :SWCD9701-CNATREC
+                   , IRECONC   = :SWCD9701-IRECONC
+                   , CTIPREC   = :SWCD9701-CTIPREC
+                   , CUSERID   = :SWCD9701-CUSERID
+                   , HTIMEST   = CURRENT_TIMESTAMP
+               WHERE MRDMOV   IN (:WS-MRDMOV-1,
+                                  :WS-MRDMOV-2)
+                 AND NCCCCBAN  = :SWCD9701-NCCCCBAN
+                 AND NCCCCSPAI = :SWCD9701-NCCCCSPAI
+                 AND MRVLR     = :SWCD9701-MRVLR
+                 AND MRMOED    = :SWCD9701-MRMOED
+                 AND IDRECONC   = 0
+           END-EXEC
+      *
+           PERFORM 9020-DB2CHECK
+              THRU 9020-DB2CHECK-EXIT.
+      *
+           EVALUATE TRUE
+              WHEN ETCL0002-SQL-OK
+                   SET SW-RECONC-OPER       TO TRUE
+              WHEN ETCL0002-SQL-NOTFND
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+              WHEN OTHER
+                   SET SW-RECONC-OPER-NAO   TO TRUE
+                   SET ETCL0002-RCODE-APL   TO TRUE
+                   MOVE '2900-UPD-MOVIM '
+                     TO ETCL0002-GINFO-ERRO
+           END-EVALUATE.
+      *
+       2900-UPD-MOVIM-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+       3000-FIM-PROGRAMA.
+      ******************************************************************
+      *
+           MOVE '3000-FIM-PROGRAMA'        TO VIAL0015-CALLER-ID.
+      *
+           IF ETCL0002-DEBUG-SIM
+              PERFORM VIAP0015-TRATA-DEBUG
+                 THRU VIAP0015-TRATA-DEBUG-EXIT
+           END-IF.
+      *
+           IF ETCL0002-SEM-ERROS
+              MOVE SW-RECONC-STATE         TO SWCL4809-OUT-RECONC-STATE
+              MOVE 1                       TO SWCL4809-OUT-COUNT-MOVIM
+              MOVE WS-CCODEST              TO SWCL4809-OUT-CCODEST
+           END-IF.
+      *
+       3000-FIM-PROGRAMA-EXIT.
+           EXIT.
+      *
+      ******************************************************************
+           COPY ETCP0010.
+           COPY VIAP0015.

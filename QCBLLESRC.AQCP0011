@@ -1,0 +1,24 @@
+      ******************************************************************
+      *                                                                *
+      *                       9020-DB2CHECK                            *
+      *               (ROTINAS QUE NAO USAM AQCL0001)                  *
+      *                                                                *
+      ******************************************************************
+       9020-DB2CHECK.
+           MOVE SQLCODE                    TO AQCW0011-SQLCODE.
+           MOVE SQLCA                      TO AQCW0011-SQLCA
+
+           IF SQLWARN0 NOT EQUAL SPACES
+              MOVE AQCK0001-WARNING-DB2    TO AQCW0011-CODERR
+              SET AQCW0009-RCODE-APL TO TRUE
+           ELSE
+              IF NOT AQCW0011-NOTFND    AND
+                 NOT AQCW0011-OK        AND
+                 NOT AQCW0011-DUPREC    AND
+                 NOT AQCW0011-FKNTFND   AND
+                 NOT AQCW0011-RESTRICT
+                    MOVE AQCK0001-ERRO-DB2 TO AQCW0011-CODERR
+                    SET AQCW0009-RCODE-APL TO TRUE
+              END-IF.
+       9029-DB2CHECK-EXIT.
+           EXIT.

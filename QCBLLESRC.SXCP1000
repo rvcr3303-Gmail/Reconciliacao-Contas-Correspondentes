@@ -1,0 +1,12 @@
+      ******************************************************************
+      *   ROTINA DE DATAS                                              *
+      ******************************************************************
+       SXCP1000-ROTINA-DATAS.
+      *
+           CALL 'SX1000'               USING SXCL1000-AREA-COMUNICACAO
+              ON EXCEPTION
+                SET ERRO-ARQUITECTURA TO TRUE
+           END-CALL.
+      *
+       SXCP1000-EXIT.
+           EXIT.

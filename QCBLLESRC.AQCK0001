@@ -1,0 +1,19 @@
+      ******************************************************************
+      *                                                                *
+      *       AQCK0001   CONSTANTES COM CODIGOS DE ERRO ARQUITECTURA   *
+      *                                                                *
+      ******************************************************************
+       01  AQCK0001-ERROS.
+           05 AQCK0001-TRN-NOTFND             PIC S9(3) VALUE +001.
+           05 AQCK0001-CODIGO-JA-EXISTE       PIC S9(3) VALUE +002.
+           05 AQCK0001-CODIGO-NAO-EXISTE      PIC S9(3) VALUE +003.
+           05 AQCK0001-WARNING-DB2            PIC S9(3) VALUE +004.
+           05 AQCK0001-ERRO-DB2               PIC S9(3) VALUE +005.
+           05 AQCK0001-APLICACAO-INACTIVA     PIC S9(3) VALUE +006.
+           05 AQCK0001-SERVICO-INACTIVO       PIC S9(3) VALUE +007.
+           05 AQCK0001-ABEND-DB2              PIC X(02) VALUE 'A2'.
+      *
+      * ERROS DE VALIDACOES DE PREENCHIMENTO DE CAMPOS NO LOCAL
+      *
+           05 AQCK0001-ERR-CTABELA            PIC S9(3) VALUE +800.
+           05 AQCK0001-ERR-CCHAVE             PIC S9(3) VALUE +801.

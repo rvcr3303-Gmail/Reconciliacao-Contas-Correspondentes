@@ -1,0 +1,99 @@
+      ******************************************************************
+      *  FUNÇÃO:           LINKAGE ARQUITECTURA                       **
+      *  CRIACAO:          2011.10.31                                 **
+      *  AUTOR:            VIA CONSULTING                             **
+      *  DESCRIÇÃO:        LINKAGE COM CAMPOS INDIVIDUAIS             **
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S           **
+      *          *        *        *                                  **
+      ******************************************************************
+       01 AQCL0001-DATA.
+           05 AQCL0001-STD-BANKA.
+      *       NOME DO PROGRAMA CALLER
+              10 AQCL0001-PGMC              PIC  X(10).
+      *       CODIGO DA TRANSACCAO
+              10 AQCL0001-TTR               PIC  X(05).
+      *       JOBNAME DO CALLER (ESTACAO)
+              10 AQCL0001-JOBNC             PIC  X(10).
+      *       UTILIZADOR DO CALLER
+              10 AQCL0001-USERC             PIC  X(10).
+      *       PROGRAM QUEUE DO CALLER
+              10 AQCL0001-PGMQC             PIC  X(10).
+      *       PROGRAM LAST CALLER
+              10 AQCL0001-PGMLC             PIC  X(10).
+              10 AQCL0001-AMBIENTE          PIC  X(01).
+                 88 AQCL0001-AMBIENTE-5250            VALUE '5'.
+              10 AQCL0001-TIPO-OPCAO        PIC  X(01).
+                 88 AQCL0001-CONVERSACAO              VALUE 'C'.
+              10 AQCL0001-CAACCAO           PIC  X(01).
+                 88 AQCL0001-VISUALIZACAO             VALUE 'V'.
+                 88 AQCL0001-CRIACAO                  VALUE 'C'.
+                 88 AQCL0001-MODIFICACAO              VALUE 'M'.
+                 88 AQCL0001-ANULACAO                 VALUE 'A'.
+                 88 AQCL0001-ELIMINACAO               VALUE 'E'.
+              10 AQCL0001-DATA-SESSAO       PIC  9(08).
+              10 AQCL0001-ANUL              PIC  X(01).
+                 88 AQCL0001-ANUL-SIM                 VALUE 'S'.
+                 88 AQCL0001-ANUL-NAO                 VALUE 'N'.
+      *       RETURN CODE
+              10 AQCL0001-RCODE             PIC S9(01) COMP-3.
+                 88 AQCL0001-SEM-ERROS                VALUE 0, 1.
+                 88 AQCL0001-COM-ERROS                VALUE 2, 3.
+                 88 AQCL0001-RCODE-OK                 VALUE 0.
+                 88 AQCL0001-RCODE-INF                VALUE 1.
+                 88 AQCL0001-RCODE-VAL                VALUE 2.
+                 88 AQCL0001-RCODE-APL                VALUE 3.
+      *       EXECUTAR TRANSACTION RECOVERY
+              10 AQCL0001-ESTR              PIC  X(01).
+                 88 AQCL0001-ESTR-NOCOMMIT            VALUE '0'.
+                 88 AQCL0001-ESTR-COMMIT       VALUE '1'.
+      *       APLICACAO DA TRANSACCAO
+              10 AQCL0001-APTR              PIC  X(01).
+                 88 AQCL0001-APTR-APLICA       VALUE 'A'.
+      *    CONTROLO DE POSICIONAMENTO DA CONSULTA EM LISTA
+           05 AQCL0001-CSRRRN               PIC S9(05) COMP-3.
+           05 AQCL0001-IND                  PIC  X(02).
+           05 AQCL0001-MESS-FILE            PIC  X(07) VALUE SPACES.
+           05 AQCL0001-APLICACAO            PIC  X(02).
+           05 AQCL0001-PCMD                 PIC  X(50).
+           05 AQCL0001-PERC                 PIC  X(06).
+           05 AQCL0001-LDMOED               PIC  X(03).
+           05 AQCL0001-NOME                 PIC  X(60).
+           05 AQCL0001-DTAPL                PIC  9(08).
+           05 AQCL0001-CMOEDI               PIC  X(03).
+           05 AQCL0001-CBANI                PIC  9(04).
+           05 AQCL0001-CBALO                PIC  9(04).
+           05 AQCL0001-CPAII                PIC  X(03).
+           05 AQCL0001-NAUTR                PIC  X(10).
+           05 AQCL0001-CODERR               PIC  X(07).
+      * WAREFP E WAREFP1 APENAS OBRIGATÓRIOS NO PERCURSO 915
+           05 AQCL0001-WAREFP               PIC  X(10).
+           05 AQCL0001-WAREFP1              PIC  X(10).
+      *    CONTROLADOR DE FUNCTION KEY ACTIVADAS NO ECRAN
+           05 AQCL0001-FUNCTION-KEY         PIC  X(02).
+           05 AQCL0001-DB2-LOG.
+              10 AQCL0001-TABLE-NAME        PIC X(16).
+              10 AQCL0001-SQLCA.
+                 15 AQCL0001-SQLAID         PIC X(8).
+                 15 AQCL0001-SQLABC         PIC S9(9) COMP.
+                 15 AQCL0001-SQLCODE        PIC S9(9) COMP.
+                 15 AQCL0001-SQLERRM.
+                   20 AQCL0001-SQLERRM-LEN  PIC S9(4) COMP.
+                   20 AQCL0001-SQLERRM-DATA PIC X(70).
+                 15 AQCL0001-SQLERRP        PIC X(8).
+                 15 AQCL0001-SQLERDDG.
+                    20 AQCL0001-SQLERDD  OCCURS 6 TIMES.
+                       25 AQCL0001-SQLERRD-ITEM PIC S9(9) COMP.
+                 15 AQCL0001-SQLWARN.
+                   20 AQCL0001-SQLWARN0     PIC X(1).
+                   20 AQCL0001-SQLWARN1     PIC X(1).
+                   20 AQCL0001-SQLWARN2     PIC X(1).
+                   20 AQCL0001-SQLWARN3     PIC X(1).
+                   20 AQCL0001-SQLWARN4     PIC X(1).
+                   20 AQCL0001-SQLWARN5     PIC X(1).
+                   20 AQCL0001-SQLWARN6     PIC X(1).
+                   20 AQCL0001-SQLWARN7     PIC X(1).
+                 15 AQCL0001-SQLEXT         PIC X(8).
+           05 AQCL0001-MSG                  PIC X(1920).

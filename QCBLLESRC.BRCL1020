@@ -1,0 +1,12 @@
+      *****************************************************************
+      * NOME:      BRCL1020                                           *
+      * DESCRICAO: AREA DE LIGACAO COM O BR1020                       *
+      * CRICAO:    19-08-2010                                         *
+      * AUTOR:     VIA CONSULTING                                     *
+      * LENGTH:    812                                                *
+      *****************************************************************
+       01 BRCL1020-DATA.
+          05 BRCL1020-PGMQ                 PIC  X(10).
+          05 BRCL1020-WRMG-H.
+             10 BRCL1020-WRMG              PIC  X(80) OCCURS 10 TIMES.
+          05 BRCL1020-WNOCORN              PIC S9(02) COMP-3.

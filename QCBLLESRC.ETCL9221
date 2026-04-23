@@ -1,0 +1,29 @@
+       01  ETCL9221-DATA.
+           05 ETCL9221-ENTRADA.
+              10 ETCL9221-TTR           PIC  X(05).
+      * AESWF - TRATAMENTO MENSAGENS SWIFT
+                 88 ETCL9221-TTR-AESWF             VALUE 'AESWF'.
+      * CONCI - ALTERA MENSAGEM SWIFT RECEBIDA PARA CONCILIADA
+                 88 ETCL9221-TTR-CONCI             VALUE 'CONCI'.
+      * RESWF - RECEPÇÃO DE MENSAGENS SWIFT
+                 88 ETCL9221-TTR-RESWF             VALUE 'RESWF'.
+      * RMSWF - RECEPÇÃO DE MENSAGENS SWIFT
+                 88 ETCL9221-TTR-RMSWF             VALUE 'RMSWF'.
+      * TAUTE - TRATAMENTO AUTOMÁTICO MENSAGEM COM ERRO
+                 88 ETCL9221-TTR-TAUTE             VALUE 'TAUTE'.
+              10 ETCL9221-APLI          PIC  X(02).
+              10 ETCL9221-CAPL          PIC  X(02).
+      *
+              10 ETCL9221-CTOP          PIC  X(10).
+              10 ETCL9221-NOPR          PIC S9(09) COMP-3.
+              10 ETCL9221-SEQM          PIC S9(03) COMP-3.
+              10 ETCL9221-TFMT          PIC  X(05).
+              10 ETCL9221-CSW           PIC  X(06).
+              10 ETCL9221-SCSW          PIC  X(06).
+              10 ETCL9221-DREG          PIC S9(08) COMP-3.
+              10 ETCL9221-HREG          PIC S9(06) COMP-3.
+              10 ETCL9221-SEQUE         PIC S9(03) COMP-3.
+              10 ETCL9221-EMSG          PIC  X(01).
+              10 ETCL9221-AUTR          PIC S9(10) COMP-3.
+      * --- ROTINA
+       01  ETCL9221-ROTINA              PIC  X(10) VALUE 'ETR80221'.

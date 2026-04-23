@@ -1,0 +1,27 @@
+      ******************************************************************
+      *  APLICAÇÃO:                                                    *
+      *  MÓDULO:           TRANSVERSAL                                 *
+      *  FUNÇÃO:           ALTERA ESTADO MENSAGEM SWIFT                *
+      *  PROGRAMA:         ETR80221
+      *  CRIACAO:          2012.02.01                                  *
+      *  AUTOR:            VIA CONSULTING                              *
+      *  DESCRIÇÃO:        ALTERA ESTADO MENSAGEM SWIFT                *
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S            *
+      *          *        *        *                                   *
+      *          *        *        *                                   *
+      ******************************************************************
+       CALL-ETR80221.
+      *
+           CALL ETCL9221-ROTINA USING ETCL0002-COMMAREA,
+                                      ETCL9221-DATA
+             ON EXCEPTION
+                SET  ETCL0002-ERROS-ARQ    TO TRUE
+                MOVE VIAK0001-PROG-NOTFND  TO ETCL0002-NR-ERRO
+                MOVE VIAK0002-APLIC-AT     TO ETCL0002-CAPLIC-ERRO
+                MOVE ETCL9221-ROTINA       TO ETCL0002-CPROGRAM.
+      *
+       CALL-ETR80221-EXIT.
+           EXIT.

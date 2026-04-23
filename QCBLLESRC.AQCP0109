@@ -1,0 +1,28 @@
+      *****************************************************************
+      * NOME:      AQCP0109                                           *
+      * DESCRICAO: PROCEDURES UTIIZADOS PELA ARQUITECTURA BATCH       *
+      *****************************************************************
+      * ******************** ARQUITECTURA BATCH **********************
+           COPY AQCP0100.
+      * CONVERTE ETCL0002 -- AQCW0100
+           COPY ETCP0003.
+      * OBTEM PARAMETROS GERAIS
+           COPY ARCR2205.
+      * OBTEM PARAMETROS GERAIS - ETCL0002
+           COPY ARCR2206.
+      * EMPRESA
+           COPY ETCR9057.
+      * MOEDA
+           COPY ETCR9056.
+      * DATA
+           COPY ETCP9050.
+      * PAIS
+           COPY ETCP9113.
+      * TRANSACTION RECOVERY
+           COPY ETCR9068.
+      * CONVERTE DATAS 10 - 8 - 10
+           COPY AQCP0005.
+      * CONVERTE RCODE - IND-ERROS
+           COPY VIAP0020.
+      * ACEDE AO INDICADOR DE DEBUG
+           COPY ARCP4400.

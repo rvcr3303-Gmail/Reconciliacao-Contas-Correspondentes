@@ -1,0 +1,30 @@
+      ******************************************************************
+      *  APLICAÇÃO:        PAGAMENTO DE SALARIOS                      **
+      *  MÓDULO:           PARAMETROS                                 **
+      *  FUNÇÃO:           TRANSFORMA CONTAS PARA V203 - PSCW0010     **
+      *  PROGRAMA:         PSCP0010.                                  **
+      *  CRIACAO:          2011.12.28                                 **
+      *  AUTOR:            DIOGO ARCO                                 **
+      *  DESCRIÇÃO:        PROCEDIMENTO PARA TRATAMENTO DE RCODES - PS**
+      ******************************************************************
+      *           L O G     D E     A L T E R A C O E S                *
+      ******************************************************************
+      *  INICIO  * AUTOR  * FIM    *  C O M E N T A R I O S           **
+      *          *        *        *                                  **
+      ******************************************************************
+       AQCP0009-TRATA-RCODE.
+           IF AQCW0009-RCODE-INF
+              SET AQCL0001-SEM-ERROS TO TRUE
+           END-IF.
+           IF AQCW0009-SEM-ERROS
+              SET AQCL0001-SEM-ERROS TO TRUE
+           END-IF.
+           IF AQCW0009-RCODE-VAL
+              SET AQCL0001-RCODE-VAL TO TRUE
+           END-IF.
+           IF AQCW0009-RCODE-APL
+              SET AQCL0001-RCODE-APL TO TRUE
+           END-IF.
+       AQCP0009-TRATA-RCODE-EXIT.
+           EXIT.
+
